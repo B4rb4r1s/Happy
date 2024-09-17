@@ -1,0 +1,13 @@
+# V:\anaconda3\Scripts\activate.bat
+# conda activate taiga
+
+numpy==1.23.5
+pandas==1.5.3
+PyPDF2==3.0.1
+torch==2.2.1
+transformers==4.38
+sentencepiece==0.2.0
+gensim==3.8.2
+spacy==3.7.6
+flask==3.0.3
+flask-socketio==5.3.7

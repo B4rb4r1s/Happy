@@ -1,0 +1,6 @@
+# .dockerignore
+
+Source/Models
+Data
+happy.rar
+uploads
