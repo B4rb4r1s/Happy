@@ -3,9 +3,6 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import MBartTokenizer, MBartForConditionalGeneration
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-from gensim.summarization.summarizer import summarize
-from gensim.summarization import keywords
-
 from Source.Handler import Handler
 
 

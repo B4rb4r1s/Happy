@@ -4,6 +4,7 @@ import re
 import PyPDF2
 
 from Source.Handler import Handler
+from Source.OCR import extract_text_from_pdf
 
 
 class TextExtractionHandler(Handler):
@@ -23,16 +24,19 @@ class TextExtractionHandler(Handler):
                     page = reader.pages[page_num]
                     all_text += page.extract_text()
 
-                # clean_text = re.sub(r'(?<=[а-яa-z,-])\s\r?\n(?=[а-яА-Яa-zA-Z])', '', all_text)
-                clean_text = all_text
-                request['text'] = clean_text
+                if all_text == '':
+                    print('[ Debug ] Extracting from scan')
+                    all_text = extract_text_from_pdf(request['path'])
 
-            print(f"TextExtractionHandler: Обработано")
+                # all_text = re.sub(r'(?<=[а-яa-z,-])\s\r?\n(?=[а-яА-Яa-zA-Z])', '', all_text)
+                request['text'] = all_text
+
+            print(f"[ Debug ] TextExtractionHandler: Обработано")
             print(request['text'])
             request['task'] = 'generate_summary'
             return super().handle(request)
         else:
-            print("Error during handing (Reader)")
+            print("[ Debug ] Error during handing")
             return super().handle(request)
 
 
@@ -60,7 +64,7 @@ if __name__ == "__main__":
     
     reader.handle(manual_request)
 
-    print(f"Содержние документа: {manual_request.get('text')}")
+    print(f"Содержние документа: {manual_request.get('summery')}")
     # texts = extract_text_from_pdfs_in_folder("./Data/PDF/text/")
 
     # for filename, text in texts.items():

@@ -14,6 +14,9 @@ COPY . /app
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 RUN apt-get install nano
+# RUN apt-get install poppler-utils
+# RUN apt-get install tesseract-ocr
+# RUN apt-get install tesseract-ocr-rus
 RUN python -m spacy download ru_core_news_md
 
 # Определяем команду для запуска вашего приложения
