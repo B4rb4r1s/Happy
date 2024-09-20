@@ -1,6 +1,9 @@
 # .gitignore
 
 Source/Models/
+Source/Models_all/
+Source/support.ipynb
+
 Data/
 happy.rar
 uploads/

@@ -27,12 +27,12 @@ class NamedEntityRecognitionHandler(Handler):
             # Сохраняем выделенные сущности в запросе
             request['entities'] = entities
             
-            print(f"NamedEntityRecognitionHandler: Обработано")
+            print(f"[ Debug ] NamedEntityRecognitionHandler: Обработано")
             print(request['entities'])
             # request['task'] = '__next_task__'
             return super().handle(request)
         else:
-            print("Error during handing (NER)")
+            print("[ Debug ] Error during handing (NER)")
             return super().handle(request)
 
 

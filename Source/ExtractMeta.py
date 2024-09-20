@@ -32,12 +32,12 @@ class ExtractPDFMeta(Handler):
 
             request['meta'] = meta_info
 
-            print(f"ExtractPDFMeta: Обработано")
+            print(f"[ Debug ] ExtractPDFMeta: Обработано")
             print(request['meta'])
             request['task'] = 'extract_text'
             return super().handle(request)
         else:
-            print("Error during handing (Mets)")
+            print("[ Debug ] Error during handing (Mets)")
             return super().handle(request)
         
 
