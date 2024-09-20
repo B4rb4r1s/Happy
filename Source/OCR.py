@@ -14,5 +14,8 @@ def extract_text_from_pdf(pdf_path):
     # Return the text data
     return text_data
  
-text = extract_text_from_pdf('../Data/PDF/scan/scan1.pdf')
-print(text)
+
+
+if __name__ == '__main__':
+    text = extract_text_from_pdf('Data/PDF/scan/scan1.pdf')
+    print(text)

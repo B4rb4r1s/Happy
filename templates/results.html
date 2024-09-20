@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results</title>
+</head>
+<body>
+    <h1>Результаты обработки</h1>
+    <!-- Отображение метаинформации PDF -->
+     <h2>Метаинформация PDF:</h2>
+     <ul>
+        <li>Формат: {{ metadata.format }}</li>
+        <li>Автор: {{ metadata.author }}</li>
+        <li>Создатель: {{ metadata.creator }}</li>
+        <li>Название: {{ metadata.title }}</li>
+        <li>Тематика: {{ metadata.subject }}</li>
+        <li>Ключевые слова: {{ metadata.keywords }}</li>
+        <li>Дата создания: {{ metadata.creation_date }}</li>
+        <!-- <li>Дата последнего изменения: {{ metadata.modification_date }}</li> -->
+        <li>Программное обеспечение: {{ metadata.producer }}</li>
+     </ul>
+
+    <!-- Отображение извлеченного текста -->
+    <h2>Извлеченный текст:</h2>
+    <p>{{ extracted_text }}</p>
+    
+    <!-- Отображение краткого содержания -->
+    <h2>Краткое содержание:</h2>
+    <p>{{ summary }}</p>
+    
+    <!-- Отображение именованных сущностей -->
+    <h2>Именованные сущности:</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Сущность</th>
+                <th>Тип</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entity, label in entities %}
+                <tr>
+                    <td>{{ entity }}</td>
+                    <td>{{ label }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <br>
+    <a href="{{ url_for('index') }}">Вернуться на главную</a>
+</body>
+</html>

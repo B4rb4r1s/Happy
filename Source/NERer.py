@@ -16,7 +16,7 @@ class NamedEntityRecognitionHandler(Handler):
     def __init__(self):
         super().__init__()
         # Загружаем предобученную модель spaCy для английского языка (или другого языка, если необходимо)
-        self.nlp = spacy.load("ru_core_news_md")
+        self.nlp = spacy.load("ru_core_news_lg")
 
     def handle(self, request):
         # Проверяем, нужно ли выполнять выделение сущностей
