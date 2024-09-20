@@ -54,7 +54,7 @@ class SummaryGenerationHandler(Handler):
         
             request['summary'] = tokenizer.decode(out[0], skip_special_tokens=True)
             
-            print(f"TextExtractionHandler: Обработано")
+            print(f"TextSummarizationHandler: Обработано")
             print(request['summary'])
             request['task'] = 'extract_entities'
             return super().handle(request)
