@@ -1,10 +1,13 @@
 # .gitignore
 
+Source/__pycache__/
 Source/Models/
 Source/Models_all/
 Source/support.ipynb
 
+__pycache__/
+
 Data/
 uploads/
+
 happy.rar
-support.ipynb
