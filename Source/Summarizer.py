@@ -38,28 +38,31 @@ class SummaryGenerationHandler(Handler):
         '''
         if 'text' in request and request['task'] == 'generate_summary':
             text = request['text']
-            if n_words:
-                text = '[{}] '.format(n_words) + text
-            elif compression:
-                text = '[{0:.1g}] '.format(compression) + text
-            x = tokenizer(text, return_tensors='pt', padding=True).to(model.device)
-            with torch.inference_mode():
-                out = model.generate(
-                    **x, 
-                    max_length=max_length, num_beams=num_beams, 
-                    do_sample=do_sample, repetition_penalty=repetition_penalty, 
-                    **kwargs
-                )
-            # return self.tokenizer.decode(out[0], skip_special_tokens=True)
-        
-            request['summary'] = tokenizer.decode(out[0], skip_special_tokens=True)
+            if text != '':
+                if n_words:
+                    text = '[{}] '.format(n_words) + text
+                elif compression:
+                    text = '[{0:.1g}] '.format(compression) + text
+                x = tokenizer(text, return_tensors='pt', padding=True).to(model.device)
+                with torch.inference_mode():
+                    out = model.generate(
+                        **x, 
+                        max_length=max_length, num_beams=num_beams, 
+                        do_sample=do_sample, repetition_penalty=repetition_penalty, 
+                        **kwargs
+                    )
+                # return self.tokenizer.decode(out[0], skip_special_tokens=True)
+            
+                request['summary'] = tokenizer.decode(out[0], skip_special_tokens=True)
+            else:
+                request['summary'] = ''
             
             print(f"[ Debug ] TextSummarizationHandler: Обработано")
             print(request['summary'])
             request['task'] = 'extract_entities'
             return super().handle(request)
         else:
-            print("[ Debug ] Error during handing (Summary)")
+            print("[ Debug Error ] Error during handing (Summary)")
             return super().handle(request)
 
 

@@ -17,7 +17,9 @@ RUN apt-get install nano
 # RUN apt-get install poppler-utils
 # RUN apt-get install tesseract-ocr
 # RUN apt-get install tesseract-ocr-rus
+RUN python -m spacy download ru_core_news_sm
 RUN python -m spacy download ru_core_news_md
+RUN python -m spacy download ru_core_news_lg
 
 # Определяем команду для запуска вашего приложения
 CMD /bin/bash

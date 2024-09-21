@@ -14,10 +14,12 @@ UPLOAD_FOLDER = 'Uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+
 # Главная страница с формой для загрузки файлов
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 # Обработка загрузки файла
 @app.route('/upload', methods=['POST'])
@@ -49,9 +51,14 @@ def upload_file():
         session['extracted_text'] = req['text']
         session['summary'] = req['summary']
         session['entities'] = req['entities']
+
+        if session['extracted_text'] == '':
+            flash(f'Ошибка в чтении файла {file.filename}', 'warning')
+            return redirect(url_for('index'))
         
         flash(f'Файл {file.filename} успешно загружен и обработан')
         return redirect(url_for('index'))
+
 
 # Страница для просмотра результатов обработки (например, список сущностей)
 @app.route('/results')
@@ -73,6 +80,15 @@ def results():
                            summary = session.get('summary', 'Нет данных'), 
                            entities = session.get('entities', []),
                            metadata = session.get('metadata', 'Нет данных'))
+
+
+@app.route('/error')
+def error():
+    flash('Ошибка в чтении файла', 'warning')
+    return redirect(url_for('index'))
+
+
+
 
 if __name__ == '__main__':
     # Запускаем приложение Flask

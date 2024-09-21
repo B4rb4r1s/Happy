@@ -32,7 +32,7 @@ class NamedEntityRecognitionHandler(Handler):
             # request['task'] = '__next_task__'
             return super().handle(request)
         else:
-            print("[ Debug ] Error during handing (NER)")
+            print("[ Debug Error ] Error during handing (NER)")
             return super().handle(request)
 
 

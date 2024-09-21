@@ -25,8 +25,12 @@ class TextExtractionHandler(Handler):
                     all_text += page.extract_text()
 
                 if all_text == '':
-                    print('[ Debug ] Extracting from scan')
-                    all_text = extract_text_from_pdf(request['path'])
+                    try:
+                        print('[ Debug ] Extracting from scan')
+                        all_text = extract_text_from_pdf(request['path'])
+                    except:
+                        print("[ Debug Error ] Error during extracting from scan")
+                        all_text = ''
 
                 # all_text = re.sub(r'(?<=[а-яa-z,-])\s\r?\n(?=[а-яА-Яa-zA-Z])', '', all_text)
                 request['text'] = all_text
@@ -36,7 +40,7 @@ class TextExtractionHandler(Handler):
             request['task'] = 'generate_summary'
             return super().handle(request)
         else:
-            print("[ Debug ] Error during handing")
+            print("[ Debug Error ] Error during handing")
             return super().handle(request)
 
 
