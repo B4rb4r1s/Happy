@@ -14,13 +14,18 @@ COPY . /app
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 RUN apt-get install nano
-# RUN apt-get install poppler-utils
-# RUN apt-get install tesseract-ocr
-# RUN apt-get install tesseract-ocr-rus
+# Установка пакетов для OCR
+RUN apt-get install poppler-utils -y
+RUN apt-get install tesseract-ocr -y
+RUN apt-get install tesseract-ocr-rus -y
+# Установка моделей для NER
 RUN python -m spacy download ru_core_news_sm
 RUN python -m spacy download ru_core_news_md
 RUN python -m spacy download ru_core_news_lg
 
 # Определяем команду для запуска вашего приложения
-CMD /bin/bash
-# CMD ["python", "./run.py"]
+# CMD /bin/bash
+CMD ["python", "app.py"]
+
+# Запуск контейнера со всеми необходимыми параметрами
+# docker run -it --name hap -p 5000:5000 --gpus all happy
