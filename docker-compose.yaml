@@ -1,0 +1,33 @@
+version: "3"
+services:
+
+  app:
+    image: happy
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    # volumes:
+    #   - ./flask:/app/uploads
+    # networks:
+    #   app_network: 
+    #     ipv4_address: "123.23.34.4"
+    command: /bin/bash
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: "1234"
+      POSTGRES_DB: filedb
+    # volumes:
+    #   - ./postgreSQL:/var/lib/postgresql/data
+    # networks:
+    #   app_network: 
+    #     ipv4_address: "123.23.34.2"
+
+
+# networks:
+#   app_network:
+#     ipam:
+#       driver: default
