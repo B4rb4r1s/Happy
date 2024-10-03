@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, request, session
+from flask import redirect, url_for, flash, render_template
 import os
 
 from run import Chain
+from doc_verification import verification
 
 # Создаем экземпляр приложения Flask
 app = Flask(__name__)
@@ -27,6 +29,7 @@ def upload_file():
     if 'file' not in request.files:
         flash('Нет файла для загрузки')
         return redirect(request.url)
+    # redirect(request.url)
     
     file = request.files['file']
     
@@ -35,29 +38,36 @@ def upload_file():
         return redirect(request.url)
     
     if file:
-        # Сохраняем файл в папку uploads
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(file_path)
-        
-        # Здесь можно вызвать функцию для обработки файла
-        # Например: process_document(file_path)
-        chain = Chain()
-        req = {'task': 'extract_meta',
-                'path': file_path}
-        chain.handle_request(req)
+        # Проверка загруженного файла
+        ext = verification(file.filename)
+        if ext == '.pdf':
 
-        # Сохраняем результаты в сессии
-        session['metadata'] = req['meta']
-        session['extracted_text'] = req['text']
-        session['summary'] = req['summary']
-        session['entities'] = req['entities']
+            # Сохраняем файл в папку uploads
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file.save(file_path)
+            
+            # Методы для обработки документов
+            chain = Chain()
+            req = {'task': 'extract_meta',
+                    'path': file_path}
+            chain.handle_request(req)
 
-        if session['extracted_text'] == '':
-            flash(f'Ошибка в чтении файла {file.filename}', 'warning')
+            # Сохраняем результаты в сессии
+            session['metadata'] = req['meta']
+            session['extracted_text'] = req['text']
+            session['summary'] = req['summary']
+            session['entities'] = req['entities']
+
+            if session['extracted_text'] == '':
+                flash(f'Ошибка в чтении файла \'{file.filename}\'', 'warning')
+                return redirect(url_for('index'))
+            
+            flash(f'Файл \'{file.filename}\' успешно загружен и обработан')
             return redirect(url_for('index'))
         
-        flash(f'Файл {file.filename} успешно загружен и обработан')
-        return redirect(url_for('index'))
+        else:
+            flash(f'Неправильный формат файла c расширением {ext}')
+            return redirect(url_for('index'))
 
 
 # Страница для просмотра результатов обработки (например, список сущностей)
