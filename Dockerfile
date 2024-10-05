@@ -29,3 +29,5 @@ CMD ["python", "app.py"]
 
 # Запуск контейнера со всеми необходимыми параметрами
 # docker run -it --name hap -p 5000:5000 --gpus all happy
+# 
+# docker start -it hap

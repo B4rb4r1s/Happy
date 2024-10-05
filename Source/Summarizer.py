@@ -1,10 +1,15 @@
+# -*- coding: utf-8 -*-
+
 import torch
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import MBartTokenizer, MBartForConditionalGeneration
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-from Source.Handler import Handler
+from Handler import Handler
 
+# Установка параметров работы модели
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+print(f'[ DEBUG ] Computing using device - {device}')
 
 # T5
 # MODEL_NAME = 'cointegrated/rut5-base-absum'
@@ -16,7 +21,7 @@ from Source.Handler import Handler
 MODEL_NAME = 'IlyaGusev/mbart_ru_sum_gazeta'
 MODEL_PATH = 'Source/Models/MBART'
 tokenizer = MBartTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
-model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH)
+model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
 
 # GPT
 # MODEL_NAME = 'IlyaGusev/rugpt3medium_sum_gazeta'
@@ -24,14 +29,13 @@ model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH)
 # tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
 # model = AutoModelForCausalLM.from_pretrained(MODEL_PATH)
 
-# Установка параметров работы модели
-model.cpu()
-# device = "cuda:0" if torch.cuda.is_available() else "cpu"
 model.eval()
 
 
 class SummaryGenerationHandler(Handler):
-    def handle(self, request, n_words=None, compression=None, max_length=1000, num_beams=3, do_sample=False, repetition_penalty=10.0, **kwargs):
+    def handle(self, request, n_words=None, compression=None, 
+               max_length=1000, num_beams=3, do_sample=False, 
+               repetition_penalty=10.0, no_repeat_ngram_size=4, **kwargs):
         '''
         Текущий запрос:
             request = ['text']
@@ -39,19 +43,24 @@ class SummaryGenerationHandler(Handler):
         if 'text' in request and request['task'] == 'generate_summary':
             text = request['text']
             if text != '':
+
                 if n_words:
+                    # n_words - приблизительное кол-во слов, которые нужно сгенерировать
                     text = '[{}] '.format(n_words) + text
                 elif compression:
+                    # compression - приблизительное отношение объема аннотации 
+                    #               и оригинального текста.
                     text = '[{0:.1g}] '.format(compression) + text
-                x = tokenizer(text, return_tensors='pt', padding=True).to(model.device)
+
+                x = tokenizer(text, return_tensors='pt', padding=True).to(device)
                 with torch.inference_mode():
                     out = model.generate(
                         **x, 
                         max_length=max_length, num_beams=num_beams, 
                         do_sample=do_sample, repetition_penalty=repetition_penalty, 
+                        no_repeat_ngram_size = no_repeat_ngram_size,
                         **kwargs
                     )
-                # return self.tokenizer.decode(out[0], skip_special_tokens=True)
             
                 request['summary'] = tokenizer.decode(out[0], skip_special_tokens=True)
             else:

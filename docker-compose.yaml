@@ -3,28 +3,35 @@ services:
 
   app:
     image: happy
+    container_name: happy_container
     ports:
       - "5000:5000"
     depends_on:
-      - db
+      -   postgre
     # volumes:
     #   - ./flask:/app/uploads
     # networks:
     #   app_network: 
     #     ipv4_address: "123.23.23.2"
-    command: /bin/bash
 
-  db:
+  postgre:
     image: postgres
+    container_name: postgres_container
     environment:
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
-    # volumes:
-    #   - ./postgreSQL:/var/lib/postgresql/data
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres_db
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
     # networks:
     #   app_network: 
     #     ipv4_address: "123.23.23.4"
 
+volumes:
+  pgdata:
+    driver: local
 
 # networks:
 #   app_network:
