@@ -1,12 +1,14 @@
 # .gitignore
 
+__pycache__/
+
 Source/__pycache__/
 Source/Models/
 Source/Models_all/
 Source/.ipynb_checkpoints/
 Source/support.ipynb
 
-__pycache__/
+pgdata/
 
 Data/
 uploads/
