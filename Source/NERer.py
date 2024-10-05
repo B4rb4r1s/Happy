@@ -31,7 +31,6 @@ class NamedEntityRecognitionHandler(Handler):
             
             print(f"[ Debug ] NamedEntityRecognitionHandler: Обработано")
             print(request['entities'])
-            # request['task'] = '__next_task__'
             return super().handle(request)
         else:
             print("[ Debug Error ] Error during handing (NER)")

@@ -23,7 +23,7 @@ RUN python -m spacy download ru_core_news_sm
 RUN python -m spacy download ru_core_news_md
 RUN python -m spacy download ru_core_news_lg
 
-# Определяем команду для запуска вашего приложения
+# Определяем команду для запуска приложения
 # CMD /bin/bash
 CMD ["python", "app.py"]
 

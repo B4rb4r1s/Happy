@@ -5,7 +5,7 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import MBartTokenizer, MBartForConditionalGeneration
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-from Handler import Handler
+from Source.Handler import Handler
 
 # Установка параметров работы модели
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
