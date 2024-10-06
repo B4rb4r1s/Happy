@@ -53,11 +53,18 @@ def upload_file():
             file_content = file.read()
 
             # Подключение к базе данных
-            connection = psycopg2.connect(database='happy_db',\
-                            user="happy_user",\
-                            password="happy",\
-                            host="localhost",\
-                            port="5432")
+            try:
+                connection = psycopg2.connect(database='happy_db',\
+                                            user="happy_user",\
+                                            password="happy",\
+                                            host="postgre",\
+                                            port="5432")
+            except:
+                connection = psycopg2.connect(database='happy_db',\
+                                            user="happy_user",\
+                                            password="happy",\
+                                            host="localhost",\
+                                            port="5432")
             # Запись файла в базу данных
             with connection.cursor() as cursor:
                 cursor.execute("INSERT INTO documents (filename, filedata) VALUES (%s, %s)", (file.filename, file_content))
