@@ -1,6 +1,9 @@
 from flask import Flask, request, session
 from flask import redirect, url_for, flash, render_template
 import os
+import time
+
+import psycopg2
 
 from run import Chain
 from doc_verification import verification
@@ -45,6 +48,25 @@ def upload_file():
             # Сохраняем файл в папку uploads
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
+
+            # Прочитать содержимое файла
+            file_content = file.read()
+
+            # Подключение к базе данных
+            connection = psycopg2.connect(database='happy_db',\
+                            user="happy_user",\
+                            password="happy",\
+                            host="localhost",\
+                            port="5432")
+            # Запись файла в базу данных
+            with connection.cursor() as cursor:
+                cursor.execute("INSERT INTO documents (filename, filedata) VALUES (%s, %s)", (file.filename, file_content))
+                # Подтверждение изменений
+                connection.commit()
+                cursor.close()
+
+            # Завершение подключения к базе данных
+            connection.close()
             
             # Методы для обработки документов
             chain = Chain()

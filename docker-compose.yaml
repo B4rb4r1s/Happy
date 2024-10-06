@@ -1,15 +1,13 @@
 # version: "3"
 services:
 
-  # app:
-  #   image: happy
-  #   container_name: happy_container
-  #   ports:
-  #     - "5000:5000"
-  #   depends_on:
-  #     -   postgre
-    # volumes:
-    #   - ./flask:/app/uploads
+  app:
+    image: happy
+    container_name: happy_container
+    ports:
+      - "5000:5000"
+    depends_on:
+      -   postgre
     # networks:
     #   app_network: 
     #     ipv4_address: "123.23.23.2"
@@ -18,11 +16,13 @@ services:
     image: postgres
     container_name: postgres_container
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: app_db
+      POSTGRES_USER: happy_user
+      POSTGRES_PASSWORD: happy
+      POSTGRES_DB: happy_db
     ports:
-      - "5001:5001"
+      - 5432:5432
+    expose:
+      - 5432
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     # networks:
@@ -32,6 +32,10 @@ services:
 volumes:
   pgdata:
     driver: local
+
+networks:
+  default:
+    name: postgre-service_default
 
 # networks:
 #   app_network:

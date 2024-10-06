@@ -25,7 +25,8 @@ RUN python -m spacy download ru_core_news_lg
 
 # Определяем команду для запуска приложения
 # CMD /bin/bash
-CMD ["python", "app.py"]
+ENTRYPOINT [ "python", "app.py" ]
+CMD ["-it", "--name", "hap", "-p", "5000:5000", "--gpus", "all"]
 
 # Запуск контейнера со всеми необходимыми параметрами
 # docker run -it --name hap -p 5000:5000 --gpus all happy

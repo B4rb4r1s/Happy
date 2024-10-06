@@ -8,7 +8,7 @@ Source/Models_all/**
 !Source/Models/MBART/**
 Source/support.ipynb
 
-pgdata/
+pgdata
 
 Data
 uploads
