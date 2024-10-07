@@ -3,6 +3,10 @@ from datetime import datetime
 
 from Source.Handler import Handler
 
+import sys
+sys.stdout.flush()
+
+
 class ExtractPDFMeta(Handler):
     def handle(self, request):
         '''
@@ -32,12 +36,12 @@ class ExtractPDFMeta(Handler):
 
             request['meta'] = meta_info
 
-            print(f"[ Debug ] ExtractPDFMeta: Обработано")
+            print(f"[{datetime.now()}][ Debug ] ExtractPDFMeta: Обработано")
             print(request['meta'])
             request['task'] = 'extract_text'
             return super().handle(request)
         else:
-            print("[ Debug ] Error during handing (Mets)")
+            print(f"[{datetime.now()}][ Debug ] Error during handing (Mets)")
             return super().handle(request)
         
 

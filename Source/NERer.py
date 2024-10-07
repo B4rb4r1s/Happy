@@ -3,8 +3,12 @@ from transformers import AutoTokenizer, AutoModelForTokenClassification
 from transformers import pipeline
 
 import spacy
+import datetime
 
 from Source.Handler import Handler
+
+import sys
+sys.stdout.flush()
 
 # PATH = 'Source/Models/MBERT'
 
@@ -29,11 +33,11 @@ class NamedEntityRecognitionHandler(Handler):
             # Сохраняем выделенные сущности в запросе
             request['entities'] = entities
             
-            print(f"[ Debug ] NamedEntityRecognitionHandler: Обработано")
+            print(f"[{datetime.datetime.now()}][ Debug ] NamedEntityRecognitionHandler: Обработано")
             print(request['entities'])
             return super().handle(request)
         else:
-            print("[ Debug Error ] Error during handing (NER)")
+            print(f"[{datetime.datetime.now()}][ Debug Error ] Error during handing (NER)")
             return super().handle(request)
 
 

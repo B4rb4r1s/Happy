@@ -3,10 +3,15 @@ from flask import redirect, url_for, flash, render_template
 import os
 import time
 
+import datetime
 import psycopg2
 
 from run import Chain
 from doc_verification import verification
+
+import sys
+sys.stdout.flush()
+
 
 # Создаем экземпляр приложения Flask
 app = Flask(__name__)
@@ -50,7 +55,7 @@ def upload_file():
             file.save(file_path)
 
             # Прочитать содержимое файла
-            file_content = file.read()
+            # file_content = file.read()
             
             # Методы для обработки документов
             chain = Chain()
@@ -74,7 +79,7 @@ def upload_file():
                                                 password="happy",\
                                                 host="postgre",\
                                                 port="5432")
-                    print(f'[ DEBUG ] Connection to DB through Docker-compose')
+                    print(f'[{datetime.datetime.now()}][ DEBUG ] Connection to DB through Docker-compose', flush=True)
                 except:
                     # локальное подключение
                     connection = psycopg2.connect(database='happy_db',\
@@ -82,23 +87,38 @@ def upload_file():
                                                 password="happy",\
                                                 host="localhost",\
                                                 port="5432")
-                    print(f'[ DEBUG ] Connection to local DB')
+                    print(f'[{datetime.datetime.now()}][ DEBUG ] Connection to local DB', flush=True)
+
                 # Запись файла в базу данных
                 with connection.cursor() as cursor:
                     cursor.execute("INSERT INTO documents (filename, \
-                                                        author, \
-                                                        content) VALUES (%s, %s, %s)", 
-                                                        (file.filename, \
-                                                            session.get('metadata')['author'], \
-                                                            session['extracted_text']))
+                                                            content, \
+                                                            summary, \
+                                                            named_enteties, \
+                                                            author, \
+                                                            creator, \
+                                                            creation_date\
+                                   ) \
+                                    VALUES (%s, %s, %s, %s, %s, %s, %s)", \
+                                        (file.filename, \
+                                        session['extracted_text'], \
+                                        session['summary'], \
+                                        session['entities'], \
+                                        session.get('metadata')['author'], \
+                                        session.get('metadata')['creator'], \
+                                        session.get('metadata')['creation_date'] \
+                                        )
+                                    )
+
                     # Подтверждение изменений
                     connection.commit()
                     cursor.close()
+                    print(f'[{datetime.datetime.now()}][ DEBUG ] Data successfully uploaded via Database', flush=True)
 
                 # Завершение подключения к базе данных
                 connection.close()
-            except:
-                print(f'[ DEBUG ERROR ] Cannot connect to Databes')
+            except Exception as err:
+                print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Cannot connect to Databes\n\t{err}', flush=True)
 
             # Удаление временно загруженного файла
             os.remove(file_path)

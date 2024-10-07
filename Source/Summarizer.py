@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import torch
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import MBartTokenizer, MBartForConditionalGeneration
@@ -7,9 +8,13 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from Source.Handler import Handler
 
+import sys
+sys.stdout.flush()
+
+
 # Установка параметров работы модели
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
-print(f'[ DEBUG ] Computing using device - {device}')
+print(f'[{datetime.datetime.now()}][ DEBUG ] Computing using device - {device}')
 
 # T5
 # MODEL_NAME = 'cointegrated/rut5-base-absum'
@@ -66,12 +71,12 @@ class SummaryGenerationHandler(Handler):
             else:
                 request['summary'] = ''
             
-            print(f"[ Debug ] TextSummarizationHandler: Обработано")
+            print(f"[{datetime.datetime.now()}][ Debug ] TextSummarizationHandler: Обработано")
             print(request['summary'])
             request['task'] = 'extract_entities'
             return super().handle(request)
         else:
-            print("[ Debug Error ] Error during handing (Summary)")
+            print(f"[{datetime.datetime.now()}][ Debug Error ] Error during handing (Summary)")
             return super().handle(request)
 
 

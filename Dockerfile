@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install
 WORKDIR /app
 
 # Копируем файлы вашего проекта в контейнер
-COPY . /app
+COPY ./requirements.txt /app
 
 # Устанавливаем зависимости из файла requirements.txt
 RUN pip install --upgrade pip
