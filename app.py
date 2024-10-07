@@ -51,29 +51,6 @@ def upload_file():
 
             # Прочитать содержимое файла
             file_content = file.read()
-
-            # Подключение к базе данных
-            try:
-                connection = psycopg2.connect(database='happy_db',\
-                                            user="happy_user",\
-                                            password="happy",\
-                                            host="postgre",\
-                                            port="5432")
-            except:
-                connection = psycopg2.connect(database='happy_db',\
-                                            user="happy_user",\
-                                            password="happy",\
-                                            host="localhost",\
-                                            port="5432")
-            # Запись файла в базу данных
-            with connection.cursor() as cursor:
-                cursor.execute("INSERT INTO documents (filename, filedata) VALUES (%s, %s)", (file.filename, file_content))
-                # Подтверждение изменений
-                connection.commit()
-                cursor.close()
-
-            # Завершение подключения к базе данных
-            connection.close()
             
             # Методы для обработки документов
             chain = Chain()
@@ -86,6 +63,45 @@ def upload_file():
             session['extracted_text'] = req['text']
             session['summary'] = req['summary']
             session['entities'] = req['entities']
+
+            # Попытка подключения к базе данных
+            try:
+                # Подключение к базе данных
+                try:
+                    # подключение по docker-compose
+                    connection = psycopg2.connect(database='happy_db',\
+                                                user="happy_user",\
+                                                password="happy",\
+                                                host="postgre",\
+                                                port="5432")
+                    print(f'[ DEBUG ] Connection to DB through Docker-compose')
+                except:
+                    # локальное подключение
+                    connection = psycopg2.connect(database='happy_db',\
+                                                user="happy_user",\
+                                                password="happy",\
+                                                host="localhost",\
+                                                port="5432")
+                    print(f'[ DEBUG ] Connection to local DB')
+                # Запись файла в базу данных
+                with connection.cursor() as cursor:
+                    cursor.execute("INSERT INTO documents (filename, \
+                                                        author, \
+                                                        content) VALUES (%s, %s, %s)", 
+                                                        (file.filename, \
+                                                            session.get('metadata')['author'], \
+                                                            session['extracted_text']))
+                    # Подтверждение изменений
+                    connection.commit()
+                    cursor.close()
+
+                # Завершение подключения к базе данных
+                connection.close()
+            except:
+                print(f'[ DEBUG ERROR ] Cannot connect to Databes')
+
+            # Удаление временно загруженного файла
+            os.remove(file_path)
 
             if session['extracted_text'] == '':
                 flash(f'Ошибка в чтении файла \'{file.filename}\'', 'warning')

@@ -8,6 +8,10 @@ services:
       - "5000:5000"
     depends_on:
       -   postgre
+
+    volumes:
+      - .:/app
+
     deploy:
       resources:
         reservations:
@@ -21,7 +25,7 @@ services:
     #     ipv4_address: "123.23.23.2"
 
   postgre:
-    image: postgres
+    image: happy_db
     container_name: postgres_container
     environment:
       POSTGRES_USER: happy_user

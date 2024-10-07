@@ -16,7 +16,7 @@ class NamedEntityRecognitionHandler(Handler):
     def __init__(self):
         super().__init__()
         # Выбор устройства обработки
-        spacy.prefer_gpu()
+        # spacy.prefer_gpu()
         # Загружаем предобученную модель spaCy
         self.nlp = spacy.load("ru_core_news_lg")
 
