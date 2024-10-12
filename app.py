@@ -58,7 +58,7 @@ def index():
 
     except Exception as err:
         print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Error while connecting to Database {err}')
-    return render_template('index.html')
+    return render_template('index.html', documents=documents)
 
 
 # Обработка загрузки файла
