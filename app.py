@@ -28,6 +28,36 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Главная страница с формой для загрузки файлов
 @app.route('/')
 def index():
+    # Попытка подключения к базе данных
+    try:
+        # Подключение к базе данных
+        try:
+            # подключение по docker-compose
+            connection = psycopg2.connect(database='happy_db',\
+                                                user="happy_user",\
+                                                password="happy",\
+                                                host="postgre",\
+                                                port="5432")
+            print(f'[{datetime.datetime.now()}][ DEBUG ] Connection to DB through Docker-compose', flush=True)
+        except:
+            # локальное подключение
+            connection = psycopg2.connect(database='happy_db',\
+                                                user="happy_user",\
+                                                password="happy",\
+                                                host="localhost",\
+                                                port="5432")
+            print(f'[{datetime.datetime.now()}][ DEBUG ] Connection to local DB', flush=True)
+    
+        cursor = connection.cursor() 
+
+        cursor.execute('SELECT id, filename, creation_date FROM documents ORDER BY id DESC;')
+        documents = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+    except Exception as err:
+        print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Error while connecting to Database {err}')
     return render_template('index.html')
 
 

@@ -24,5 +24,29 @@
     <br>
     <a href="{{ url_for('results') }}">Просмотреть результаты</a>
 
+    <h2>Обработанные документы</h2>
+    <table border="1">
+	<thead>
+	    <tr>
+		<th>ID</th>
+		<th>Имя файла</th>
+		<th>Дата создания</th>
+	    </tr>
+	</thead>
+	<tbody>
+	    {% for doc in documents %}
+	        <tr>
+		    <td>{{ doc[0] }}</td>
+		    <td><a href="">{{ doc[1] }}</a></td>
+		    <td>{{ doc[2] }}</td>
+	        </tr>
+	    {% else %}
+	        <tr>
+		    <td colsnap="4">База данных пуста</td>
+		</tr>
+	    {% endfor %}
+	</tbody>
+    </table>
+
 </body>
 </html>
