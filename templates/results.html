@@ -11,14 +11,14 @@
     <!-- Отображение метаинформации PDF -->
      <h2>Метаинформация PDF:</h2>
      <ul>
-        <li>Формат: {{ metadata.format }}</li>
-        <li>Автор: {{ metadata.author }}</li>
-        <li>Создатель: {{ metadata.creator }}</li>
-        <li>Название: {{ metadata.title }}</li>
-        <li>Тематика: {{ metadata.subject }}</li>
-        <li>Ключевые слова: {{ metadata.keywords }}</li>
-        <li>Дата создания: {{ metadata.creation_date }}</li>
-        <li>Программное обеспечение: {{ metadata.producer }}</li>
+        <li>Формат: {{ format }}</li>
+        <li>Автор: {{ author }}</li>
+        <li>Создатель: {{ creator }}</li>
+        <li>Название: {{ title }}</li>
+        <li>Тематика: {{ subject }}</li>
+        <li>Ключевые слова: {{ keywords }}</li>
+        <li>Дата создания: {{ creation_date.strftime('%d.%m.%Y %H:%M:%S') }}</li>
+        <li>Программное обеспечение: {{ producer }}</li>
      </ul>
 
     <!-- Отображение извлеченного текста -->

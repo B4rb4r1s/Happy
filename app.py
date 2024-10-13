@@ -57,7 +57,7 @@ def index():
         conn = db_connection()
         cursor = conn.cursor() 
 
-        cursor.execute('SELECT id, filename, upload_time FROM documents ORDER BY id DESC;')
+        cursor.execute('SELECT id, filename, upload_time FROM documents ORDER BY id DESC LIMIT 10;')
         documents = cursor.fetchall()
 
         cursor.close()
@@ -109,6 +109,7 @@ def upload_file():
             # Запись файла в базу данных
             cursor = conn.cursor()
             try:
+                # Запись в табоицу DOCUMENTS
                 cursor.execute("""INSERT INTO documents (filename,
                                                         content,
                                                         summary,
@@ -121,11 +122,14 @@ def upload_file():
                                     )
                                 )
                 
+                # Запись в табоицу METADATA
                 cursor.execute("""INSERT INTO metadata (doc_id, format, author, 
                                                         creator, title, subject, 
                                                         keywords, creation_date, producer)
                                   VALUES (
-                                        (SELECT id FROM documents ORDER BY ID DESC LIMIT 1 ), 
+                                        (SELECT id 
+                                        FROM documents 
+                                        ORDER BY ID DESC LIMIT 1 ), 
                                             %s, %s, %s, %s, %s, %s, %s, %s)""", 
                                         (
                                          req['meta']['format'],
@@ -177,7 +181,11 @@ def results(doc_id):
     cur = conn.cursor()
     
     # Извлекаем результаты обработки для конкретного документа по ID
-    cur.execute('SELECT filename, content, summary FROM documents WHERE id = %s', (doc_id,))
+    cur.execute(''' SELECT *
+                    FROM documents 
+                    RIGHT JOIN metadata ON documents.id = metadata.doc_id
+                    WHERE documents.id = %s;
+                ''', (doc_id,))
     document = cur.fetchone()
     
     cur.close()
@@ -185,12 +193,20 @@ def results(doc_id):
     
     if document:
         return render_template('results.html', 
-                               filename=document[0], 
-                               extracted_text=document[1], 
-                               summary=document[2],
-                               # Сущности и метаинф. - заглушка БД
-                               entities = session.get('entities', []),
-                               metadata = session.get('metadata', 'Нет данных'))
+                               filename=document[1], 
+                               extracted_text=document[2], 
+                               summary=document[3],
+                               # Метаинформация
+                               format=document[7],
+                               author=document[8],
+                               creator=document[9],
+                               title=document[10],
+                               subject=document[11],
+                               keywords=document[12],
+                               creation_date=document[13],
+                               producer=document[14],
+                               # Сущности - заглушка БД
+                               entities = session.get('entities', []))
     else:
         flash('Документ не найден')
         return redirect(url_for('index'))
