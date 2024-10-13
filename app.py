@@ -57,7 +57,7 @@ def index():
         conn = db_connection()
         cursor = conn.cursor() 
 
-        cursor.execute('SELECT id, filename FROM documents ORDER BY id DESC;')
+        cursor.execute('SELECT id, filename, upload_time FROM documents ORDER BY id DESC;')
         documents = cursor.fetchall()
 
         cursor.close()
@@ -111,21 +111,35 @@ def upload_file():
             try:
                 cursor.execute("""INSERT INTO documents (filename,
                                                         content,
-                                                        summary)
-                                VALUES (%s, %s, %s)""",
+                                                        summary,
+                                                        upload_time)
+                                VALUES (%s, %s, %s, %s)""",
                                     (file.filename,
                                     req['text'],
                                     req['summary'],
+                                    datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
                                     )
                                 )
                 
-                cursor.execute("""INSERT INTO metadata (doc_id, format, author)
+                cursor.execute("""INSERT INTO metadata (doc_id, format, author, 
+                                                        creator, title, subject, 
+                                                        keywords, creation_date, producer)
                                   VALUES (
-                                        (SELECT id FROM documents WHERE filename = %s), 
-                                            %s, %s)""", 
-                                        (file.filename,
+                                        (SELECT id FROM documents ORDER BY ID DESC LIMIT 1 ), 
+                                            %s, %s, %s, %s, %s, %s, %s, %s)""", 
+                                        (
                                          req['meta']['format'],
-                                         req['meta']['author'])
+                                         req['meta']['author'],
+                                         req['meta']['creator'],
+                                         req['meta']['title'],
+                                         req['meta']['subject'],
+                                         req['meta']['keywords'],
+                                         # Формат 02.04.2024 20:28:19
+                                         #  (%d.%m.%Y %H:%M:%S)
+                                         datetime.datetime.strptime(req['meta']['creation_date'], '%d.%m.%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S'),
+                                        #  datetime.datetime.strptime(req['meta']['modification_date'], '%d.%m.%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S'),
+                                         req['meta']['producer'] 
+                                        )
                                 )
 
                 # Подтверждение изменений
@@ -171,7 +185,7 @@ def results(doc_id):
     
     if document:
         return render_template('results.html', 
-                               filemane=document[0], 
+                               filename=document[0], 
                                extracted_text=document[1], 
                                summary=document[2],
                                # Сущности и метаинф. - заглушка БД
