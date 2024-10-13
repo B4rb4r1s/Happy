@@ -25,20 +25,17 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
-# Главная страница с формой для загрузки файлов
-@app.route('/')
-def index():
-    # Попытка подключения к базе данных
+def db_connection():
     try:
-        # Подключение к базе данных
         try:
             # подключение по docker-compose
             connection = psycopg2.connect(database='happy_db',\
-                                                user="happy_user",\
-                                                password="happy",\
-                                                host="postgre",\
-                                                port="5432")
+                                            user="happy_user",\
+                                            password="happy",\
+                                            host="postgre",\
+                                            port="5432")
             print(f'[{datetime.datetime.now()}][ DEBUG ] Connection to DB through Docker-compose', flush=True)
+            return connection
         except:
             # локальное подключение
             connection = psycopg2.connect(database='happy_db',\
@@ -47,18 +44,25 @@ def index():
                                                 host="localhost",\
                                                 port="5432")
             print(f'[{datetime.datetime.now()}][ DEBUG ] Connection to local DB', flush=True)
-    
-        cursor = connection.cursor() 
+            return connection
+    except Exception as err:
+        print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Error while connecting to Database\n{err}')
+        return 0
+
+
+# Главная страница с формой для загрузки файлов
+@app.route('/')
+def index():
+    # Попытка подключения к базе данных
+        conn = db_connection()
+        cursor = conn.cursor() 
 
         cursor.execute('SELECT id, filename, creation_date FROM documents ORDER BY id DESC;')
         documents = cursor.fetchall()
 
         cursor.close()
-        connection.close()
-
-    except Exception as err:
-        print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Error while connecting to Database {err}')
-    return render_template('index.html', documents=documents)
+        conn.close()
+        return render_template('index.html', documents=documents)
 
 
 # Обработка загрузки файла
@@ -100,55 +104,41 @@ def upload_file():
             session['entities'] = req['entities']
 
             # Попытка подключения к базе данных
-            try:
-                # Подключение к базе данных
-                try:
-                    # подключение по docker-compose
-                    connection = psycopg2.connect(database='happy_db',\
-                                                user="happy_user",\
-                                                password="happy",\
-                                                host="postgre",\
-                                                port="5432")
-                    print(f'[{datetime.datetime.now()}][ DEBUG ] Connection to DB through Docker-compose', flush=True)
-                except:
-                    # локальное подключение
-                    connection = psycopg2.connect(database='happy_db',\
-                                                user="happy_user",\
-                                                password="happy",\
-                                                host="localhost",\
-                                                port="5432")
-                    print(f'[{datetime.datetime.now()}][ DEBUG ] Connection to local DB', flush=True)
+            conn = db_connection()
 
-                # Запись файла в базу данных
-                with connection.cursor() as cursor:
-                    cursor.execute("INSERT INTO documents (filename, \
-                                                            content, \
-                                                            summary, \
-                                                            named_enteties, \
-                                                            author, \
-                                                            creator, \
-                                                            creation_date\
-                                   ) \
-                                    VALUES (%s, %s, %s, %s, %s, %s, %s)", \
-                                        (file.filename, \
-                                        session['extracted_text'], \
-                                        session['summary'], \
-                                        session['entities'], \
-                                        session.get('metadata')['author'], \
-                                        session.get('metadata')['creator'], \
-                                        session.get('metadata')['creation_date'] \
-                                        )
+            # Запись файла в базу данных
+            cursor = conn.cursor()
+            try:
+                cursor.execute("INSERT INTO documents (filename, \
+                                                        content, \
+                                                        summary, \
+                                                        named_enteties, \
+                                                        author, \
+                                                        creator, \
+                                                        creation_date, \
+                                                        matadata \
+                                                        ) \
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", \
+                                    (file.filename, \
+                                    session['extracted_text'], \
+                                    session['summary'], \
+                                    session['entities'], \
+                                    session.get('metadata')['author'], \
+                                    session.get('metadata')['creator'], \
+                                    session.get('metadata')['creation_date'], \
+                                    session.get('metadata') \
                                     )
+                                )
 
                     # Подтверждение изменений
-                    connection.commit()
-                    cursor.close()
-                    print(f'[{datetime.datetime.now()}][ DEBUG ] Data successfully uploaded via Database', flush=True)
-
-                # Завершение подключения к базе данных
-                connection.close()
+                conn.commit()
+                cursor.close()
+                print(f'[{datetime.datetime.now()}][ DEBUG ] Data successfully uploaded to Database', flush=True)
             except Exception as err:
-                print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Cannot connect to Databes\n\t{err}', flush=True)
+                print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with uploading document to Database\n{err}', flush=True)
+
+            # Завершение подключения к базе данных
+            conn.close()
 
             # Удаление временно загруженного файла
             os.remove(file_path)
@@ -169,15 +159,27 @@ def upload_file():
 @app.route('/results')
 def results():
     # Здесь должны быть данные, полученные после обработки документа
-    # Например, из базы данных или глобальной переменной
+
+    # # Отображение результатов для выбранного документа
+    # conn = db_connection()
+    # cur = conn.cursor()
     
-    # extracted_text = req['text']
-    # summary = req['summary']
-    # entities = [
-    #     ("Barack Obama", "PERSON"),
-    #     ("United States", "GPE"),
-    #     ("Washington", "GPE")
-    # ]
+    # # Извлекаем результаты обработки для конкретного документа по ID
+    # cur.execute('SELECT id, matadata, content, summary FROM documents WHERE id = %s', (doc_id,))
+    # document = cur.fetchone()
+    
+    # cur.close()
+    # conn.close()
+    
+    # if document:
+    #     return render_template('results.html', 
+    #                            id = document[0],
+    #                            metadata=document[1], 
+    #                            extracted_text=document[1], 
+    #                            summary=document[3])
+    # else:
+    #     flash('Документ не найден')
+    #     return redirect(url_for('index'))
     
     # Передаем данные в шаблон для отображения
     return render_template('results.html', 

@@ -37,7 +37,9 @@
 	    {% for doc in documents %}
 	        <tr>
 		    <td>{{ doc[0] }}</td>
-		    <td><a href="">{{ doc[1] }}</a></td>
+		    <td>
+                <a href="{{ url_for('results') }}">{{ doc[1] }}</a>
+            </td>
 		    <td>{{ doc[2] }}</td>
 	        </tr>
 	    {% else %}
