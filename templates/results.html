@@ -7,6 +7,7 @@
 </head>
 <body>
     <h1>Результаты обработки</h1>
+    <h3>{{ filename }}</h3>
     <!-- Отображение метаинформации PDF -->
      <h2>Метаинформация PDF:</h2>
      <ul>
@@ -17,7 +18,7 @@
         <li>Тематика: {{ metadata.subject }}</li>
         <li>Ключевые слова: {{ metadata.keywords }}</li>
         <li>Дата создания: {{ metadata.creation_date }}</li>
-        <!-- <li>Дата последнего изменения: {{ metadata.modification_date }}</li> -->
+        <li>Дата последнего изменения: {{ metadata.modification_date }}</li> 
         <li>Программное обеспечение: {{ metadata.producer }}</li>
      </ul>
 

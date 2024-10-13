@@ -57,7 +57,7 @@ def index():
         conn = db_connection()
         cursor = conn.cursor() 
 
-        cursor.execute('SELECT id, filename, creation_date FROM documents ORDER BY id DESC;')
+        cursor.execute('SELECT id, filename FROM documents ORDER BY id DESC;')
         documents = cursor.fetchall()
 
         cursor.close()
@@ -109,28 +109,26 @@ def upload_file():
             # Запись файла в базу данных
             cursor = conn.cursor()
             try:
-                cursor.execute("INSERT INTO documents (filename, \
-                                                        content, \
-                                                        summary, \
-                                                        named_enteties, \
-                                                        author, \
-                                                        creator, \
-                                                        creation_date, \
-                                                        matadata \
-                                                        ) \
-                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", \
-                                    (file.filename, \
-                                    session['extracted_text'], \
-                                    session['summary'], \
-                                    session['entities'], \
-                                    session.get('metadata')['author'], \
-                                    session.get('metadata')['creator'], \
-                                    session.get('metadata')['creation_date'], \
-                                    session.get('metadata') \
+                cursor.execute("""INSERT INTO documents (filename,
+                                                        content,
+                                                        summary)
+                                VALUES (%s, %s, %s)""",
+                                    (file.filename,
+                                    req['text'],
+                                    req['summary'],
                                     )
                                 )
+                
+                cursor.execute("""INSERT INTO metadata (doc_id, format, author)
+                                  VALUES (
+                                        (SELECT id FROM documents WHERE filename = %s), 
+                                            %s, %s)""", 
+                                        (file.filename,
+                                         req['meta']['format'],
+                                         req['meta']['author'])
+                                )
 
-                    # Подтверждение изменений
+                # Подтверждение изменений
                 conn.commit()
                 cursor.close()
                 print(f'[{datetime.datetime.now()}][ DEBUG ] Data successfully uploaded to Database', flush=True)
@@ -156,37 +154,39 @@ def upload_file():
 
 
 # Страница для просмотра результатов обработки (например, список сущностей)
-@app.route('/results')
-def results():
+@app.route('/results/<int:doc_id>')
+def results(doc_id):
     # Здесь должны быть данные, полученные после обработки документа
 
-    # # Отображение результатов для выбранного документа
-    # conn = db_connection()
-    # cur = conn.cursor()
+    # Отображение результатов для выбранного документа
+    conn = db_connection()
+    cur = conn.cursor()
     
-    # # Извлекаем результаты обработки для конкретного документа по ID
-    # cur.execute('SELECT id, matadata, content, summary FROM documents WHERE id = %s', (doc_id,))
-    # document = cur.fetchone()
+    # Извлекаем результаты обработки для конкретного документа по ID
+    cur.execute('SELECT filename, content, summary FROM documents WHERE id = %s', (doc_id,))
+    document = cur.fetchone()
     
-    # cur.close()
-    # conn.close()
+    cur.close()
+    conn.close()
     
-    # if document:
-    #     return render_template('results.html', 
-    #                            id = document[0],
-    #                            metadata=document[1], 
-    #                            extracted_text=document[1], 
-    #                            summary=document[3])
-    # else:
-    #     flash('Документ не найден')
-    #     return redirect(url_for('index'))
+    if document:
+        return render_template('results.html', 
+                               filemane=document[0], 
+                               extracted_text=document[1], 
+                               summary=document[2],
+                               # Сущности и метаинф. - заглушка БД
+                               entities = session.get('entities', []),
+                               metadata = session.get('metadata', 'Нет данных'))
+    else:
+        flash('Документ не найден')
+        return redirect(url_for('index'))
     
     # Передаем данные в шаблон для отображения
-    return render_template('results.html', 
-                           extracted_text = session.get('extracted_text', 'Нет данных'), 
-                           summary = session.get('summary', 'Нет данных'), 
-                           entities = session.get('entities', []),
-                           metadata = session.get('metadata', 'Нет данных'))
+    # return render_template('results.html', 
+    #                        extracted_text = session.get('extracted_text', 'Нет данных'), 
+    #                        summary = session.get('summary', 'Нет данных'), 
+    #                        entities = session.get('entities', []),
+    #                        metadata = session.get('metadata', 'Нет данных'))
 
 
 @app.route('/error')

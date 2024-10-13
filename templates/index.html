@@ -22,7 +22,10 @@
         {% endif %}
     {% endwith %}
     <br>
-    <a href="{{ url_for('results') }}">Просмотреть результаты</a>
+
+    {%if documents|length > 0 %}
+        <!-- <a href="{{ url_for('results', doc_id=documents[-1][0]) }}">Просмотреть результаты</a> -->
+    {%endif%}
 
     <h2>Обработанные документы</h2>
     <table border="1">
@@ -38,7 +41,7 @@
 	        <tr>
 		    <td>{{ doc[0] }}</td>
 		    <td>
-                <a href="{{ url_for('results') }}">{{ doc[1] }}</a>
+                <a href="{{ url_for('results', doc_id=doc[0]) }}">{{ doc[1] }}</a>
             </td>
 		    <td>{{ doc[2] }}</td>
 	        </tr>
