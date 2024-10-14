@@ -34,6 +34,7 @@
 		<th>ID</th>
 		<th>Имя файла</th>
 		<th>Дата загрузки</th>
+		<th>Дата создания</th>
 	    </tr>
 	</thead>
 	<tbody>
@@ -44,6 +45,7 @@
                 <a href="{{ url_for('results', doc_id=doc[0]) }}">{{ doc[1] }}</a>
             </td>
 		    <td>{{ doc[2].strftime('%d.%m.%Y %H:%M:%S') }}</td>
+		    <td>{{ doc[3].strftime('%d.%m.%Y %H:%M:%S') }}</td>
 	        </tr>
 	    {% else %}
 	        <tr>

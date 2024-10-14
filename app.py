@@ -57,7 +57,10 @@ def index():
         conn = db_connection()
         cursor = conn.cursor() 
 
-        cursor.execute('SELECT id, filename, upload_time FROM documents ORDER BY id DESC LIMIT 10;')
+        cursor.execute('''  SELECT documents.id, filename, upload_time, creation_date 
+                            FROM documents 
+                            RIGHT JOIN metadata ON documents.id = metadata.doc_id
+                            ORDER BY id DESC LIMIT 10;''')
         documents = cursor.fetchall()
 
         cursor.close()
