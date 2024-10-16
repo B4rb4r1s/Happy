@@ -91,9 +91,6 @@ def upload_file():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(file_path)
 
-            # Прочитать содержимое файла
-            # file_content = file.read()
-            
             # Методы для обработки документов
             chain = Chain()
             req = {'task': 'extract_meta',
@@ -104,7 +101,7 @@ def upload_file():
             # session['metadata'] = req['meta']
             # session['extracted_text'] = req['text']
             # session['summary'] = req['summary']
-            session['entities'] = req['entities']
+            # session['entities'] = req['entities']
 
             # Попытка подключения к базе данных
             conn = db_connection()
