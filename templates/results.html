@@ -39,10 +39,10 @@
             </tr>
         </thead>
         <tbody>
-            {% for entity, label in entities %}
+            {% for entity in entities %}
                 <tr>
-                    <td>{{ entity }}</td>
-                    <td>{{ label }}</td>
+                    <td>{{ entity[0] }}</td>
+                    <td>{{ entity[1] }}</td>
                 </tr>
             {% endfor %}
         </tbody>

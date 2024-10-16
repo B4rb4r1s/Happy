@@ -101,9 +101,9 @@ def upload_file():
             chain.handle_request(req)
 
             # Сохраняем результаты в сессии
-            session['metadata'] = req['meta']
-            session['extracted_text'] = req['text']
-            session['summary'] = req['summary']
+            # session['metadata'] = req['meta']
+            # session['extracted_text'] = req['text']
+            # session['summary'] = req['summary']
             session['entities'] = req['entities']
 
             # Попытка подключения к базе данных
@@ -113,16 +113,16 @@ def upload_file():
             cursor = conn.cursor()
             try:
                 # Запись в табоицу DOCUMENTS
-                cursor.execute("""INSERT INTO documents (filename,
-                                                        content,
-                                                        summary,
-                                                        upload_time)
-                                VALUES (%s, %s, %s, %s)""",
-                                    (file.filename,
-                                    req['text'],
-                                    req['summary'],
-                                    datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-                                    )
+                cursor.execute("""  INSERT INTO documents (filename,
+                                                            content,
+                                                            summary,
+                                                            upload_time)
+                                    VALUES (%s, %s, %s, %s)""",
+                                        (file.filename,
+                                        req['text'],
+                                        req['summary'],
+                                        datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+                                        )
                                 )
                 
                 # Запись в табоицу METADATA
@@ -149,8 +149,24 @@ def upload_file():
                                         )
                                 )
 
+                # Записать в таблицу NAMED_ENTITIES
+                print(req['entities'], flush=True)
+                print(req['entities'][0], flush=True)
+                for tup in req['entities']:
+                    cursor.execute("""  INSERT INTO named_entities (doc_id, entity, value)
+                                        VALUES (
+                                            (SELECT id 
+                                            FROM documents 
+                                            ORDER BY ID DESC LIMIT 1 ), %s, %s)""",
+                                            (
+                                            tup[0], 
+                                            tup[1]
+                                            )
+                                    )
+
                 # Подтверждение изменений
-                conn.commit()
+                jls_extract_var = conn
+                jls_extract_var.commit()
                 cursor.close()
                 print(f'[{datetime.datetime.now()}][ DEBUG ] Data successfully uploaded to Database', flush=True)
             except Exception as err:
@@ -174,6 +190,34 @@ def upload_file():
             return redirect(url_for('index'))
 
 
+@app.route('/delete_documents', methods=['POST'])
+def delete_documents():
+    document_ids = request.form.getlist('document_ids')
+    
+    if document_ids:
+        document_ids = [int(doc_id) for doc_id in document_ids]
+
+        conn = db_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Выполнение удаления по всем таблицам базы данных
+            cursor.execute('DELETE FROM documents       WHERE id        = ANY(%s)', (document_ids,))
+            cursor.execute('DELETE FROM metadata        WHERE doc_id    = ANY(%s)', (document_ids,))
+            cursor.execute('DELETE FROM named_entities  WHERE doc_id    = ANY(%s)', (document_ids,))
+            
+            conn.commit()
+        except Exception as err:
+            print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with deleting documents from Databes\n{err}')
+        
+        cursor.close()
+        conn.close()
+    else:
+        flash(f'Не выбраны документы для удаления')
+    
+    return redirect(url_for('index'))
+
+
 # Страница для просмотра результатов обработки (например, список сущностей)
 @app.route('/results/<int:doc_id>')
 def results(doc_id):
@@ -181,17 +225,26 @@ def results(doc_id):
 
     # Отображение результатов для выбранного документа
     conn = db_connection()
-    cur = conn.cursor()
+    cursor = conn.cursor()
     
     # Извлекаем результаты обработки для конкретного документа по ID
-    cur.execute(''' SELECT *
+    cursor.execute(''' SELECT *
                     FROM documents 
                     RIGHT JOIN metadata ON documents.id = metadata.doc_id
                     WHERE documents.id = %s;
                 ''', (doc_id,))
-    document = cur.fetchone()
+    document = cursor.fetchone()
+    cursor.execute(''' SELECT entity, value
+                    FROM named_entities
+                    INNER JOIN documents ON documents.id = named_entities.doc_id
+                    WHERE documents.id = %s;
+                ''', (doc_id,))
+    doc_entities = cursor.fetchall()
+    print(doc_entities, flush=True)
+    # general = document[0:4]
+    # metainf = decument[5:14]
     
-    cur.close()
+    cursor.close()
     conn.close()
     
     if document:
@@ -209,7 +262,9 @@ def results(doc_id):
                                creation_date=document[13],
                                producer=document[14],
                                # Сущности - заглушка БД
-                               entities = session.get('entities', []))
+                            #    entities = session.get('entities', []))
+                               entities = doc_entities
+                               )
     else:
         flash('Документ не найден')
         return redirect(url_for('index'))

@@ -28,32 +28,41 @@
     {%endif%}
 
     <h2>Обработанные документы</h2>
-    <table border="1">
-	<thead>
-	    <tr>
-		<th>ID</th>
-		<th>Имя файла</th>
-		<th>Дата загрузки</th>
-		<th>Дата создания</th>
-	    </tr>
-	</thead>
-	<tbody>
-	    {% for doc in documents %}
-	        <tr>
-		    <td>{{ doc[0] }}</td>
-		    <td>
-                <a href="{{ url_for('results', doc_id=doc[0]) }}">{{ doc[1] }}</a>
-            </td>
-		    <td>{{ doc[2].strftime('%d.%m.%Y %H:%M:%S') }}</td>
-		    <td>{{ doc[3].strftime('%d.%m.%Y %H:%M:%S') }}</td>
-	        </tr>
-	    {% else %}
-	        <tr>
-		    <td colsnap="4">База данных пуста</td>
-		</tr>
-	    {% endfor %}
-	</tbody>
-    </table>
+
+    <form method="POST" action="{{ url_for('delete_documents') }}">
+        <table border="1">
+        <thead>
+            <tr>
+                <th></th>
+                <th>ID</th>
+                <th>Имя файла</th>
+                <th>Дата загрузки</th>
+                <th>Дата создания</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents %}
+                <tr>
+                    <td><input type="checkbox" name="document_ids" value="{{ doc[0] }}"></td>
+                    <td>{{ doc[0] }}</td>
+                    <td>
+                        <a href="{{ url_for('results', doc_id=doc[0]) }}">{{ doc[1] }}</a>
+                    </td>
+                    <td>{{ doc[2].strftime('%d.%m.%Y %H:%M:%S') }}</td>
+                    <td>{{ doc[3].strftime('%d.%m.%Y %H:%M:%S') }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                <td colsnap="4">База данных пуста</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+        <br>
+        <!-- Кнопка для удаления выбранных документов -->
+        <button type="submit">Удалить выбранные документы</button>
+    
+    </form>
 
 </body>
 </html>
