@@ -227,7 +227,6 @@ def results(doc_id):
     conn = db_connection()
     cursor = conn.cursor()
     
-    # Извлекаем результаты обработки для конкретного документа по ID
     cursor.execute(''' SELECT *
                     FROM documents 
                     RIGHT JOIN metadata ON documents.id = metadata.doc_id
@@ -240,9 +239,6 @@ def results(doc_id):
                     WHERE documents.id = %s;
                 ''', (doc_id,))
     doc_entities = cursor.fetchall()
-    print(doc_entities, flush=True)
-    # general = document[0:4]
-    # metainf = decument[5:14]
     
     cursor.close()
     conn.close()
@@ -261,15 +257,13 @@ def results(doc_id):
                                keywords=document[12],
                                creation_date=document[13],
                                producer=document[14],
-                               # Сущности - заглушка БД
-                            #    entities = session.get('entities', []))
+                               # Сущности
                                entities = doc_entities
                                )
     else:
         flash('Документ не найден')
         return redirect(url_for('index'))
     
-    # Передаем данные в шаблон для отображения
     # return render_template('results.html', 
     #                        extracted_text = session.get('extracted_text', 'Нет данных'), 
     #                        summary = session.get('summary', 'Нет данных'), 
