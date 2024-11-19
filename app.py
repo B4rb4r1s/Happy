@@ -164,12 +164,12 @@ def upload_file():
                 # Подтверждение изменений
                 jls_extract_var = conn
                 jls_extract_var.commit()
-                cursor.close()
                 print(f'[{datetime.datetime.now()}][ DEBUG ] Data successfully uploaded to Database', flush=True)
             except Exception as err:
                 print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with uploading document to Database\n{err}', flush=True)
 
             # Завершение подключения к базе данных
+            cursor.close()
             conn.close()
 
             # Удаление временно загруженного файла
