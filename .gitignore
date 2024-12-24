@@ -1,6 +1,7 @@
 # .gitignore
 
 __pycache__/
+.app.py.swp
 
 Source/__pycache__/
 Source/Models/

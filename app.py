@@ -97,12 +97,6 @@ def upload_file():
                     'path': file_path}
             chain.handle_request(req)
 
-            # Сохраняем результаты в сессии
-            # session['metadata'] = req['meta']
-            # session['extracted_text'] = req['text']
-            # session['summary'] = req['summary']
-            # session['entities'] = req['entities']
-
             # Попытка подключения к базе данных
             conn = db_connection()
 
@@ -175,9 +169,6 @@ def upload_file():
             # Удаление временно загруженного файла
             os.remove(file_path)
 
-            if session['extracted_text'] == '':
-                flash(f'Ошибка в чтении файла \'{file.filename}\'', 'warning')
-                return redirect(url_for('index'))
             
             flash(f'Файл \'{file.filename}\' успешно загружен и обработан')
             return redirect(url_for('index'))
@@ -260,12 +251,6 @@ def results(doc_id):
     else:
         flash('Документ не найден')
         return redirect(url_for('index'))
-    
-    # return render_template('results.html', 
-    #                        extracted_text = session.get('extracted_text', 'Нет данных'), 
-    #                        summary = session.get('summary', 'Нет данных'), 
-    #                        entities = session.get('entities', []),
-    #                        metadata = session.get('metadata', 'Нет данных'))
 
 
 @app.route('/error')

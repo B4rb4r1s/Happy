@@ -2,6 +2,7 @@
 import os
 import re
 import PyPDF2
+import pymupdf 
 
 from Source.Handler import Handler
 from Source.OCR import extract_text_from_pdf
@@ -17,12 +18,15 @@ class TextExtractionHandler(Handler):
         '''
         if request['task'] == 'extract_text':
             with open(request['path'], 'rb') as file:
-                reader = PyPDF2.PdfReader(file)
+                reader = pymupdf.open(file)
                 all_text = ''
 
-                for page_num in range(len(reader.pages)):
-                    page = reader.pages[page_num]
-                    all_text += page.extract_text()
+                for page in reader:
+                    all_text += page.get_text()
+
+                # for page_num in range(len(reader.pages)):
+                #     page = reader.pages[page_num]
+                #     all_text += page.extract_text()
 
                 if all_text == '':
                     try:

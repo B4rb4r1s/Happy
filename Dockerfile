@@ -22,6 +22,7 @@ RUN apt-get install -y poppler-utils \
 RUN python -m spacy download ru_core_news_sm 
 RUN python -m spacy download ru_core_news_md 
 RUN python -m spacy download ru_core_news_lg
+RUN pip install dedoc
 
 # Определяем команду для запуска приложения
 # CMD /bin/bash
@@ -31,6 +32,6 @@ CMD [ "python", "app.py" ]
 # CMD ["-it", "--name", "hap", "-p", "5000:5000", "--gpus", "all"]
 
 # Запуск контейнера со всеми необходимыми параметрами
-# docker run -it --name hap -p 5000:5000 --gpus all happy
+# docker run -it --name hap -p 5000:5000 -v .:/app --rm --gpus all happy
 # 
 # docker start -it hap
