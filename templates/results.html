@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Results</title>
+    <title>Результаты обрабьотки</title>
 </head>
 <body>
     <h1>Результаты обработки</h1>
+    <a href="{{ url_for('index') }}">Главная</a>
     <h2>{{ filename }}</h2>
     <!-- Отображение метаинформации PDF -->
      <h2>Метаинформация PDF:</h2>
@@ -23,11 +24,11 @@
 
     <!-- Отображение извлеченного текста -->
     <h2>Извлеченный текст:</h2>
-    <p>{{ extracted_text }}</p>
+    <pre style="margin-left: 40px;">{{ extracted_text }}</pre>
     
     <!-- Отображение краткого содержания -->
     <h2>Краткое содержание:</h2>
-    <p>{{ summary }}</p>
+    <p style="margin-left: 40px; width: 50%">{{ summary }}</p>
     
     <!-- Отображение именованных сущностей -->
     <h2>Именованные сущности:</h2>

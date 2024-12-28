@@ -2,6 +2,8 @@
 
 __pycache__/
 .app.py.swp
+tesser-test.ipynb
+load_dataset.py
 
 Source/__pycache__/
 Source/Models/

@@ -54,18 +54,18 @@ def db_connection():
 @app.route('/')
 def index():
     # Попытка подключения к базе данных
-        conn = db_connection()
-        cursor = conn.cursor() 
+    conn = db_connection()
+    cursor = conn.cursor() 
 
-        cursor.execute('''  SELECT documents.id, filename, upload_time, creation_date 
-                            FROM documents 
-                            RIGHT JOIN metadata ON documents.id = metadata.doc_id
-                            ORDER BY id DESC;''')
-        documents = cursor.fetchall()
+    cursor.execute('''  SELECT documents.id, filename, upload_time, creation_date 
+                        FROM documents 
+                        RIGHT JOIN metadata ON documents.id = metadata.doc_id
+                        ORDER BY id DESC;''')
+    documents = cursor.fetchall()
 
-        cursor.close()
-        conn.close()
-        return render_template('index.html', documents=documents)
+    cursor.close()
+    conn.close()
+    return render_template('index.html', documents=documents)
 
 
 # Обработка загрузки файла
@@ -251,6 +251,39 @@ def results(doc_id):
     else:
         flash('Документ не найден')
         return redirect(url_for('index'))
+
+
+@app.route('/dataset/')
+def dataset():
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('''  SELECT * 
+                        FROM doc_dataset
+                        ORDER BY id DESC;''')
+    documents = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return render_template('dataset.html', dataset=documents)
+
+
+@app.route('/dataset_document/<int:doc_id>')
+def dataset_document(doc_id):
+    conn = db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+                    SELECT *
+                    FROM doc_dataset
+                    WHERE doc_dataset.id = %s;
+                   ''', (doc_id,))
+    doc_full = cursor.fetchone()
+    
+    cursor.close()
+    conn.close()
+    return render_template('dataset_document.html', doc_full=doc_full)
+
 
 
 @app.route('/error')

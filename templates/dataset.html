@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>База данных документов</title>
+</head>
+<body>
+    <h1>База данных документов</h1>
+    
+    {% if dataset|length > 0 %}
+        <p>{{ dataset|length }}/11608 записей
+        </br>
+            ({{ dataset|length / 11608 *100}} %)</p>
+    {% endif %}
+
+    <a href="{{ url_for('index') }}">Главная</a>
+    <table border="1">
+        <thead>
+            <tr>
+                <th></th>
+                <th>ID</th>
+                <th>Название файла</th>
+                <th>Мероприятие</th>
+                <th>Формат</th>
+                <th>Начало документа</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in dataset %}
+                <tr>
+                    <td><input type="checkbox" name="document_ids" value="{{ doc[0] }}"></td>
+                    <td>{{ doc[0] }}</td>
+                    <td>
+                        <a href="{{ url_for('dataset_document', doc_id=doc[0]) }}">{{ doc[2] }}</a>
+                    </td>
+                    <td>
+                        <a>{{ doc[3] }}</a>
+                    </td>
+                    <td>{{ doc[4] }}</td>
+                    <td>{{ doc[1][:26] }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                <td colsnap="4">База данных пуста</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    
+</body>
+</html>
