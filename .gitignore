@@ -1,6 +1,7 @@
 # .gitignore
 
 __pycache__/
+.ipynb_checkpoints/
 .app.py.swp
 tesser-test.ipynb
 load_dataset.py
