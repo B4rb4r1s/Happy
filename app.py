@@ -7,7 +7,7 @@ import datetime
 import psycopg2
 
 from run import Chain
-from doc_verification import verification
+from Verifying.doc_verification import verification
 
 import sys
 sys.stdout.flush()
