@@ -6,9 +6,9 @@ __pycache__/
 tesser-test.ipynb
 load_dataset.py
 
+Models/
+Models_all/
 Source/__pycache__/
-Source/Models/
-Source/Models_all/
 Source/.ipynb_checkpoints/
 Source/support.ipynb
 

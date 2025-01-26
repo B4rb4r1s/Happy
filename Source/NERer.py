@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 from transformers import pipeline
+import torch
 
 import spacy
 import datetime
@@ -10,10 +11,26 @@ from Source.Handler import Handler
 import sys
 sys.stdout.flush()
 
-# PATH = 'Source/Models/MBERT'
+
+# Установка параметров работы модели
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+print(f'[{datetime.datetime.now()}][ DEBUG ] Computing using device - {device}')
+
 
 # tokenizer = AutoTokenizer.from_pretrained(PATH)
-# model = AutoModelForTokenClassification.from_pretrained(PATH)
+# model = AutoModel.from_pretrained(PATH)
+
+# MODEL_NAME = 'kontur-ai/sbert_punc_case_ru'
+# MODEL_PATH = 'Models_all/sbert-NER'
+
+# ***** BEST *****
+MODEL_NAME = 'FacebookAI/xlm-roberta-large-finetuned-conll03-english'
+MODEL_PATH = 'Models_all/fb-roberta-NER'
+
+
+
+# tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+# model = AutoModelForTokenClassification.from_pretrained(MODEL_PATH)
 
 
 class NamedEntityRecognitionHandler(Handler):
@@ -27,6 +44,12 @@ class NamedEntityRecognitionHandler(Handler):
     def handle(self, request):
         # Проверяем, нужно ли выполнять выделение сущностей
         if 'text' in request and request['task'] == 'extract_entities':
+
+            # HuggingFace Models
+            # classifier = pipeline("ner", model=model, tokenizer=tokenizer)
+            # entities = classifier(request['text'])
+
+            # SpaCy Models
             doc = self.nlp(request['text'])
             entities = [(ent.text, ent.label_) for ent in doc.ents]
             

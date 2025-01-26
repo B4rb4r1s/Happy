@@ -3,7 +3,7 @@
 import datetime
 import torch
 from transformers import T5ForConditionalGeneration, T5Tokenizer
-from transformers import MBartTokenizer, MBartForConditionalGeneration
+from transformers import MBartTokenizer, MBartForConditionalGeneration, BertForTokenClassification
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from Source.Handler import Handler
@@ -18,19 +18,24 @@ print(f'[{datetime.datetime.now()}][ DEBUG ] Computing using device - {device}')
 
 # T5
 # MODEL_NAME = 'cointegrated/rut5-base-absum'
-# MODEL_PATH = 'Source/Models/T5'
+# MODEL_PATH = 'Models/T5'
 # tokenizer = T5Tokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
 # model = T5ForConditionalGeneration.from_pretrained(MODEL_PATH)
 
 # BART
 MODEL_NAME = 'IlyaGusev/mbart_ru_sum_gazeta'
-MODEL_PATH = 'Source/Models/MBART'
+MODEL_PATH = 'Models/MBART'
 tokenizer = MBartTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
 model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
+# rubert
+# MODEL_NAME = 'IlyaGusev/rubert_ext_sum_gazeta'
+# MODEL_PATH = '../Models/runert-SUM'
+# tokenizer = MBartTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
+# model = BertForTokenClassification.from_pretrained(MODEL_PATH).to(device)
 
 # GPT
 # MODEL_NAME = 'IlyaGusev/rugpt3medium_sum_gazeta'
-# MODEL_PATH = 'Source/Models/GPT'
+# MODEL_PATH = 'Models/GPT'
 # tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
 # model = AutoModelForCausalLM.from_pretrained(MODEL_PATH)
 

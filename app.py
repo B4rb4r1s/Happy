@@ -1,5 +1,5 @@
 from flask import Flask, request, session
-from flask import redirect, url_for, flash, render_template
+from flask import redirect, url_for, flash, render_template, jsonify
 import os
 import time
 
@@ -284,6 +284,21 @@ def dataset_document(doc_id):
     conn.close()
     return render_template('dataset_document.html', doc_full=doc_full)
 
+
+# Простая функция чат-бота (заглушка)
+def chatbot_response(user_input):
+    # Здесь можно подключить вашу модель или API чат-бота
+    return f"Вы сказали: {user_input}. Я пока просто эхо-бот."
+
+@app.route('/chat', methods=['GET', 'POST'])
+def chat():
+    if request.method == 'POST':
+        user_message = request.json.get('message', '')
+        # Логика обработки сообщения пользователя
+        bot_response = chatbot_response(user_message)
+        return jsonify({"response": bot_response})
+    
+    return render_template('chat-assistant.html')
 
 
 @app.route('/error')
