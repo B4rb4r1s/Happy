@@ -7,34 +7,36 @@ import sys
 sys.stdout.flush()
 
 
-class ExtractPDFMeta(Handler):
+class ExtractMeta(Handler):
     def handle(self, request):
         '''
         Текущий запрос:
             request = {
                 'task': 'extract_meta',
-                'path': './Data/PDF/text/text2.pdf'}
+                'path': './Data/PDF/text/*.pdf'}
         '''
         if request['task'] == 'extract_meta':
-            doc = fitz.open(request['path'])
 
-            meta = doc.metadata
+            if request['format'] == 'pdf':
+                doc = fitz.open(request['path'])
 
-            meta_info = {
-                'format': meta.get('format', 'Нет данных'),
-                'author': meta.get('author', 'Нет данных'),
-                'creator': meta.get('creator', 'Нет данных'),
-                'title': meta.get('title', 'Нет данных'),
-                'subject': meta.get('subject', 'Нет данных'),
-                'keywords': meta.get('keywords', 'Нет данных'),
-                'trapped': meta.get('trapped', 'Нет данных'),
-                'encryption': meta.get('encryption', 'Нет данных'),
-                'creation_date': self.convert_date(meta.get('creationDate', 'Нет данных')),
-                'modification_date': self.convert_date(meta.get('modDate', 'Нет данных')),
-                'producer': meta.get('producer', 'Нет данных')
-            }
+                meta = doc.metadata
 
-            request['meta'] = meta_info
+                meta_info = {
+                    'format': meta.get('format', 'Нет данных'),
+                    'author': meta.get('author', 'Нет данных'),
+                    'creator': meta.get('creator', 'Нет данных'),
+                    'title': meta.get('title', 'Нет данных'),
+                    'subject': meta.get('subject', 'Нет данных'),
+                    'keywords': meta.get('keywords', 'Нет данных'),
+                    'trapped': meta.get('trapped', 'Нет данных'),
+                    'encryption': meta.get('encryption', 'Нет данных'),
+                    'creation_date': self.convert_date(meta.get('creationDate', 'Нет данных')),
+                    'modification_date': self.convert_date(meta.get('modDate', 'Нет данных')),
+                    'producer': meta.get('producer', 'Нет данных')
+                }
+
+                request['meta'] = meta_info
 
             print(f"[{datetime.now()}][ Debug ] ExtractPDFMeta: Обработано")
             print(request['meta'])
@@ -59,7 +61,7 @@ class ExtractPDFMeta(Handler):
 
 
 if __name__ == "__main__":
-    reader = ExtractPDFMeta()
+    reader = ExtractMeta()
 
     # Ручной запрос
     manual_request = {'task': 'extract_meta',

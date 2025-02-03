@@ -10,6 +10,8 @@ Models/
 Models_all/
 Source/__pycache__/
 Source/.ipynb_checkpoints/
+Source/Classification/
+Source/NER_System/
 Source/support.ipynb
 
 pgdata/

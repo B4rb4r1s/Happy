@@ -32,15 +32,16 @@ services:
     volumes:
       - ./happy_pgdata:/var/lib/postgresql/data
 
-  # dodek:
-  #   image: dedik
-  #   container_name: dedok_container
+  # task:
+  #   image: happy
+  #   container_name: task_container
   #   depends_on:
   #     - postgre
   #   ports:
   #     - 8888:8888
   #   volumes:
-  #     - .:/ded
+  #     - .:/app
+  #   command: [python, ./handle_dataset.py]
   #   # environment:
   #   #   NVIDIA_VISIBLE_DEVICES: all
   #   # runtime: nvidia

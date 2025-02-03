@@ -1,5 +1,6 @@
 
-from Source.ExtractMeta import ExtractPDFMeta
+from Source.FileOverwiev import FileOverwiever
+from Source.ExtractMeta import ExtractMeta
 from Source.PDFReader import TextExtractionHandler
 from Source.Summarizer import SummaryGenerationHandler
 from Source.NERer import NamedEntityRecognitionHandler
@@ -9,17 +10,18 @@ class Chain:
     def __init__(self):
 
         # Объявление обработчиков
-        self.meta_extraction_handler = ExtractPDFMeta()
+        self.file_overwiever = FileOverwiever()
+        self.meta_extraction_handler = ExtractMeta()
         self.text_extraction_handler = TextExtractionHandler()
         self.summary_generation_handler = SummaryGenerationHandler()
         self.NER_handler = NamedEntityRecognitionHandler()
 
         # Создание цепочки
-        self.meta_extraction_handler.set_next(
-            self.text_extraction_handler).set_next(
-                self.summary_generation_handler).set_next(
-                    self.NER_handler
-                )
+        self.file_overwiever.set_next(
+            self.meta_extraction_handler).set_next(
+                self.text_extraction_handler).set_next(
+                    self.summary_generation_handler).set_next(
+                        self.NER_handler)
 
     # Добавление обработчиков
     #   не реализовано
@@ -39,7 +41,7 @@ if __name__ == '__main__':
     # NER_handler = NamedEntityRecognitionHandler()
 
     chain = Chain()    
-    request = {'task': 'extract_meta',
+    request = {'task': 'overwieve',
                'path': './Data/PDF/text/text2.pdf'}
 
     chain.handle_request(request)

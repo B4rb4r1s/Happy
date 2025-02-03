@@ -52,37 +52,87 @@ class SummaryGenerationHandler(Handler):
         '''
         if 'text' in request and request['task'] == 'generate_summary':
             text = request['text']
-            if text != '':
-
-                if n_words:
-                    # n_words - приблизительное кол-во слов, которые нужно сгенерировать
-                    text = '[{}] '.format(n_words) + text
-                elif compression:
-                    # compression - приблизительное отношение объема аннотации 
-                    #               и оригинального текста.
-                    text = '[{0:.1g}] '.format(compression) + text
-
-                x = tokenizer(text, return_tensors='pt', padding=True).to(device)
-                with torch.inference_mode():
-                    out = model.generate(
-                        **x, 
-                        max_length=max_length, num_beams=num_beams, 
-                        do_sample=do_sample, repetition_penalty=repetition_penalty, 
-                        no_repeat_ngram_size = no_repeat_ngram_size,
-                        **kwargs
-                    )
-            
-                request['summary'] = tokenizer.decode(out[0], skip_special_tokens=True)
-            else:
+            if not text:
                 request['summary'] = ''
+                request['big_summary'] = ''
+                return super().handle(request)
             
-            print(f"[{datetime.datetime.now()}][ Debug ] TextSummarizationHandler: Обработано")
-            print(request['summary'])
+            print(f"[{datetime.datetime.now()}][ DEBUG ] Text length: {len(text)} characters")
+            
+            # Define chunk size and calculate steps
+            CHUNK_SIZE = 3 * 1024  # 3KB chunks
+            num_steps = (len(text) // CHUNK_SIZE) + 1 if len(text) > CHUNK_SIZE else 0
+            print(f'[ DEBUG ] Needed steps: {num_steps}')
+            
+            # Process text in chunks for large documents
+            summary_parts = []
+            
+            for step in range(num_steps):
+                start = step * CHUNK_SIZE
+                end = start + CHUNK_SIZE
+                chunk = text[start:end]
+                print(f'[ DEBUG ] start: {start}, finish: {end}')
+
+                # Generate summary for each chunk
+                summary = self._generate_summary(chunk, None, None, max_length, num_beams, do_sample,
+                                                 repetition_penalty, no_repeat_ngram_size)
+                summary_parts.append(summary)
+
+            if num_steps > 0:
+                big_summary = '\n'.join(summary_parts)
+                request['big_summary'] = big_summary
+                try:
+                    final_summary = self._generate_summary(big_summary, None, None, max_length, num_beams,
+                                                           do_sample, repetition_penalty,
+                                                           no_repeat_ngram_size)
+                    request['summary'] = final_summary
+                except:
+                    print(f'[ DEBUG ] Big summary is too long to summarize')
+                    request['summary'] = ''
+            else:
+                # Handle small documents directly
+                request['summary'] = self._generate_summary(text, None, None, max_length, num_beams,
+                                                           do_sample, repetition_penalty,
+                                                           no_repeat_ngram_size)
+                request['big_summary'] = ''
+
+            print(f"[{datetime.datetime.now()}][ DEBUG ] Summary generated: {request['summary']}")
             request['task'] = 'extract_entities'
             return super().handle(request)
+
         else:
-            print(f"[{datetime.datetime.now()}][ Debug Error ] Error during handing (Summary)")
+            print(f"[{datetime.datetime.now()}][ DEBUG ERROR ] Handling failed")
             return super().handle(request)
+
+        
+    def _generate_summary(self, text, n_words, compression, max_length, 
+                          num_beams, do_sample, repetition_penalty, 
+                          no_repeat_ngram_size, **kwargs):
+        if not text:
+            return ''
+
+        if n_words:
+            # n_words - приблизительное кол-во слов, которые нужно сгенерировать
+            text = '[{}] '.format(n_words) + text
+        elif compression:
+            # compression - приблизительное отношение объема аннотации 
+            #               и оригинального текста.
+            text = '[{0:.1g}] '.format(compression) + text
+
+        inputs = tokenizer(text, return_tensors='pt', padding=True).to(device)
+
+        with torch.inference_mode():
+            output = model.generate(
+                **inputs,
+                max_length=max_length,
+                num_beams=num_beams,
+                do_sample=do_sample,
+                repetition_penalty=repetition_penalty,
+                no_repeat_ngram_size=no_repeat_ngram_size,
+                **kwargs
+            )
+
+        return tokenizer.decode(output[0], skip_special_tokens=True)
 
 
 

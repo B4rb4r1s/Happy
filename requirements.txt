@@ -13,6 +13,7 @@ gensim==3.8.2
 spacy==3.7.6
 flask==3.0.3
 flask-socketio==5.3.7
+fastapi==0.89.1
 notebook==7.1.1
 python-docx==1.1.2
 pdf2image==1.17.0
