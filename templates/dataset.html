@@ -4,18 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>База данных документов</title>
+    <!-- <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        p {
+            color: #7f8c8d;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        a {
+            color: #3498db;
+            text-decoration: none;
+            margin: 10px 0;
+            display: inline-block;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        table {
+            width: 80%;
+            margin: 30px auto;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #ecf0f1;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        td a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        td a:hover {
+            text-decoration: underline;
+        }
+
+        .center {
+            text-align: center;
+        }
+    </style> -->
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/> 
 </head>
 <body>
     <h1>База данных документов</h1>
-    
+
     {% if dataset|length > 0 %}
-        <p>{{ dataset|length }}/11608 записей
-        </br>
+        <p>{{ dataset|length }}/11608 записей</br>
             ({{ dataset|length / 11608 *100}} %)</p>
     {% endif %}
 
-    <a href="{{ url_for('index') }}">Главная</a>
-    <table border="1">
+    <div>
+        <a href="{{ url_for('index') }}">Главная</a>
+    </div>
+
+    <table>
         <thead>
             <tr>
                 <th></th>
@@ -34,19 +104,17 @@
                     <td>
                         <a href="{{ url_for('dataset_document', doc_id=doc[0]) }}">{{ doc[2] }}</a>
                     </td>
-                    <td>
-                        <a>{{ doc[3] }}</a>
-                    </td>
+                    <td>{{ doc[3] }}</td>
                     <td>{{ doc[4] }}</td>
                     <td>{{ doc[1][:26] }}</td>
                 </tr>
             {% else %}
                 <tr>
-                <td colsnap="4">База данных пуста</td>
-            </tr>
+                    <td colspan="6" class="center">База данных пуста</td>
+                </tr>
             {% endfor %}
         </tbody>
-        </table>
-    
+    </table>
+
 </body>
 </html>

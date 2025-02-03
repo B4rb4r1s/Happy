@@ -4,66 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Система Обработки Документов</title>
+    <!-- <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin-left: 2.5%;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 80%;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        label {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        input[type="file"] {
+            margin-bottom: 12px;
+        }
+
+        .upload {
+            padding: 10px 20px;
+            background-color: #3498db;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .upload:hover {
+            background-color: #2980b9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #ecf0f1;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .messages ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+        }
+
+        .messages li {
+            color: #14971a;
+            font-weight: bold;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+    </style> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/> 
 </head>
 <body>
-    <h1>Система Обработки Документов</h1>
-    <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data">
-        <label for="file">Выберите файл:</label>
-        <input type="file" name="file" id="file">
-        <button type="submit">Обработать</button>
-    </form>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    <br>
+    <div class="container">
+        <h1>Система Обработки Документов</h1>
+        <div class="center">
+            <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data">
+                <label for="file">Выберите файл:</label>
+                <input type="file" name="file" id="file">
+                <button type="submit" class="upload">Обработать</button>
+            </form>
 
-    {%if documents|length > 0 %}
-        <a href="{{ url_for('results', doc_id=documents[0][0]) }}">Просмотреть результаты</a>
-    {%endif%}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="messages">
+                        <ul>
+                            {% for message in messages %}
+                                <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        
+            {% if documents|length > 0 %}
+                <a href="{{ url_for('results', doc_id=documents[0][0]) }}">Просмотреть результаты</a>
+            {% endif %}
+        </div>
 
-    <h2>Обработанные документы</h2>
-
-    <a href="{{ url_for('dataset') }}">База данных документов</a>
-    <form method="POST" action="{{ url_for('delete_documents') }}">
-        <table border="1">
-        <thead>
-            <tr>
-                <th></th>
-                <th>ID</th>
-                <th>Имя файла</th>
-                <th>Дата загрузки</th>
-                <th>Дата создания</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for doc in documents %}
-                <tr>
-                    <td><input type="checkbox" name="document_ids" value="{{ doc[0] }}"></td>
-                    <td>{{ doc[0] }}</td>
-                    <td>
-                        <a href="{{ url_for('results', doc_id=doc[0]) }}">{{ doc[1] }}</a>
-                    </td>
-                    <td>{{ doc[2].strftime('%d.%m.%Y %H:%M:%S') }}</td>
-                    <td>{{ doc[3].strftime('%d.%m.%Y %H:%M:%S') }}</td>
-                </tr>
-            {% else %}
-                <tr>
-                <td colsnap="4">База данных пуста</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        </table>
-        <br>
-        <!-- Кнопка для удаления выбранных документов -->
-        <button type="submit">Удалить выбранные документы</button>
-    
-    </form>
-
+        <h2 style="text-align: center;">Обработанные документы</h2>
+        <div class=''>
+            <a href="{{ url_for('dataset') }}">База данных документов</a>
+            <form method="POST" action="{{ url_for('delete_documents') }}">
+                <button type="submit" style="margin: 5px;">Удалить выбранные документы</button>
+                <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>ID</th>
+                        <th>Имя файла</th>
+                        <th>Дата загрузки</th>
+                        <th>Дата создания</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in documents %}
+                        <tr>
+                            <td><input type="checkbox" name="document_ids" value="{{ doc[0] }}"></td>
+                            <td>{{ doc[0] }}</td>
+                            <td>
+                                <a href="{{ url_for('results', doc_id=doc[0]) }}">{{ doc[1] }}</a>
+                            </td>
+                            <td>{{ doc[2].strftime('%d.%m.%Y %H:%M:%S') }}</td>
+                            <td>{{ doc[3].strftime('%d.%m.%Y %H:%M:%S') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="center">База данных пуста</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

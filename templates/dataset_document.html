@@ -4,27 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Документ</title>
-</head>
-<body style="margin: 20px;">
-    <h1>{{ doc_full[2] }}</h1>
-    
-    <a href="{{ url_for('dataset') }}">Назад</a>
-    <h2>Мероприятие</h2>
-    <div>
-        <p>{{ doc_full[3] }}</p>
-    </div>
+    <!-- <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 20px;
+        }
 
-    <h2>Полный текст</h2>
-    <p>Tesseract</p>
-    <div>
-        <pre style="margin-left: 40px; width: 50%">{{ doc_full[1] }}</pre>
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-top: 30px;
+        }
+
+        p {
+            color: #7f8c8d;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        a {
+            color: #3498db;
+            text-decoration: none;
+            margin: 10px 0;
+            display: inline-block;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+
+        pre {
+            margin-left: 40px;
+            background-color: #fff;
+            padding: 15px;
+            border: 1px solid #ddd;
+            width: 80%;
+            margin-bottom: 20px;
+            word-wrap: break-word;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style> -->
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/> 
+</head>
+<body>
+    <div class="container">
+        <h1>{{ doc_full[2] }}</h1>
+        
+        <div>
+            <a href="{{ url_for('dataset') }}">Назад</a>
+        </div>
+        
+        <h2>Мероприятие</h2>
+        <div>
+            <p>{{ doc_full[3] }}</p>
+        </div>
+
+        <h2>Полный текст</h2>
+        <p>Tesseract</p>
+        <div>
+            <pre>{{ doc_full[1] }}</pre>
+        </div>
     </div>
-    
-    <!-- <h2>Полный текст</h2>
-    <p>Dedok</p>
-    <div>
-        <p>{{ doc_full[5] | safe }}</p>
-    </div> -->
-    
 </body>
 </html>

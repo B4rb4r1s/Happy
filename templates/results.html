@@ -1,55 +1,81 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Результаты обрабьотки</title>
+    <title>Результаты обработки</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/> 
 </head>
 <body>
-    <h1>Результаты обработки</h1>
-    <a href="{{ url_for('index') }}">Главная</a>
-    <h2>{{ filename }}</h2>
-    <!-- Отображение метаинформации PDF -->
-     <h2>Метаинформация PDF:</h2>
-     <ul>
-        <li>Формат: {{ format }}</li>
-        <li>Автор: {{ author }}</li>
-        <li>Создатель: {{ creator }}</li>
-        <li>Название: {{ title }}</li>
-        <li>Тематика: {{ subject }}</li>
-        <li>Ключевые слова: {{ keywords }}</li>
-        <li>Дата создания: {{ creation_date.strftime('%d.%m.%Y %H:%M:%S') }}</li>
-        <li>Программное обеспечение: {{ producer }}</li>
-     </ul>
+    <div class="container">
+        <h1 style="text-align: center;">Результаты обработки</h1>
+        <h2 style="text-align: center;">{{ filename }}</h2>
 
-    <!-- Отображение извлеченного текста -->
-    <h2>Извлеченный текст:</h2>
-    <pre style="margin-left: 40px;">{{ extracted_text }}</pre>
-    
-    <!-- Отображение краткого содержания -->
-    <h2>Краткое содержание:</h2>
-    <p style="margin-left: 40px; width: 50%">{{ summary }}</p>
-    
-    <!-- Отображение именованных сущностей -->
-    <h2>Именованные сущности:</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Сущность</th>
-                <th>Тип</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entity in entities %}
-                <tr>
-                    <td>{{ entity[0] }}</td>
-                    <td>{{ entity[1] }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    
-    <br>
-    <a href="{{ url_for('index') }}">Вернуться на главную</a>
+        <nav class="nav-links">
+            <a href="{{ url_for('index') }}">Главная</a>
+        </nav>
+
+        <!-- Метаинформация PDF -->
+        <div class="meta-section">
+            <h2>Метаинформация файла:</h2>
+            <ul>
+                <li>Название: {{ title }}</li>
+                <li>Формат: {{ format }}</li>
+                <li>Автор: {{ author }}</li>
+                <li>Создатель: {{ creator }}</li>
+                <li>Тематика: {{ subject }}</li>
+                <li>Ключевые слова: {{ keywords }}</li>
+                <li>Дата создания: {{ creation_date.strftime('%d.%m.%Y %H:%M:%S') }}</li>
+                <li>Программное обеспечение: {{ producer }}</li>
+            </ul>
+        </div>
+
+        <!-- Извлеченный текст -->
+        <div class="text-section">
+            <h2>Извлеченный текст:</h2>
+            <pre>{{ extracted_text }}</pre>
+        </div>
+
+        <!-- Краткое содержание -->
+        {% if big_summary %}
+        <div class="summary-section">
+            <h2>Содержание</h2>
+            <pre>{{ big_summary }}</pre>
+        </div>
+        {% endif %}
+
+        {% if summary %}
+        <div class="summary-section">
+            <h2>Краткое содержание:</h2>
+            <pre>{{ summary }}</pre>
+        </div>
+        {% endif %}
+
+        <!-- Именованные сущности -->
+        <div class="">
+            <h2>Именованные сущности:</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Сущность</th>
+                        <th>Тип</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entity, type in entities %}
+                    <tr>
+                        <td>{{ entity }}</td>
+                        <td>{{ type }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bottom navigation -->
+        <nav class="nav-links" style="margin-top: 40px;">
+            <a href="{{ url_for('index') }}">Вернуться на главную</a>
+        </nav>
+    </div>
 </body>
 </html>
