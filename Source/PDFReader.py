@@ -20,27 +20,34 @@ class TextExtractionHandler(Handler):
         '''
         if request['task'] == 'extract_text' and request['dataset_handle'] == False:
             try:
-                with open(request['path'], 'rb') as file:
-                    reader = pymupdf.open(file)
-                    all_text = ''
 
-                    for page in reader:
-                        all_text += page.get_text()
+                all_text = ''
+                if request['file_format'] == 'pdf':
+                    with open(request['path'], 'rb') as file:
+                        reader = pymupdf.open(file)
 
-                    # for page_num in range(len(reader.pages)):
-                    #     page = reader.pages[page_num]
-                    #     all_text += page.extract_text()
+                        for page in reader:
+                            all_text += page.get_text()
 
-                    if all_text == '':
-                        try:
-                            print('[ DEBUG ] Extracting from scan')
-                            all_text = extract_text_from_img(request['path'], request['file_format'])
-                        except:
-                            print("[ DEBUG ERROR ExtrMeta ] Error during extracting from scan")
-                            all_text = ''
+                        # for page_num in range(len(reader.pages)):
+                        #     page = reader.pages[page_num]
+                        #     all_text += page.extract_text()
 
-                    # all_text = re.sub(r'(?<=[а-яa-z,-])\s\r?\n(?=[а-яА-Яa-zA-Z])', '', all_text)
-                    request['text'] = all_text
+                        if all_text == '':
+                            try:
+                                print('[ DEBUG ] Extracting from PDF scan')
+                                all_text = extract_text_from_img(request['path'], request['file_format'])
+                            except:
+                                print("[ DEBUG ERROR ExtrMeta ] Error during extracting from scan")
+                                all_text = ''
+
+                        # all_text = re.sub(r'(?<=[а-яa-z,-])\s\r?\n(?=[а-яА-Яa-zA-Z])', '', all_text)
+
+                elif request['file_format'] in ["jpg", "jpeg", "png"]:
+                    print('[ DEBUG ] Extracting from IMG scan')
+                    all_text = extract_text_from_img(request['path'], request['file_format'])
+
+                request['text'] = all_text
 
                 print(f"[ DEBUG ] TextExtractionHandler: Обработано")
                 print(request['text'][:50])

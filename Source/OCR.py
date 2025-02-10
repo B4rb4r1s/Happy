@@ -16,7 +16,7 @@ def extract_text_from_img(path, file_format):
 
     text_tesseract = ''
     try:
-        if file_format in ['pdf', 'jpg', 'png']:
+        if file_format in ['pdf', 'jpg', 'jpeg', 'png']:
             if file_format == 'pdf':
                 try:
                     pages = convert_from_path(path, 1000)
@@ -24,7 +24,7 @@ def extract_text_from_img(path, file_format):
                     print(f'[ DEBUG ERROR ] PDF is too big to process\n>>> {err}')
                     return ''
 
-            if file_format in ['jpg', 'png']:
+            if file_format in ['jpg', 'jpeg', 'png']:
                 pages = [path]
 
             # Extract text from each page using Tesseract OCR

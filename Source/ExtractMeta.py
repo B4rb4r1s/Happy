@@ -39,8 +39,13 @@ class ExtractMeta(Handler):
                     }
                     request['meta'] = meta_info
 
+                elif request['file_format'] in ["jpg", "jpeg", "png"]:
+                    print(f"[ DEBUG ] Task ExtractPDFMeta skipped >>> IMG FORMAT")
+                    request['task'] = 'extract_text'
+                    return super().handle(request)
+
                 else:
-                    print(f"[ {datetime.now()} ][ DEBUG META ] NOT PDF FORMAT")
+                    print(f"[ {datetime.now()} ][ DEBUG META ] UNKNOWN FORMAT")
                     return super().handle(request)
                 
 

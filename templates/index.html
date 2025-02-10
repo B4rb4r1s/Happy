@@ -4,102 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Система Обработки Документов</title>
-    <!-- <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-            margin-left: 2.5%;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 80%;
-            margin: 0 auto;
-        }
-
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        h2 {
-            color: #2c3e50;
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        label {
-            font-size: 16px;
-            margin-bottom: 8px;
-            color: #2c3e50;
-        }
-
-        input[type="file"] {
-            margin-bottom: 12px;
-        }
-
-        .upload {
-            padding: 10px 20px;
-            background-color: #3498db;
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .upload:hover {
-            background-color: #2980b9;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #fff;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #ecf0f1;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        a {
-            color: #3498db;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .messages ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            text-align: center;
-        }
-
-        .messages li {
-            color: #14971a;
-            font-weight: bold;
-        }
-
-        .center {
-            text-align: center;
-        }
-
-    </style> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/> 
 </head>
 <body>
@@ -153,7 +57,11 @@
                                 <a href="{{ url_for('results', doc_id=doc[0]) }}">{{ doc[1] }}</a>
                             </td>
                             <td>{{ doc[2].strftime('%d.%m.%Y %H:%M:%S') }}</td>
+                            {% if doc[3] %}
                             <td>{{ doc[3].strftime('%d.%m.%Y %H:%M:%S') }}</td>
+                            {% else %}
+                            <td>Пусто</td>
+                            {% endif %}
                         </tr>
                     {% else %}
                         <tr>

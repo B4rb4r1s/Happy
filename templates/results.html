@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Результаты обработки</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+    <script>
+        function openImage(url) {
+            window.open(url, '_blank');
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -15,7 +20,22 @@
             <a href="{{ url_for('index') }}">Главная</a>
         </nav>
 
+        <!-- Предпросмотр файла -->
+        <div class="file-preview" style="text-align: left; margin: 20px 0; width: 30%; min-width: 361px;">
+            {% if doc_format in ['jpg', 'jpeg', 'png'] %}
+                <img src="{{ url_for('static', filename='uploads/' + filename) }}" 
+                    alt="Изображение" 
+                    style="max-width: 100%; height: auto; cursor: pointer;"><br>
+                <a href="{{ url_for('static', filename='uploads/' + filename) }}" target="_blank">Открыть в новой вкладке</a>
+            {% elif doc_format == 'pdf' %}
+                <iframe src="{{ url_for('static', filename='uploads/' + filename) }}" 
+                        width="100%" height="500px" 
+                        style="border: none;"></iframe>
+                <p><a href="{{ url_for('static', filename='uploads/' + filename) }}" target="_blank">Открыть PDF в новой вкладке</a></p>
+            {% endif %}
+        </div>
         <!-- Метаинформация PDF -->
+        {% if title %}
         <div class="meta-section">
             <h2>Метаинформация файла:</h2>
             <ul>
@@ -29,6 +49,7 @@
                 <li>Программное обеспечение: {{ producer }}</li>
             </ul>
         </div>
+        {% endif %}
 
         <!-- Извлеченный текст -->
         <div class="text-section">

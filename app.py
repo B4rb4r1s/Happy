@@ -3,6 +3,7 @@ from flask import redirect, url_for, flash, render_template, jsonify
 import os
 import time
 import json
+import traceback
 
 import datetime
 import psycopg2
@@ -21,7 +22,7 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 # Папка для загрузки файлов
-UPLOAD_FOLDER = 'Uploads'
+UPLOAD_FOLDER = 'static/Uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -60,7 +61,7 @@ def index():
 
     cursor.execute('''  SELECT documents.id, filename, upload_time, creation_date 
                         FROM documents 
-                        RIGHT JOIN metadata ON documents.id = metadata.doc_id
+                        FULL JOIN metadata ON documents.id = metadata.doc_id
                         ORDER BY id DESC;''')
     documents = cursor.fetchall()
 
@@ -86,65 +87,67 @@ def upload_file():
     if file:
         # Проверка загруженного файла
         ext = verification(file.filename)
-        if ext == '.pdf':
+        # if ext == '.pdf':
 
-            # Сохраняем файл в папку uploads
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            file.save(file_path)
+        # Сохраняем файл в папку uploads
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(file_path)
 
-            # Методы для обработки документов
-            chain = Chain()
-            req = {'task': 'overwiev',
-                   'path': file_path,
-                   'dataset_handle': False}
-            chain.handle_request(req)
+        # Методы для обработки документов
+        chain = Chain()
+        req = {'task': 'overwiev',
+                'path': file_path,
+                'dataset_handle': False}
+        chain.handle_request(req)
 
-            # Попытка подключения к базе данных
-            conn = db_connection()
+        # Попытка подключения к базе данных
+        conn = db_connection()
 
-            # Запись файла в базу данных
-            cursor = conn.cursor()
-            try:
-                # Запись в табоицу DOCUMENTS
-                cursor.execute("""  INSERT INTO documents (filename,
-                                                            content,
-                                                            summary,
-                                                            upload_time)
-                                    VALUES (%s, %s, %s, %s)""",
-                                        (file.filename,
-                                        req['text'],
-                                        req['summary'],
-                                        datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-                                        )
-                                )
-                
-                # Запись в табоицу METADATA
+        # Запись файла в базу данных
+        cursor = conn.cursor()
+        try:
+            # Запись в табоицу DOCUMENTS
+            cursor.execute("""  INSERT INTO documents (filename,
+                                                        content,
+                                                        summary,
+                                                        upload_time,
+                                                        doc_format)
+                                VALUES (%s, %s, %s, %s, %s)""",
+                                    (file.filename,
+                                    req['text'],
+                                    req['summary'],
+                                    datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'),
+                                    req['file_format']
+                                    )
+                            )
+            
+            # Запись в табоицу METADATA
+            if req['file_format'] == 'pdf':
                 cursor.execute("""INSERT INTO metadata (doc_id, format, author, 
                                                         creator, title, subject, 
                                                         keywords, creation_date, producer)
-                                  VALUES (
+                                    VALUES (
                                         (SELECT id 
                                         FROM documents 
                                         ORDER BY ID DESC LIMIT 1 ), 
                                             %s, %s, %s, %s, %s, %s, %s, %s)""", 
                                         (
-                                         req['meta']['format'],
-                                         req['meta']['author'],
-                                         req['meta']['creator'],
-                                         req['meta']['title'],
-                                         req['meta']['subject'],
-                                         req['meta']['keywords'],
-                                         # Формат 02.04.2024 20:28:19
-                                         #  (%d.%m.%Y %H:%M:%S)
-                                         datetime.datetime.strptime(req['meta']['creation_date'], '%d.%m.%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S'),
+                                            req['meta']['format'],
+                                            req['meta']['author'],
+                                            req['meta']['creator'],
+                                            req['meta']['title'],
+                                            req['meta']['subject'],
+                                            req['meta']['keywords'],
+                                            # Формат 02.04.2024 20:28:19
+                                            #  (%d.%m.%Y %H:%M:%S)
+                                            datetime.datetime.strptime(req['meta']['creation_date'], '%d.%m.%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S'),
                                         #  datetime.datetime.strptime(req['meta']['modification_date'], '%d.%m.%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S'),
-                                         req['meta']['producer'] 
+                                            req['meta']['producer'] 
                                         )
                                 )
 
-                # Записать в таблицу NAMED_ENTITIES
-                print(req['entities'], flush=True)
-                print(req['entities'][0], flush=True)
+            # Записать в таблицу NAMED_ENTITIES
+            if len(req['entities']) > 0:
                 for tup in req['entities']:
                     cursor.execute("""  INSERT INTO named_entities (doc_id, entity, value)
                                         VALUES (
@@ -157,27 +160,30 @@ def upload_file():
                                             )
                                     )
 
-                # Подтверждение изменений
-                jls_extract_var = conn
-                jls_extract_var.commit()
-                print(f'[{datetime.datetime.now()}][ DEBUG ] Data successfully uploaded to Database', flush=True)
-            except Exception as err:
-                print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with uploading document to Database\n{err}', flush=True)
+            # Подтверждение изменений
+            jls_extract_var = conn
+            jls_extract_var.commit()
+            print(f'[{datetime.datetime.now()}][ DEBUG ] Data successfully uploaded to Database', flush=True)
+        except Exception as err:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with uploading document to Database\n>>> {err}', flush=True)
+            print(f'>>> {sys.exc_info()}', flush=True)
+            print(f'>>> {traceback.format_exc()}', flush=True)
 
-            # Завершение подключения к базе данных
-            cursor.close()
-            conn.close()
+        # Завершение подключения к базе данных
+        cursor.close()
+        conn.close()
 
-            # Удаление временно загруженного файла
-            os.remove(file_path)
+        # Удаление временно загруженного файла
+        # os.remove(file_path)
 
-            
-            flash(f'Файл \'{file.filename}\' успешно загружен и обработан')
-            return redirect(url_for('index'))
         
-        else:
-            flash(f'Неправильный формат файла c расширением {ext}')
-            return redirect(url_for('index'))
+        flash(f'Файл \'{file.filename}\' успешно загружен и обработан')
+        return redirect(url_for('index'))
+        
+        # else:
+        #     flash(f'Неправильный формат файла c расширением {ext}')
+        #     return redirect(url_for('index'))
 
 
 @app.route('/delete_documents', methods=['POST'])
@@ -219,10 +225,13 @@ def results(doc_id):
     
     cursor.execute(''' SELECT *
                     FROM documents 
-                    RIGHT JOIN metadata ON documents.id = metadata.doc_id
+                    FULL JOIN metadata ON documents.id = metadata.doc_id
                     WHERE documents.id = %s;
                 ''', (doc_id,))
     document = cursor.fetchone()
+    # print(document[7:],document[:7], flush=True)
+    matadata = document[7:]
+    document = document[:7]
     cursor.execute(''' SELECT entity, value
                     FROM named_entities
                     INNER JOIN documents ON documents.id = named_entities.doc_id
@@ -240,15 +249,16 @@ def results(doc_id):
                                extracted_text=document[2], 
                                summary=document[3], 
                                big_summary=document[5],
+                               doc_format=document[6],
                                # Метаинформация
-                               format=document[8],
-                               author=document[9],
-                               creator=document[10],
-                               title=document[11],
-                               subject=document[12],
-                               keywords=document[13],
-                               creation_date=document[14],
-                               producer=document[15],
+                               format=matadata[2],
+                               author=matadata[3],
+                               creator=matadata[4],
+                               title=matadata[5],
+                               subject=matadata[6],
+                               keywords=matadata[7],
+                               creation_date=matadata[8],
+                               producer=matadata[9],
                                # Сущности
                                entities = doc_entities
                                )
