@@ -13,7 +13,8 @@ class ExtractMeta(Handler):
         Текущий запрос:
             request = {
                 'task': 'extract_meta',
-                'path': './Data/PDF/text/*.pdf'}
+                'path': './Data/PDF/text/*.*',
+                'format': '.*'}
         '''
         if request['task'] == 'extract_meta':
 

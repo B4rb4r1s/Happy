@@ -14,9 +14,10 @@ class TextExtractionHandler(Handler):
         Текущий запрос:
             request = {
                 'task': 'extract_text',
-                'path': './Data/PDF/text/text2.pdf'}
+                'path': './Data/PDF/text/text2.pdf',
+                'dataset_handle': True/False}
         '''
-        if request['task'] == 'extract_text':
+        if request['task'] == 'extract_text' and request['dataset_handle'] == False:
             with open(request['path'], 'rb') as file:
                 reader = pymupdf.open(file)
                 all_text = ''

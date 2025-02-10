@@ -10,13 +10,13 @@ services:
       - postgre
     volumes:
       - .:/app
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
 
   postgre:
     image: happy_db
@@ -32,26 +32,26 @@ services:
     volumes:
       - ./happy_pgdata:/var/lib/postgresql/data
 
-  # task:
-  #   image: happy
-  #   container_name: task_container
-  #   depends_on:
-  #     - postgre
-  #   ports:
-  #     - 8888:8888
-  #   volumes:
-  #     - .:/app
-  #   command: [python, ./handle_dataset.py]
-  #   # environment:
-  #   #   NVIDIA_VISIBLE_DEVICES: all
-  #   # runtime: nvidia
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             count: 1
-  #             capabilities: [gpu]
+  task:
+    image: happy
+    container_name: task_container
+    depends_on:
+      - postgre
+    ports:
+      - 8888:8888
+    volumes:
+      - .:/app
+    command: [python, ./handle_dataset.py]
+    # environment:
+    #   NVIDIA_VISIBLE_DEVICES: all
+    # runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
       
 
 volumes:
