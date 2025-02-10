@@ -29,7 +29,7 @@ class Chain:
     #     self.handlers.append(handler)
 
     def handle_request(self, request):
-        self.meta_extraction_handler.handle(request)
+        self.file_overwiever.handle(request)
 
 
 

@@ -3,9 +3,10 @@ import os
 import re
 import PyPDF2
 import pymupdf 
+from datetime import datetime
 
 from Source.Handler import Handler
-from Source.OCR import extract_text_from_pdf
+from Source.OCR import extract_text_from_img
 
 
 class TextExtractionHandler(Handler):
@@ -18,34 +19,52 @@ class TextExtractionHandler(Handler):
                 'dataset_handle': True/False}
         '''
         if request['task'] == 'extract_text' and request['dataset_handle'] == False:
-            with open(request['path'], 'rb') as file:
-                reader = pymupdf.open(file)
-                all_text = ''
+            try:
+                with open(request['path'], 'rb') as file:
+                    reader = pymupdf.open(file)
+                    all_text = ''
 
-                for page in reader:
-                    all_text += page.get_text()
+                    for page in reader:
+                        all_text += page.get_text()
 
-                # for page_num in range(len(reader.pages)):
-                #     page = reader.pages[page_num]
-                #     all_text += page.extract_text()
+                    # for page_num in range(len(reader.pages)):
+                    #     page = reader.pages[page_num]
+                    #     all_text += page.extract_text()
 
-                if all_text == '':
-                    try:
-                        print('[ Debug ] Extracting from scan')
-                        all_text = extract_text_from_pdf(request['path'])
-                    except:
-                        print("[ Debug Error ] Error during extracting from scan")
-                        all_text = ''
+                    if all_text == '':
+                        try:
+                            print('[ DEBUG ] Extracting from scan')
+                            all_text = extract_text_from_img(request['path'], request['file_format'])
+                        except:
+                            print("[ DEBUG ERROR ExtrMeta ] Error during extracting from scan")
+                            all_text = ''
 
-                # all_text = re.sub(r'(?<=[а-яa-z,-])\s\r?\n(?=[а-яА-Яa-zA-Z])', '', all_text)
-                request['text'] = all_text
+                    # all_text = re.sub(r'(?<=[а-яa-z,-])\s\r?\n(?=[а-яА-Яa-zA-Z])', '', all_text)
+                    request['text'] = all_text
 
-            print(f"[ Debug ] TextExtractionHandler: Обработано")
-            print(request['text'])
+                print(f"[ DEBUG ] TextExtractionHandler: Обработано")
+                print(request['text'][:50])
+                request['task'] = 'generate_summary'
+                return super().handle(request)
+            
+            except Exception as err:
+                print(f"[{datetime.now()}][ DEBUG ERROR ExtrMeta ] Handling failed\n>>> {err}")
+                return super().handle(request)
+        
+        elif request['dataset_handle'] == True:
+            print('[ DEBUG ] Extracting from scan')
+            all_text = extract_text_from_img(request['path'], request['file_format'])
+            
+            request['text'] = all_text
+
+            print(f"[ DEBUG ] TextExtractionHandler: Обработано")
+            # print(request['text'])
             request['task'] = 'generate_summary'
             return super().handle(request)
+            
         else:
-            print("[ Debug Error ] Error during handing")
+            print(f"[ DEBUG ] Task TextExtractionHandler skipped >>> {request['task']}")
+            request['task'] = 'generate_summary'
             return super().handle(request)
 
 

@@ -3,7 +3,7 @@
 import datetime
 import torch
 from transformers import T5ForConditionalGeneration, T5Tokenizer
-from transformers import MBartTokenizer, MBartForConditionalGeneration, BertForTokenClassification
+from transformers import MBartTokenizer, MBartForConditionalGeneration
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from Source.Handler import Handler
@@ -18,7 +18,7 @@ print(f'[{datetime.datetime.now()}][ DEBUG ] Computing using device - {device}')
 
 # T5
 # MODEL_NAME = 'cointegrated/rut5-base-absum'
-# MODEL_PATH = 'Models/T5'
+# MODEL_PATH = 'Source/Models/T5'
 # tokenizer = T5Tokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
 # model = T5ForConditionalGeneration.from_pretrained(MODEL_PATH)
 
@@ -27,15 +27,10 @@ MODEL_NAME = 'IlyaGusev/mbart_ru_sum_gazeta'
 MODEL_PATH = 'Models/MBART'
 tokenizer = MBartTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
 model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
-# rubert
-# MODEL_NAME = 'IlyaGusev/rubert_ext_sum_gazeta'
-# MODEL_PATH = '../Models/runert-SUM'
-# tokenizer = MBartTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
-# model = BertForTokenClassification.from_pretrained(MODEL_PATH).to(device)
 
 # GPT
 # MODEL_NAME = 'IlyaGusev/rugpt3medium_sum_gazeta'
-# MODEL_PATH = 'Models/GPT'
+# MODEL_PATH = 'Source/Models/GPT'
 # tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
 # model = AutoModelForCausalLM.from_pretrained(MODEL_PATH)
 
@@ -43,65 +38,78 @@ model.eval()
 
 
 class SummaryGenerationHandler(Handler):
-    def handle(self, request, n_words=None, compression=None, 
-               max_length=1000, num_beams=3, do_sample=False, 
-               repetition_penalty=10.0, no_repeat_ngram_size=4, **kwargs):
+    def handle(self, request, 
+               n_words=None, 
+               compression=None, 
+               max_length=1000, 
+               num_beams=3, 
+               do_sample=False, 
+               repetition_penalty=10.0, 
+               no_repeat_ngram_size=4, 
+               **kwargs):
         '''
         Текущий запрос:
             request = ['text']
         '''
         if 'text' in request and request['task'] == 'generate_summary':
-            text = request['text']
-            if not text:
-                request['summary'] = ''
-                request['big_summary'] = ''
+            try:
+                text = request['text']
+                if not text:
+                    request['summary'] = ''
+                    request['big_summary'] = ''
+                    return super().handle(request)
+                
+                print(f"[{datetime.datetime.now()}][ DEBUG ] Text length: {len(text)} characters")
+                
+                # Define chunk size and calculate steps
+                CHUNK_SIZE = 3 * 1024  # 3KB chunks
+                num_steps = (len(text) // CHUNK_SIZE) + 1 if len(text) > CHUNK_SIZE else 0
+                print(f'[ DEBUG ] Needed steps: {num_steps}')
+                
+                # Process text in chunks for large documents
+                summary_parts = []
+                
+                for step in range(num_steps):
+                    start = step * CHUNK_SIZE
+                    end = start + CHUNK_SIZE
+                    chunk = text[start:end]
+                    print(f'[ DEBUG ] start: {start}, finish: {end}')
+
+                    # Generate summary for each chunk
+                    summary = self._generate_summary(chunk, None, None, max_length, num_beams, do_sample,
+                                                    repetition_penalty, no_repeat_ngram_size)
+                    summary_parts.append(summary)
+
+                if num_steps > 0:
+                    big_summary = '\n'.join(summary_parts)
+                    request['big_summary'] = big_summary
+                    try:
+                        final_summary = self._generate_summary(big_summary, None, None, max_length, num_beams,
+                                                            do_sample, repetition_penalty,
+                                                            no_repeat_ngram_size)
+                        request['summary'] = final_summary
+                    except:
+                        print(f'[ DEBUG ] Big summary is too long to summarize')
+                        request['summary'] = ''
+                else:
+                    # Handle small documents directly
+                    request['summary'] = self._generate_summary(text, None, None, max_length, num_beams,
+                                                            do_sample, repetition_penalty,
+                                                            no_repeat_ngram_size)
+                    request['big_summary'] = ''
+
+                print(f"[ DEBUG ] SummaryGenerationHandler: Обработано")
+
+                print(f"[{datetime.datetime.now()}][ DEBUG ] Summary generated: {request['summary'][:50]}")
+                request['task'] = 'extract_entities'
                 return super().handle(request)
             
-            print(f"[{datetime.datetime.now()}][ DEBUG ] Text length: {len(text)} characters")
-            
-            # Define chunk size and calculate steps
-            CHUNK_SIZE = 3 * 1024  # 3KB chunks
-            num_steps = (len(text) // CHUNK_SIZE) + 1 if len(text) > CHUNK_SIZE else 0
-            print(f'[ DEBUG ] Needed steps: {num_steps}')
-            
-            # Process text in chunks for large documents
-            summary_parts = []
-            
-            for step in range(num_steps):
-                start = step * CHUNK_SIZE
-                end = start + CHUNK_SIZE
-                chunk = text[start:end]
-                print(f'[ DEBUG ] start: {start}, finish: {end}')
-
-                # Generate summary for each chunk
-                summary = self._generate_summary(chunk, None, None, max_length, num_beams, do_sample,
-                                                 repetition_penalty, no_repeat_ngram_size)
-                summary_parts.append(summary)
-
-            if num_steps > 0:
-                big_summary = '\n'.join(summary_parts)
-                request['big_summary'] = big_summary
-                try:
-                    final_summary = self._generate_summary(big_summary, None, None, max_length, num_beams,
-                                                           do_sample, repetition_penalty,
-                                                           no_repeat_ngram_size)
-                    request['summary'] = final_summary
-                except:
-                    print(f'[ DEBUG ] Big summary is too long to summarize')
-                    request['summary'] = ''
-            else:
-                # Handle small documents directly
-                request['summary'] = self._generate_summary(text, None, None, max_length, num_beams,
-                                                           do_sample, repetition_penalty,
-                                                           no_repeat_ngram_size)
-                request['big_summary'] = ''
-
-            print(f"[{datetime.datetime.now()}][ DEBUG ] Summary generated: {request['summary']}")
-            request['task'] = 'extract_entities'
-            return super().handle(request)
-
+            except Exception as err:
+                print(f"[ {datetime.datetime.now()} ][ DEBUG ERROR SUMM ] Handling failed\n>>> {err}")
+                return super().handle(request)
         else:
-            print(f"[{datetime.datetime.now()}][ DEBUG ERROR ] Handling failed")
+            print(f"[ DEBUG ] Task SummaryGenerationHandler skipped >>> {request['task']}")
+            request['task'] = 'extract_entities'
             return super().handle(request)
 
         
@@ -133,9 +141,9 @@ class SummaryGenerationHandler(Handler):
             )
 
         return tokenizer.decode(output[0], skip_special_tokens=True)
-
-
-
+              
+              
+    
 if __name__ == "__main__":
     sum_handler = SummaryGenerationHandler()
     

@@ -2,6 +2,7 @@ from flask import Flask, request, session
 from flask import redirect, url_for, flash, render_template, jsonify
 import os
 import time
+import json
 
 import datetime
 import psycopg2
@@ -93,8 +94,9 @@ def upload_file():
 
             # Методы для обработки документов
             chain = Chain()
-            req = {'task': 'extract_meta',
-                    'path': file_path}
+            req = {'task': 'overwiev',
+                   'path': file_path,
+                   'dataset_handle': False}
             chain.handle_request(req)
 
             # Попытка подключения к базе данных
@@ -230,21 +232,23 @@ def results(doc_id):
     
     cursor.close()
     conn.close()
+    print(f'[ DEBUG APP ] {document}')
     
     if document:
         return render_template('results.html', 
                                filename=document[1], 
                                extracted_text=document[2], 
-                               summary=document[3],
+                               summary=document[3], 
+                               big_summary=document[5],
                                # Метаинформация
-                               format=document[7],
-                               author=document[8],
-                               creator=document[9],
-                               title=document[10],
-                               subject=document[11],
-                               keywords=document[12],
-                               creation_date=document[13],
-                               producer=document[14],
+                               format=document[8],
+                               author=document[9],
+                               creator=document[10],
+                               title=document[11],
+                               subject=document[12],
+                               keywords=document[13],
+                               creation_date=document[14],
+                               producer=document[15],
                                # Сущности
                                entities = doc_entities
                                )
@@ -277,12 +281,25 @@ def dataset_document(doc_id):
                     SELECT *
                     FROM doc_dataset
                     WHERE doc_dataset.id = %s;
-                   ''', (doc_id,))
-    doc_full = cursor.fetchone()
+                ''', (doc_id,))
+    docs = cursor.fetchone()
+    
+    cursor.execute(''' SELECT *
+                    FROM metadata_dataset
+                    WHERE doc_id = %s;
+                ''', (doc_id,))
+    metadata = cursor.fetchone()
+    
+    cursor.execute(''' SELECT entity, value
+                    FROM named_entities_dataset
+                    INNER JOIN doc_dataset ON doc_dataset.id = named_entities_dataset.doc_id
+                    WHERE doc_dataset.id = %s;
+                ''', (doc_id,))
+    dataset_entities = cursor.fetchall()
     
     cursor.close()
     conn.close()
-    return render_template('dataset_document.html', doc_full=doc_full)
+    return render_template('dataset_document.html', doc_full=docs, metadata=metadata, entities=dataset_entities)
 
 
 # Простая функция чат-бота (заглушка)
@@ -297,6 +314,14 @@ def chat():
         # Логика обработки сообщения пользователя
         bot_response = chatbot_response(user_message)
         return jsonify({"response": bot_response})
+    
+    return render_template('chat-assistant.html')
+    if request.method == 'POST':
+        user_message = request.form.get('message')
+        if user_message:
+            bot_response = chatbot_response(user_message)
+            return jsonify({'user_message': user_message, 'bot_response': bot_response})
+        return jsonify({'error': 'Сообщение не должно быть пустым'}), 400
     
     return render_template('chat-assistant.html')
 

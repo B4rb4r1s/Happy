@@ -1,7 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 from transformers import pipeline
-import torch
 
 import spacy
 import datetime
@@ -11,53 +10,39 @@ from Source.Handler import Handler
 import sys
 sys.stdout.flush()
 
-
-# Установка параметров работы модели
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
-print(f'[{datetime.datetime.now()}][ DEBUG ] Computing using device - {device}')
-
+# PATH = 'Source/Models/MBERT'
 
 # tokenizer = AutoTokenizer.from_pretrained(PATH)
-# model = AutoModel.from_pretrained(PATH)
-
-# MODEL_NAME = 'kontur-ai/sbert_punc_case_ru'
-# MODEL_PATH = 'Models_all/sbert-NER'
-
-# ***** BEST *****
-MODEL_NAME = 'FacebookAI/xlm-roberta-large-finetuned-conll03-english'
-MODEL_PATH = 'Models_all/fb-roberta-NER'
-
-
-
-# tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-# model = AutoModelForTokenClassification.from_pretrained(MODEL_PATH)
+# model = AutoModelForTokenClassification.from_pretrained(PATH)
 
 
 class NamedEntityRecognitionHandler(Handler):
     def __init__(self):
         super().__init__()
         # Выбор устройства обработки
-        # spacy.prefer_gpu()
+        spacy.prefer_gpu()
         # Загружаем предобученную модель spaCy
         self.nlp = spacy.load("ru_core_news_lg")
 
     def handle(self, request):
         # Проверяем, нужно ли выполнять выделение сущностей
         if 'text' in request and request['task'] == 'extract_entities':
-
-            # HuggingFace Models
-            # classifier = pipeline("ner", model=model, tokenizer=tokenizer)
-            # entities = classifier(request['text'])
-
-            # SpaCy Models
-            doc = self.nlp(request['text'])
+            unique_entities = []
+            
+            text_ = request['text'].replace('\n', '').replace('\t', '')
+            doc = self.nlp(text_)
             entities = [(ent.text, ent.label_) for ent in doc.ents]
             
+            for entity in entities:
+                print(f'[ DEBUG ] {entity}')
+                if entity not in unique_entities:
+                    unique_entities.append(entity)
+            
             # Сохраняем выделенные сущности в запросе
-            request['entities'] = entities
+            request['entities'] = unique_entities
             
             print(f"[{datetime.datetime.now()}][ Debug ] NamedEntityRecognitionHandler: Обработано")
-            print(request['entities'])
+            print(request['entities'][:5])
             return super().handle(request)
         else:
             print(f"[{datetime.datetime.now()}][ Debug Error ] Error during handing (NER)")

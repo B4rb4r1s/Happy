@@ -14,37 +14,48 @@ class ExtractMeta(Handler):
             request = {
                 'task': 'extract_meta',
                 'path': './Data/PDF/text/*.*',
-                'format': '.*'}
+                'file_format': '.*'
+                }
         '''
         if request['task'] == 'extract_meta':
+            try:
+                if request['file_format'] == 'pdf':
+                    doc = fitz.open(request['path'])
 
-            if request['format'] == 'pdf':
-                doc = fitz.open(request['path'])
+                    meta = doc.metadata
 
-                meta = doc.metadata
+                    meta_info = {
+                        'format': meta.get('format', 'Нет данных'),
+                        'author': meta.get('author', 'Нет данных'),
+                        'creator': meta.get('creator', 'Нет данных'),
+                        'title': meta.get('title', 'Нет данных'),
+                        'subject': meta.get('subject', 'Нет данных'),
+                        'keywords': meta.get('keywords', 'Нет данных'),
+                        'trapped': meta.get('trapped', 'Нет данных'),
+                        'encryption': meta.get('encryption', 'Нет данных'),
+                        'creation_date': self.convert_date(meta.get('creationDate', 'Нет данных')),
+                        'modification_date': self.convert_date(meta.get('modDate', 'Нет данных')),
+                        'producer': meta.get('producer', 'Нет данных')
+                    }
+                    request['meta'] = meta_info
 
-                meta_info = {
-                    'format': meta.get('format', 'Нет данных'),
-                    'author': meta.get('author', 'Нет данных'),
-                    'creator': meta.get('creator', 'Нет данных'),
-                    'title': meta.get('title', 'Нет данных'),
-                    'subject': meta.get('subject', 'Нет данных'),
-                    'keywords': meta.get('keywords', 'Нет данных'),
-                    'trapped': meta.get('trapped', 'Нет данных'),
-                    'encryption': meta.get('encryption', 'Нет данных'),
-                    'creation_date': self.convert_date(meta.get('creationDate', 'Нет данных')),
-                    'modification_date': self.convert_date(meta.get('modDate', 'Нет данных')),
-                    'producer': meta.get('producer', 'Нет данных')
-                }
+                else:
+                    print(f"[ {datetime.now()} ][ DEBUG META ] NOT PDF FORMAT")
+                    return super().handle(request)
+                
 
-                request['meta'] = meta_info
+                print(f"[ {datetime.now()} ][ DEBUG ] ExtractPDFMeta: Обработано")
+                print(request['meta'])
 
-            print(f"[{datetime.now()}][ Debug ] ExtractPDFMeta: Обработано")
-            print(request['meta'])
-            request['task'] = 'extract_text'
-            return super().handle(request)
+                request['task'] = 'extract_text'
+                return super().handle(request)
+            
+            except Exception as err:
+                print(f"[{datetime.now()}][ DEBUG ERROR ExtrMeta ] Handling failed\n>>> {err}")
+                return super().handle(request)
         else:
-            print(f"[{datetime.now()}][ Debug ] Error during handing (Mets)")
+            print(f"[ DEBUG ] Task ExtractPDFMeta skipped >>> {request['task']}")
+            request['task'] = 'extract_text'
             return super().handle(request)
         
 

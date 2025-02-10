@@ -15,15 +15,24 @@ class FileOverwiever(Handler):
                 'task': 'overwiev',
                 'path': './Data/*.*'}
         '''
+        if request['task'] == 'overwiev':
+            try:
+                file_format = request['path'][request['path'].rfind('.')+1:].lower()
 
-        file_format = request['path'][request['path'].rfind('.')+1:].lower()
+                print(f"[ {datetime.now()} ][ DEBUG ] FileOverwiev: Обработано")
+                print(f'{file_format}')
 
-        print(f"[{datetime.now()}][ Debug ] FileOverwiev: Обработано")
-        print(f'{file_format}')
-        
-        request['task'] = 'extract_meta'
-        request['format'] = file_format
-        return super().handle(request)
+                request['file_format'] = file_format
+
+                request['task'] = 'extract_meta'
+                return super().handle(request)
+            except Exception as err:
+                print(f"[ {datetime.now()} ][ DEBUG ERROR FileOW ] Handling failed\n>>> {err}")
+        else:
+            print(f"[ DEBUG ] Task FileOverwiev skipped >>> {request['task']}")
+            request['task'] = 'extract_meta'
+            return super().handle(request)
+
     
 
 
