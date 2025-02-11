@@ -111,18 +111,26 @@ def upload_file():
                                                         content,
                                                         summary,
                                                         upload_time,
-                                                        doc_format)
-                                VALUES (%s, %s, %s, %s, %s)""",
+                                                        doc_format,
+                                                        text_tesseract,
+                                                        text_dedoc)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
                                     (file.filename,
                                     req['text'],
                                     req['summary'],
                                     datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'),
-                                    req['file_format']
+                                    req['file_format'],
+                                    req['text_tesseract'],
+                                    req['text_dedoc'],
                                     )
                             )
             
             # Запись в табоицу METADATA
             if req['file_format'] == 'pdf':
+                if req['meta']['creation_date'] == 'Unknown':
+                    timestmp = None
+                else:
+                    timestmp = datetime.datetime.strptime(req['meta']['creation_date'], '%d.%m.%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
                 cursor.execute("""INSERT INTO metadata (doc_id, format, author, 
                                                         creator, title, subject, 
                                                         keywords, creation_date, producer)
@@ -140,11 +148,20 @@ def upload_file():
                                             req['meta']['keywords'],
                                             # Формат 02.04.2024 20:28:19
                                             #  (%d.%m.%Y %H:%M:%S)
-                                            datetime.datetime.strptime(req['meta']['creation_date'], '%d.%m.%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S'),
+                                            timestmp,
                                         #  datetime.datetime.strptime(req['meta']['modification_date'], '%d.%m.%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S'),
                                             req['meta']['producer'] 
                                         )
                                 )
+            # if req['file_format'] in ['jpg', 'jpeg', 'png']:
+            #     cursor.execute("""INSERT INTO metadata (doc_id, format)
+            #                         VALUES (
+            #                             (SELECT id 
+            #                             FROM documents 
+            #                             ORDER BY ID DESC LIMIT 1 ), 
+            #                                 %s)""", 
+            #                             (req['file_format'],)
+            #                     )
 
             # Записать в таблицу NAMED_ENTITIES
             if len(req['entities']) > 0:
@@ -230,8 +247,8 @@ def results(doc_id):
                 ''', (doc_id,))
     document = cursor.fetchone()
     # print(document[7:],document[:7], flush=True)
-    matadata = document[7:]
-    document = document[:7]
+    matadata = document[9:]
+    document = document[:9]
     cursor.execute(''' SELECT entity, value
                     FROM named_entities
                     INNER JOIN documents ON documents.id = named_entities.doc_id
@@ -250,6 +267,8 @@ def results(doc_id):
                                summary=document[3], 
                                big_summary=document[5],
                                doc_format=document[6],
+                               text_tesseract=document[7],
+                               text_dedoc=document[8],
                                # Метаинформация
                                format=matadata[2],
                                author=matadata[3],

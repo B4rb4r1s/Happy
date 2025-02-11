@@ -41,7 +41,14 @@ services:
       - 8888:8888
     volumes:
       - .:/app
-    command: [python, ./handle_dataset.py]
+    stdin_open:
+      # docker run -i
+      true
+    tty:
+      # docker run -t
+      true
+    command: [python, ./Utility/load_dataset.py]
+
     # environment:
     #   NVIDIA_VISIBLE_DEVICES: all
     # runtime: nvidia

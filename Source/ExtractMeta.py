@@ -40,6 +40,9 @@ class ExtractMeta(Handler):
                     request['meta'] = meta_info
 
                 elif request['file_format'] in ["jpg", "jpeg", "png"]:
+                    # request['meta'] = {
+                    #     'format': request['file_format'],
+                    # }
                     print(f"[ DEBUG ] Task ExtractPDFMeta skipped >>> IMG FORMAT")
                     request['task'] = 'extract_text'
                     return super().handle(request)

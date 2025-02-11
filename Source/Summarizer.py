@@ -53,7 +53,10 @@ class SummaryGenerationHandler(Handler):
         '''
         if 'text' in request and request['task'] == 'generate_summary':
             try:
-                text = request['text']
+                if request['text'] == '':
+                    text = request['text_dedoc']
+                else:
+                    text = request['text']
                 if not text:
                     request['summary'] = ''
                     request['big_summary'] = ''

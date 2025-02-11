@@ -29,7 +29,12 @@ class NamedEntityRecognitionHandler(Handler):
         if 'text' in request and request['task'] == 'extract_entities':
             unique_entities = []
             
-            text_ = request['text'].replace('\n', '').replace('\t', '')
+            if request['text'] == '':
+                text = request['text_dedoc']
+            else:
+                text = request['text']
+            
+            text_ = text.replace('\n', ' ').replace('\t', ' ')
             doc = self.nlp(text_)
             entities = [(ent.text, ent.label_) for ent in doc.ents]
             

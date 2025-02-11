@@ -19,9 +19,10 @@ class TextExtractionHandler(Handler):
                 'dataset_handle': True/False}
         '''
         if request['task'] == 'extract_text' and request['dataset_handle'] == False:
+            text_tesseract = ''
+            text_dedoc = ''
+            all_text = ''
             try:
-
-                all_text = ''
                 if request['file_format'] == 'pdf':
                     with open(request['path'], 'rb') as file:
                         reader = pymupdf.open(file)
@@ -29,25 +30,17 @@ class TextExtractionHandler(Handler):
                         for page in reader:
                             all_text += page.get_text()
 
-                        # for page_num in range(len(reader.pages)):
-                        #     page = reader.pages[page_num]
-                        #     all_text += page.extract_text()
-
                         if all_text == '':
-                            try:
-                                print('[ DEBUG ] Extracting from PDF scan')
-                                all_text = extract_text_from_img(request['path'], request['file_format'])
-                            except:
-                                print("[ DEBUG ERROR ExtrMeta ] Error during extracting from scan")
-                                all_text = ''
+                            text_tesseract, text_dedoc = extract_text_from_img(request['path'], request['file_format'])
 
-                        # all_text = re.sub(r'(?<=[а-яa-z,-])\s\r?\n(?=[а-яА-Яa-zA-Z])', '', all_text)
 
                 elif request['file_format'] in ["jpg", "jpeg", "png"]:
                     print('[ DEBUG ] Extracting from IMG scan')
-                    all_text = extract_text_from_img(request['path'], request['file_format'])
+                    text_tesseract, text_dedoc = extract_text_from_img(request['path'], request['file_format'])
 
                 request['text'] = all_text
+                request['text_tesseract'] = text_tesseract
+                request['text_dedoc'] = text_dedoc
 
                 print(f"[ DEBUG ] TextExtractionHandler: Обработано")
                 print(request['text'][:50])
@@ -60,7 +53,7 @@ class TextExtractionHandler(Handler):
         
         elif request['dataset_handle'] == True:
             print('[ DEBUG ] Extracting from scan')
-            all_text = extract_text_from_img(request['path'], request['file_format'])
+            _, all_text = extract_text_from_img(request['path'], request['file_format'])
             
             request['text'] = all_text
 

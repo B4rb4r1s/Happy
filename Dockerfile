@@ -18,11 +18,13 @@ RUN apt-get install nano
 RUN apt-get install -y poppler-utils \
     tesseract-ocr \
     tesseract-ocr-rus
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
 # Установка моделей для NER
 RUN python -m spacy download ru_core_news_sm 
 RUN python -m spacy download ru_core_news_md 
 RUN python -m spacy download ru_core_news_lg
-RUN pip install dedoc
+RUN pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip install "dedoc[torch]"
 
 # Определяем команду для запуска приложения
 # CMD /bin/bash

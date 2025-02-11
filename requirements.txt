@@ -6,9 +6,11 @@ pandas==1.5.3
 PyPDF2
 docx
 PyMuPDF
-torch==2.2.1
+# torch==2.2.1
+# torchvision==0.19.1
 transformers==4.38
 sentencepiece==0.2.0
+opencv-python>=4.5.5.64,<4.6.0
 gensim==3.8.2
 spacy==3.7.6
 flask==3.0.3
