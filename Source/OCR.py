@@ -2,6 +2,8 @@ import io
 import pytesseract
 from pdf2image import convert_from_path
 
+import traceback
+
 from dedoc import DedocManager
 from dedoc.attachments_handler import AttachmentsHandler
 from dedoc.converters import DocxConverter, PNGConverter, ConverterComposition
@@ -58,15 +60,19 @@ def dedoc_scan(path):
 
  
 def extract_text_from_img(path, file_format):
-    text_tesseract = ''
-    text_dedoc = ''
+    text_tesseract = None
+    text_dedoc = None
     try:
         if file_format in ['pdf', 'jpg', 'jpeg', 'png']:
             text_tesseract = tesseract_scan(path, file_format)
             text_dedoc = dedoc_scan(path)
+        elif file_format in ["doc", "docx"]:
+            text_tesseract = None
+            text_dedoc = dedoc_scan(path)
     
     except Exception as err:
         print(f'[ DEBUG ERROR OCR] Error during OCR\n>>> {err}')
+        print(f'>>> {traceback.format_exc()}', flush=True)
     
     return text_tesseract, text_dedoc
     

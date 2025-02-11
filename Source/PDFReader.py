@@ -19,8 +19,8 @@ class TextExtractionHandler(Handler):
                 'dataset_handle': True/False}
         '''
         if request['task'] == 'extract_text' and request['dataset_handle'] == False:
-            text_tesseract = ''
-            text_dedoc = ''
+            text_tesseract = None
+            text_dedoc = None
             all_text = ''
             try:
                 if request['file_format'] == 'pdf':
@@ -36,6 +36,10 @@ class TextExtractionHandler(Handler):
 
                 elif request['file_format'] in ["jpg", "jpeg", "png"]:
                     print('[ DEBUG ] Extracting from IMG scan')
+                    text_tesseract, text_dedoc = extract_text_from_img(request['path'], request['file_format'])
+
+                elif request['file_format'] in ["doc", "docx"]:
+                    print('[ DEBUG ] Extracting from DOC scan')
                     text_tesseract, text_dedoc = extract_text_from_img(request['path'], request['file_format'])
 
                 request['text'] = all_text

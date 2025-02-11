@@ -2,7 +2,7 @@
 services:
 
   app:
-    image: happy
+    image: happy:dedoc
     container_name: happy_container
     ports:
       - 5000:5000

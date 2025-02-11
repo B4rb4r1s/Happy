@@ -46,6 +46,11 @@ class ExtractMeta(Handler):
                     print(f"[ DEBUG ] Task ExtractPDFMeta skipped >>> IMG FORMAT")
                     request['task'] = 'extract_text'
                     return super().handle(request)
+                
+                elif request['file_format'] in ["doc", "docx"]:
+                    print(f"[ DEBUG ] Task ExtractPDFMeta skipped >>> DOC FORMAT")
+                    request['task'] = 'extract_text'
+                    return super().handle(request)
 
                 else:
                     print(f"[ {datetime.now()} ][ DEBUG META ] UNKNOWN FORMAT")

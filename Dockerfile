@@ -1,9 +1,18 @@
 # Используем официальный образ Python в качестве базового образа
 FROM python:3.9
 
+RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+    && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
 # Устанавливаем необходимые пакеты Linux
 RUN apt-get update && apt-get install
 
+RUN apt-get install -y nano libreoffice djvulibre-bin unzip \
+    automake binutils-dev build-essential ca-certificates clang g++ g++-multilib gcc-multilib libcairo2 libffi-dev \
+    libgdk-pixbuf2.0-0 libglib2.0-dev libjpeg-dev libleptonica-dev libpango-1.0-0 libpango1.0-dev libpangocairo-1.0-0 libpng-dev libsm6 \
+    libtesseract-dev libtool libxext6 make pkg-config poppler-utils shared-mime-info software-properties-common swig zlib1g-dev
+RUN apt-get install -y nvidia-container-toolkit
 # Создаем директорию для приложения
 WORKDIR /app
 

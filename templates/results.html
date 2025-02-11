@@ -70,7 +70,7 @@
             <h2>Извлеченный текст:</h2>
             {% if extracted_text %}
                 <pre>{{ extracted_text }}</pre>
-            {% else %}
+            {% elif text_tesseract and text_dedoc %}
                 <table>
                     <thead>
                         <th style="width: 50%;">
@@ -93,6 +93,8 @@
                         </td>
                     </tbody>
                 </table>
+            {% elif text_dedoc %}
+                <pre>{{ text_dedoc }}</pre>
             {% endif %}
         </div>
         <!-- <div class="text-section">
