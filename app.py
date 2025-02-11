@@ -9,7 +9,6 @@ import datetime
 import psycopg2
 
 from run import Chain
-from Verifying.doc_verification import verification
 
 import sys
 sys.stdout.flush()
@@ -85,10 +84,6 @@ def upload_file():
         return redirect(request.url)
     
     if file:
-        # Проверка загруженного файла
-        ext = verification(file.filename)
-        # if ext == '.pdf':
-
         # Сохраняем файл в папку uploads
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
