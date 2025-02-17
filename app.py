@@ -72,156 +72,145 @@ def index():
 # Обработка загрузки файла
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
+    if 'file' not in request.files or not request.files['file'].filename.strip():
         flash('Нет файла для загрузки')
         return redirect(request.url)
-    # redirect(request.url)
     
     file = request.files['file']
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(file_path)
     
-    if file.filename == '':
-        flash('Не выбран файл для загрузки')
-        return redirect(request.url)
+    chain = Chain()
+    req = {'task': 'overwiev',
+            'path': file_path,
+            'dataset_handle': False}
+    chain.handle_request(req)
+
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    # Запись файла в базу данных
+    try:
+        # Запись в табоицу DOCUMENTS
+        cursor.execute("""  
+            INSERT INTO documents (filename, 
+                                   content, 
+                                   summary, 
+                                   upload_time, 
+                                   doc_format,
+                                   text_tesseract,
+                                   text_dedoc)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                (file.filename,
+                req['text'],
+                req['summary'],
+                datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'),
+                req['file_format'],
+                req['text_tesseract'],
+                req['text_dedoc'],
+                )
+            )
+        
+        cursor.execute('''
+            SELECT id 
+            FROM documents 
+            ORDER BY ID DESC LIMIT 1
+        ''')
+        doc_id = cursor.fetchone()[0] 
+        
+        # Запись в табоицу METADATA
+        if req['file_format'] == 'pdf' and 'meta' in req:
+            metadata = req['meta']
+            cursor.execute("""
+                INSERT INTO metadata (doc_id, 
+                                      format, 
+                                      author, 
+                                      creator, 
+                                      title, 
+                                      subject, 
+                                      keywords, 
+                                      creation_date, 
+                                      producer)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", 
+                    (
+                    doc_id, 
+                    metadata.get('format'), 
+                    metadata.get('author'),
+                    metadata.get('creator'), 
+                    metadata.get('title'),
+                    metadata.get('subject'), 
+                    metadata.get('keywords'),
+                    metadata.get('creation_date') or None, 
+                    metadata.get('producer')
+                    )
+            )
+        # if req['file_format'] in ['jpg', 'jpeg', 'png']:
+        #     cursor.execute("""INSERT INTO metadata (doc_id, format)
+        #                         VALUES (
+        #                             (SELECT id 
+        #                             FROM documents 
+        #                             ORDER BY ID DESC LIMIT 1 ), 
+        #                                 %s)""", 
+        #                             (req['file_format'],)
+        #                     )
+
+        # Записать в таблицу NAMED_ENTITIES
+        if req.get('entities'):
+            for tup in req['entities']:
+                cursor.execute("""  
+                    INSERT INTO named_entities (doc_id, entity, value)
+                    VALUES (
+                        %s, %s, %s)""",
+                        (
+                        doc_id,
+                        tup[0], 
+                        tup[1]
+                        )
+                )
+        # Подтверждение изменений
+        conn.commit()
+
+        print(f'[{datetime.datetime.now()}][ DEBUG ] Data successfully uploaded to Database', flush=True)
+    except Exception as err:
+        print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with uploading document to Database\n>>> {err}', flush=True)
+        print(f'>>> {traceback.format_exc()}', flush=True)
+
+    # Завершение подключения к базе данных
+    cursor.close()
+    conn.close()
+
+    # Удаление временно загруженного файла
+    # os.remove(file_path)
     
-    if file:
-        # Сохраняем файл в папку uploads
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(file_path)
-
-        # Методы для обработки документов
-        chain = Chain()
-        req = {'task': 'overwiev',
-                'path': file_path,
-                'dataset_handle': False}
-        chain.handle_request(req)
-
-        # Попытка подключения к базе данных
-        conn = db_connection()
-
-        # Запись файла в базу данных
-        cursor = conn.cursor()
-        try:
-            # Запись в табоицу DOCUMENTS
-            cursor.execute("""  INSERT INTO documents (filename,
-                                                        content,
-                                                        summary,
-                                                        upload_time,
-                                                        doc_format,
-                                                        text_tesseract,
-                                                        text_dedoc)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-                                    (file.filename,
-                                    req['text'],
-                                    req['summary'],
-                                    datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'),
-                                    req['file_format'],
-                                    req['text_tesseract'],
-                                    req['text_dedoc'],
-                                    )
-                            )
-            
-            # Запись в табоицу METADATA
-            if req['file_format'] == 'pdf':
-                if req['meta']['creation_date'] == 'Unknown':
-                    timestmp = None
-                else:
-                    timestmp = datetime.datetime.strptime(req['meta']['creation_date'], '%d.%m.%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
-                cursor.execute("""INSERT INTO metadata (doc_id, format, author, 
-                                                        creator, title, subject, 
-                                                        keywords, creation_date, producer)
-                                    VALUES (
-                                        (SELECT id 
-                                        FROM documents 
-                                        ORDER BY ID DESC LIMIT 1 ), 
-                                            %s, %s, %s, %s, %s, %s, %s, %s)""", 
-                                        (
-                                            req['meta']['format'],
-                                            req['meta']['author'],
-                                            req['meta']['creator'],
-                                            req['meta']['title'],
-                                            req['meta']['subject'],
-                                            req['meta']['keywords'],
-                                            # Формат 02.04.2024 20:28:19
-                                            #  (%d.%m.%Y %H:%M:%S)
-                                            timestmp,
-                                        #  datetime.datetime.strptime(req['meta']['modification_date'], '%d.%m.%Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S'),
-                                            req['meta']['producer'] 
-                                        )
-                                )
-            # if req['file_format'] in ['jpg', 'jpeg', 'png']:
-            #     cursor.execute("""INSERT INTO metadata (doc_id, format)
-            #                         VALUES (
-            #                             (SELECT id 
-            #                             FROM documents 
-            #                             ORDER BY ID DESC LIMIT 1 ), 
-            #                                 %s)""", 
-            #                             (req['file_format'],)
-            #                     )
-
-            # Записать в таблицу NAMED_ENTITIES
-            if len(req['entities']) > 0:
-                for tup in req['entities']:
-                    cursor.execute("""  INSERT INTO named_entities (doc_id, entity, value)
-                                        VALUES (
-                                            (SELECT id 
-                                            FROM documents 
-                                            ORDER BY ID DESC LIMIT 1 ), %s, %s)""",
-                                            (
-                                            tup[0], 
-                                            tup[1]
-                                            )
-                                    )
-
-            # Подтверждение изменений
-            jls_extract_var = conn
-            jls_extract_var.commit()
-            print(f'[{datetime.datetime.now()}][ DEBUG ] Data successfully uploaded to Database', flush=True)
-        except Exception as err:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with uploading document to Database\n>>> {err}', flush=True)
-            print(f'>>> {sys.exc_info()}', flush=True)
-            print(f'>>> {traceback.format_exc()}', flush=True)
-
-        # Завершение подключения к базе данных
-        cursor.close()
-        conn.close()
-
-        # Удаление временно загруженного файла
-        # os.remove(file_path)
-
-        
-        flash(f'Файл \'{file.filename}\' успешно загружен и обработан')
-        return redirect(url_for('index'))
-        
-        # else:
-        #     flash(f'Неправильный формат файла c расширением {ext}')
-        #     return redirect(url_for('index'))
+    flash(f'Файл \'{file.filename}\' успешно загружен и обработан')
+    return redirect(url_for('index'))
 
 
 @app.route('/delete_documents', methods=['POST'])
 def delete_documents():
     document_ids = request.form.getlist('document_ids')
     
-    if document_ids:
-        document_ids = [int(doc_id) for doc_id in document_ids]
-
-        conn = db_connection()
-        cursor = conn.cursor()
-
-        try:
-            # Выполнение удаления по всем таблицам базы данных
-            cursor.execute('DELETE FROM documents       WHERE id        = ANY(%s)', (document_ids,))
-            cursor.execute('DELETE FROM metadata        WHERE doc_id    = ANY(%s)', (document_ids,))
-            cursor.execute('DELETE FROM named_entities  WHERE doc_id    = ANY(%s)', (document_ids,))
-            
-            conn.commit()
-        except Exception as err:
-            print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with deleting documents from Databes\n{err}')
-        
-        cursor.close()
-        conn.close()
-    else:
+    if not document_ids:
         flash(f'Не выбраны документы для удаления')
+        return redirect(url_for('index'))
+
+    document_ids = [int(doc_id) for doc_id in document_ids]
+
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Выполнение удаления по всем таблицам базы данных
+        cursor.execute('DELETE FROM documents       WHERE id        = ANY(%s)', (document_ids,))
+        cursor.execute('DELETE FROM metadata        WHERE doc_id    = ANY(%s)', (document_ids,))
+        cursor.execute('DELETE FROM named_entities  WHERE doc_id    = ANY(%s)', (document_ids,))
+        
+        conn.commit()
+    except Exception as err:
+        print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with deleting documents from Databes\n>>> {err}')
+    
+    cursor.close()
+    conn.close()
     
     return redirect(url_for('index'))
 
@@ -235,20 +224,42 @@ def results(doc_id):
     conn = db_connection()
     cursor = conn.cursor()
     
-    cursor.execute(''' SELECT *
-                    FROM documents 
-                    FULL JOIN metadata ON documents.id = metadata.doc_id
-                    WHERE documents.id = %s;
-                ''', (doc_id,))
+    cursor.execute(''' 
+        SELECT documents.id,
+               filename, 
+               content, 
+               text_tesseract,
+               text_dedoc,
+               big_summary,
+               summary, 
+               upload_time, 
+               doc_format,
+            
+               metadata.id,
+               doc_id,
+               format, 
+               author, 
+               creator, 
+               title, 
+               subject, 
+               keywords, 
+               creation_date, 
+               producer
+        FROM documents 
+        FULL JOIN metadata ON documents.id = metadata.doc_id
+        WHERE documents.id = %s;
+        ''', (doc_id,))
     document = cursor.fetchone()
-    # print(document[7:],document[:7], flush=True)
-    matadata = document[9:]
+    
+    matadata = document[8:]
     document = document[:9]
-    cursor.execute(''' SELECT entity, value
-                    FROM named_entities
-                    INNER JOIN documents ON documents.id = named_entities.doc_id
-                    WHERE documents.id = %s;
-                ''', (doc_id,))
+
+    cursor.execute(''' 
+        SELECT entity, value
+        FROM named_entities
+        INNER JOIN documents ON documents.id = named_entities.doc_id
+        WHERE documents.id = %s;
+        ''', (doc_id,))
     doc_entities = cursor.fetchall()
     
     cursor.close()
@@ -257,14 +268,17 @@ def results(doc_id):
     
     if document:
         return render_template('results.html', 
-                               filename=document[1], 
-                               extracted_text=document[2], 
-                               summary=document[3], 
+                               filename=document[1],
+                               extracted_text=document[2],
+                               text_tesseract=document[3],
+                               text_dedoc=document[4],
                                big_summary=document[5],
-                               doc_format=document[6],
-                               text_tesseract=document[7],
-                               text_dedoc=document[8],
+                               summary=document[6],
+                               upload_time=document[7],
+                               doc_format=document[8],
+
                                # Метаинформация
+                               doc_id=matadata[1],
                                format=matadata[2],
                                author=matadata[3],
                                creator=matadata[4],
@@ -272,7 +286,8 @@ def results(doc_id):
                                subject=matadata[6],
                                keywords=matadata[7],
                                creation_date=matadata[8],
-                               producer=matadata[9],
+                               produce=matadata[9],
+
                                # Сущности
                                entities = doc_entities
                                )
@@ -286,9 +301,16 @@ def dataset():
     conn = db_connection()
     cursor = conn.cursor()
 
-    cursor.execute('''  SELECT * 
-                        FROM doc_dataset
-                        ORDER BY id DESC;''')
+    cursor.execute('''  
+        SELECT doc_dataset.id,
+               file_name,
+               event,
+               format,
+               full_text_tesseract,
+               full_text_dedoc
+        FROM doc_dataset
+        ORDER BY id DESC;
+    ''')
     documents = cursor.fetchall()
 
     cursor.close()

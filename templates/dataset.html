@@ -29,17 +29,29 @@
                 <th>Начало документа</th>
             </tr>
         </thead>
+        <!-- 
+            doc[0] = doc_dataset.id,
+            doc[1] = file_name,
+            doc[2] = event,
+            doc[3] = format,
+            doc[4] = full_text_tesseract,
+            doc[6] = full_text_dedoc 
+        -->
         <tbody>
             {% for doc in dataset %}
                 <tr>
                     <td><input type="checkbox" name="document_ids" value="{{ doc[0] }}"></td>
                     <td>{{ doc[0] }}</td>
                     <td>
-                        <a href="{{ url_for('dataset_document', doc_id=doc[0]) }}">{{ doc[2] }}</a>
+                        <a href="{{ url_for('dataset_document', doc_id=doc[0]) }}">{{ doc[1] }}</a>
                     </td>
+                    <td>{{ doc[2] }}</td>
                     <td>{{ doc[3] }}</td>
-                    <td>{{ doc[4] }}</td>
-                    <td>{{ doc[1][:26] }}</td>
+                    {% if doc[5] %}
+                        <td>{{ doc[5][:26] }}</td>
+                    {% elif doc[4] %}
+                        <td>{{ doc[4][:26] }}</td>
+                    {% endif %}
                 </tr>
             {% else %}
                 <tr>

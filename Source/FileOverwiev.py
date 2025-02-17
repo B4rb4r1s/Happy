@@ -19,8 +19,7 @@ class FileOverwiever(Handler):
             try:
                 file_format = request['path'][request['path'].rfind('.')+1:].lower()
 
-                print(f"[ {datetime.now()} ][ DEBUG ] FileOverwiev: Обработано")
-                print(f'{file_format}')
+                print(f"[ {datetime.now()} ][ DEBUG ] FileOverwiev: Обработано\n>>> {file_format}")
 
                 request['file_format'] = file_format
 

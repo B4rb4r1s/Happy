@@ -30,8 +30,8 @@ class TextExtractionHandler(Handler):
                         for page in reader:
                             all_text += page.get_text()
 
-                        if all_text == '':
-                            text_tesseract, text_dedoc = extract_text_from_img(request['path'], request['file_format'])
+                        # if all_text == '':
+                    text_tesseract, text_dedoc = extract_text_from_img(request['path'], request['file_format'])
 
 
                 elif request['file_format'] in ["jpg", "jpeg", "png"]:

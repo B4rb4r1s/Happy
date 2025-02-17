@@ -67,6 +67,7 @@ class ExtractMeta(Handler):
                 print(f"[{datetime.now()}][ DEBUG ERROR ExtrMeta ] Handling failed\n>>> {err}")
                 return super().handle(request)
         else:
+            # Пропуск по предварительной настройке
             print(f"[ DEBUG ] Task ExtractPDFMeta skipped >>> {request['task']}")
             request['task'] = 'extract_text'
             return super().handle(request)
