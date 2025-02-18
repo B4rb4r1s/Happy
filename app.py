@@ -303,7 +303,7 @@ def dataset():
 
     cursor.execute('''  
         SELECT doc_dataset.id,
-               file_name,
+               filename,
                event,
                format,
                full_text_tesseract,
@@ -324,28 +324,48 @@ def dataset_document(doc_id):
     cursor = conn.cursor()
     
     cursor.execute('''
-                    SELECT *
-                    FROM doc_dataset
-                    WHERE doc_dataset.id = %s;
-                ''', (doc_id,))
+        SELECT doc_dataset.id,
+               full_text_tesseract,
+               full_text_dedoc,
+               filename, 
+               event,
+               format,
+               big_summary,
+               summary
+        FROM doc_dataset
+        WHERE doc_dataset.id = %s;
+    ''', (doc_id,))
     docs = cursor.fetchone()
     
-    cursor.execute(''' SELECT *
-                    FROM metadata_dataset
-                    WHERE doc_id = %s;
-                ''', (doc_id,))
+    cursor.execute('''
+        SELECT *
+        FROM metadata_dataset
+        WHERE doc_id = %s;
+    ''', (doc_id,))
     metadata = cursor.fetchone()
     
-    cursor.execute(''' SELECT entity, value
-                    FROM named_entities_dataset
-                    INNER JOIN doc_dataset ON doc_dataset.id = named_entities_dataset.doc_id
-                    WHERE doc_dataset.id = %s;
-                ''', (doc_id,))
+    cursor.execute('''
+        SELECT entity, value
+        FROM named_entities_dataset
+        INNER JOIN doc_dataset ON doc_dataset.id = named_entities_dataset.doc_id
+        WHERE doc_dataset.id = %s;
+    ''', (doc_id,))
     dataset_entities = cursor.fetchall()
     
     cursor.close()
     conn.close()
-    return render_template('dataset_document.html', doc_full=docs, metadata=metadata, entities=dataset_entities)
+    return render_template('dataset_document.html', 
+                        #    doc_full=docs, 
+                           text_tesseract=docs[1],
+                           texy_dedoc=docs[2],
+                           filename=docs[3],
+                           event=docs[4],
+                           format=docs[5],
+                           big_summary=docs[6],
+                           summar=docs[7],
+
+                           metadata=metadata, 
+                           entities=dataset_entities)
 
 
 # Простая функция чат-бота (заглушка)
