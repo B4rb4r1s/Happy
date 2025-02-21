@@ -4,13 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Система Обработки Документов</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+    <style>
+        .spinner {
+          border: 16px solid #f3f3f3;
+          border-top: 16px solid #3498db;
+          border-radius: 50%;
+          width: 120px;
+          height: 120px;
+          animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
+    <div id="loading-overlay" style="display:none;
+                                     position: fixed;
+                                     top: 0; left: 0;
+                                     width: 100%; height: 100%;
+                                     background: rgba(255,255,255,0.8);
+                                     z-index: 9999;
+                                     display: none;
+                                     align-items: center;
+                                     justify-content: center;">
+        <div class="spinner"></div>
+    </div>
+
     <div class="container">
         <h1>Система Обработки Документов</h1>
         <div class="center">
-            <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
                 <label for="file">Выберите файл:</label>
                 <input type="file" name="file" id="file">
                 <button type="submit" class="upload">Обработать</button>
@@ -73,5 +99,11 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+        });
+    </script>
 </body>
 </html>

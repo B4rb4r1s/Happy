@@ -99,7 +99,7 @@
                                                     {% endfor %}
                                                 </thead>
                                                 <tbody>
-                                                    {% for cell in table[2] %}
+                                                    {% for cell in table[2][1:] %}
                                                         <tr>
                                                         {% for text in cell %}
                                                             <td>{{ text }}</td>
