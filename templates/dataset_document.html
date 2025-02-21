@@ -19,29 +19,113 @@
             <p>{{ event }}</p>
         </div>
 
+        <!-- Метаинформация PDF -->
+        <div class="meta-section">
+            <h2>Метаинформация файла:</h2>
+            <ul>
+                {% if title %}
+                <li>Название: {{ title }}</li>
+                {% endif %}
+                {% if format %}
+                <li>Формат: {{ format }}</li>
+                {% endif %}
+                {% if author %}
+                <li>Автор: {{ author }}</li>
+                {% endif %}
+                {% if creator %}
+                <li>Создатель: {{ creator }}</li>
+                {% endif %}
+                {% if subject %}
+                <li>Тематика: {{ subject }}</li>
+                {% endif %}
+                {% if keywords %}
+                <li>Ключевые слова: {{ keywords }}</li>
+                {% endif %}
+                {% if creation_date %}
+                <li>Дата создания: {{ creation_date.strftime('%d.%m.%Y %H:%M:%S') }}</li>
+                {% endif %}
+                {% if producer %}
+                <li>Программное обеспечение: {{ producer }}</li>
+                {% endif %}
+            </ul>
+        </div>
+
         <h2>Полный текст</h2>
-        <table>
-            <thead>
-                <th style="width: 50%;">
-                    <p>Tesseract</p>
-                </th>
-                <th style="width: 50%;">
-                    <p>Dedoc</p>
-                </th>
-            </thead>
-            <tbody>
-                <td>
-                    <div>
-                        <pre>{{ text_tesseract }}</pre>
-                    </div>
-                </td>
-                <td>
-                    <div>
-                        <pre>{{ texy_dedoc }}</pre>
-                    </div>
-                </td>
-            </tbody>
-        </table>
+        <!-- Извлеченный текст -->
+        <div class="text-section">
+            <h2>Извлеченный текст:</h2>
+            <!-- {% if extracted_text %}
+                <pre>{{ extracted_text }}</pre>
+            {% endif %} -->
+            {% if text_tesseract and text_dedoc %}
+                <table>
+                    <thead>
+                        <th style="width: 50%;">
+                            <p>Tesseract</p>
+                        </th>
+                        <th style="width: 50%;">
+                            <p>Dedoc</p>
+                        </th>
+                    </thead>
+                    <tbody>
+                        <td>
+                            <div>
+                                <pre>{{ text_tesseract }}</pre>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <pre>{{ text_dedoc }}</pre>
+                            </div>
+                            {% if tables %}
+                                {% for table in tables %}
+                                    <div style="font-size: 80%;">
+                                        <h3>Таблицы документа:</h3>
+                                            <table style="width: 100%;">
+                                                <thead>
+                                                    {% for text in table[1] %}
+                                                        <th>{{ text }}</th>
+                                                    {% endfor %}
+                                                </thead>
+                                                <tbody>
+                                                    {% for cell in table[2] %}
+                                                        <tr>
+                                                        {% for text in cell %}
+                                                            <td>{{ text }}</td>
+                                                        {% endfor %}
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+                    </tbody>
+                </table>
+            {% elif text_dedoc %}
+                <p>Dedoc</p>
+                <pre>{{ text_dedoc }}</pre>
+            {% elif text_tesseract %}
+                <p>Tesseract</p>
+                <pre>{{ text_tesseract }}</pre>
+            {% endif %}
+        </div>
+
+        <!-- Краткое содержание -->
+        {% if big_summary %}
+        <div class="summary-section">
+            <h2>Содержание</h2>
+            <pre>{{ big_summary }}</pre>
+        </div>
+        {% endif %}
+
+        {% if summary %}
+        <div class="summary-section">
+            <h2>Краткое содержание:</h2>
+            <pre>{{ summary }}</pre>
+        </div>
+        {% endif %}
 
         <!-- Именованные сущности -->
         <div class="">
@@ -71,6 +155,12 @@
                 {% endif %}
             </table>
         </div>
+
+        <!-- Bottom navigation -->
+        <nav class="nav-links" style="margin-top: 40px;">
+            <a href="{{ url_for('index') }}">Вернуться на главную</a>
+        </nav>
+
     </div>
 </body>
 </html>

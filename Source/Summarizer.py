@@ -55,6 +55,9 @@ class SummaryGenerationHandler(Handler):
             try:
                 if request['text'] == '':
                     text = request['text_dedoc']
+                    if request['tables']:
+                        tables_texts = '\n\n'.join(['\n'.join([' '.join(row) for row in table]) for table in request['tables']])
+                        text += tables_texts
                 else:
                     text = request['text']
                 if not text:
@@ -112,7 +115,6 @@ class SummaryGenerationHandler(Handler):
                 return super().handle(request)
         else:
             print(f"[ DEBUG ] Task SummaryGenerationHandler skipped >>> {request['task']}")
-            request['task'] = 'extract_entities'
             return super().handle(request)
 
         

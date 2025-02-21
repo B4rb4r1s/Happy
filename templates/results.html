@@ -68,9 +68,7 @@
         <!-- Извлеченный текст -->
         <div class="text-section">
             <h2>Извлеченный текст:</h2>
-            {% if extracted_text %}
-                <pre>{{ extracted_text }}</pre>
-            {% elif text_tesseract and text_dedoc %}
+            {% if text_tesseract and text_dedoc %}
                 <table>
                     <thead>
                         <th style="width: 50%;">
@@ -90,17 +88,45 @@
                             <div>
                                 <pre>{{ text_dedoc }}</pre>
                             </div>
+                            {% if tables %}
+                                {% for table in tables %}
+                                    <div style="font-size: 80%;">
+                                        <h3>Таблицы документа:</h3>
+                                            <table style="width: 100%;">
+                                                <thead>
+                                                    {% for text in table[2][0] %}
+                                                        <th>{{ text }}</th>
+                                                    {% endfor %}
+                                                </thead>
+                                                <tbody>
+                                                    {% for cell in table[2] %}
+                                                        <tr>
+                                                        {% for text in cell %}
+                                                            <td>{{ text }}</td>
+                                                        {% endfor %}
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
                         </td>
                     </tbody>
                 </table>
             {% elif text_dedoc %}
+                <p>Dedoc</p>
                 <pre>{{ text_dedoc }}</pre>
+            {% elif text_tesseract %}
+                <p>Dedoc</p>
+                <pre>{{ text_tesseract }}</pre>
+            {% elif content %}
+                <p>Текстовый слой</p>
+                <pre>{{ content }}</pre>
+            {% else %}
+                <p>Текст не найден</p>
             {% endif %}
         </div>
-        <!-- <div class="text-section">
-            <h2>Извлеченный текст:</h2>
-            <pre>{{ extracted_text }}</pre>
-        </div> -->
 
         <!-- Краткое содержание -->
         {% if big_summary %}

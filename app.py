@@ -167,6 +167,16 @@ def upload_file():
                         tup[1]
                         )
                 )
+
+        # Запись в таблицу таблиц, если есть
+        if req['tables']:
+            for table in req['tables']:
+                cursor.execute("""
+                    INSERT INTO tables (doc_id, rows)
+                    VALUES (%s, %s)
+                """, (doc_id, table)
+                )
+
         # Подтверждение изменений
         conn.commit()
 
@@ -261,35 +271,45 @@ def results(doc_id):
         WHERE documents.id = %s;
         ''', (doc_id,))
     doc_entities = cursor.fetchall()
+
+    cursor.execute(''' 
+        SELECT doc_id, header, rows
+        FROM tables
+        WHERE doc_id = %s;
+    ''', (doc_id,))
+    tables = cursor.fetchall()
     
     cursor.close()
     conn.close()
-    print(f'[ DEBUG APP ] {document}')
+    # print(f'[ DEBUG APP ] {document}')
     
     if document:
         return render_template('results.html', 
-                               filename=document[1],
-                               extracted_text=document[2],
-                               text_tesseract=document[3],
-                               text_dedoc=document[4],
-                               big_summary=document[5],
-                               summary=document[6],
-                               upload_time=document[7],
-                               doc_format=document[8],
+                               filename =       document[1],
+                               extracted_text = document[2],
+                               text_tesseract = document[3],
+                               text_dedoc =     document[4],
+                               big_summary =    document[5],
+                               summary =        document[6],
+                               upload_time =    document[7],
+                               doc_format =     document[8],
 
                                # Метаинформация
-                               doc_id=matadata[1],
-                               format=matadata[2],
-                               author=matadata[3],
-                               creator=matadata[4],
-                               title=matadata[5],
-                               subject=matadata[6],
-                               keywords=matadata[7],
-                               creation_date=matadata[8],
-                               produce=matadata[9],
+                               doc_id =         matadata[1],
+                               format =         matadata[2],
+                               author =         matadata[3],
+                               creator =        matadata[4],
+                               title =          matadata[5],
+                               subject =        matadata[6],
+                               keywords =       matadata[7],
+                               creation_date =  matadata[8],
+                               produce =        matadata[9],
 
                                # Сущности
-                               entities = doc_entities
+                               entities = doc_entities,
+
+                               # Таблицы
+                               tables = tables
                                )
     else:
         flash('Документ не найден')
@@ -338,7 +358,16 @@ def dataset_document(doc_id):
     docs = cursor.fetchone()
     
     cursor.execute('''
-        SELECT *
+        SELECT metadata_dataset.id,
+               doc_id,
+               format, 
+               author, 
+               creator, 
+               title, 
+               subject, 
+               keywords, 
+               creation_date, 
+               producer
         FROM metadata_dataset
         WHERE doc_id = %s;
     ''', (doc_id,))
@@ -352,20 +381,41 @@ def dataset_document(doc_id):
     ''', (doc_id,))
     dataset_entities = cursor.fetchall()
     
+    cursor.execute(''' 
+        SELECT doc_id, header, rows
+        FROM tables_dataset
+        WHERE doc_id = %s;
+    ''', (doc_id,))
+    tables = cursor.fetchall()
+
     cursor.close()
     conn.close()
     return render_template('dataset_document.html', 
                         #    doc_full=docs, 
-                           text_tesseract=docs[1],
-                           texy_dedoc=docs[2],
-                           filename=docs[3],
-                           event=docs[4],
-                           format=docs[5],
-                           big_summary=docs[6],
-                           summar=docs[7],
+                           id_doc =         docs[0],
+                           text_tesseract = docs[1],
+                           texy_dedoc =     docs[2],
+                           filename =       docs[3],
+                           event =          docs[4],
+                           doc_format =     docs[5],
+                           big_summary =    docs[6],
+                           summar =         docs[7],
 
-                           metadata=metadata, 
-                           entities=dataset_entities)
+                        #    metadata=metadata, 
+                           metadata_dataset_id =    metadata[0],
+                           doc_id =                 metadata[1],
+                           format =                 metadata[2],
+                           author =                 metadata[3],
+                           creator =                metadata[4],
+                           title =                  metadata[5],
+                           subject =                metadata[6],
+                           keywords =               metadata[7],
+                           creation_date =          metadata[8],
+                           producer =               metadata[9],
+
+                           entities=dataset_entities,
+                           
+                           tables = tables)
 
 
 # Простая функция чат-бота (заглушка)

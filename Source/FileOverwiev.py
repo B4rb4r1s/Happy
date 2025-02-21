@@ -29,7 +29,6 @@ class FileOverwiever(Handler):
                 print(f"[ {datetime.now()} ][ DEBUG ERROR FileOW ] Handling failed\n>>> {err}")
         else:
             print(f"[ DEBUG ] Task FileOverwiev skipped >>> {request['task']}")
-            request['task'] = 'extract_meta'
             return super().handle(request)
 
     

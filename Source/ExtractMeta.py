@@ -69,7 +69,6 @@ class ExtractMeta(Handler):
         else:
             # Пропуск по предварительной настройке
             print(f"[ DEBUG ] Task ExtractPDFMeta skipped >>> {request['task']}")
-            request['task'] = 'extract_text'
             return super().handle(request)
         
 
