@@ -4,7 +4,7 @@ import datetime
 import torch
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import MBartTokenizer, MBartForConditionalGeneration
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM
 
 from Source.Handler import Handler
 
@@ -16,23 +16,26 @@ sys.stdout.flush()
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 print(f'[{datetime.datetime.now()}][ DEBUG ] Computing using device - {device}')
 
-# T5
-# MODEL_NAME = 'cointegrated/rut5-base-absum'
-# MODEL_PATH = 'Source/Models/T5'
-# tokenizer = T5Tokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
-# model = T5ForConditionalGeneration.from_pretrained(MODEL_PATH)
+
 
 # BART
-MODEL_NAME = 'IlyaGusev/mbart_ru_sum_gazeta'
-MODEL_PATH = 'Models/MBART'
-tokenizer = MBartTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
-model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
+# MODEL_NAME = 'IlyaGusev/mbart_ru_sum_gazeta'
+# MODEL_PATH = 'Models/IlyaGusev--mbart_ru_sum_gazeta'
+# tokenizer = MBartTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
+# model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
 
-# GPT
-# MODEL_NAME = 'IlyaGusev/rugpt3medium_sum_gazeta'
-# MODEL_PATH = 'Source/Models/GPT'
+# T5
+MODEL_NAME = 'utrobinmv/t5_summary_en_ru_zh_base_2048'
+MODEL_PATH = 'Models/utrobinmv--t5_summary_en_ru_zh_base_2048'
+tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
+model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH).to(device)
+
+# mT5
+# MODEL_NAME = 'csebuetnlp/mT5_multilingual_XLSum'
+# MODEL_PATH = 'Models/csebuetnlp--mT5_multilingual_XLSum'
 # tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
-# model = AutoModelForCausalLM.from_pretrained(MODEL_PATH)
+# model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH).to(device)
+
 
 model.eval()
 
@@ -68,7 +71,7 @@ class SummaryGenerationHandler(Handler):
                 print(f"[{datetime.datetime.now()}][ DEBUG ] Text length: {len(text)} characters")
                 
                 # Define chunk size and calculate steps
-                CHUNK_SIZE = 3 * 1024  # 3KB chunks
+                CHUNK_SIZE = 100 * 1024  # 3KB chunks
                 num_steps = (len(text) // CHUNK_SIZE) + 1 if len(text) > CHUNK_SIZE else 0
                 print(f'[ DEBUG ] Needed steps: {num_steps}')
                 
@@ -82,7 +85,7 @@ class SummaryGenerationHandler(Handler):
                     print(f'[ DEBUG ] start: {start}, finish: {end}')
 
                     # Generate summary for each chunk
-                    summary = self._generate_summary(chunk, None, None, max_length, num_beams, do_sample,
+                    summary = self._generate_summary(chunk, n_words, compression, max_length, num_beams, do_sample,
                                                     repetition_penalty, no_repeat_ngram_size)
                     summary_parts.append(summary)
 
@@ -90,7 +93,7 @@ class SummaryGenerationHandler(Handler):
                     big_summary = '\n'.join(summary_parts)
                     request['big_summary'] = big_summary
                     try:
-                        final_summary = self._generate_summary(big_summary, None, None, max_length, num_beams,
+                        final_summary = self._generate_summary(big_summary, n_words, compression, max_length, num_beams,
                                                             do_sample, repetition_penalty,
                                                             no_repeat_ngram_size)
                         request['summary'] = final_summary
@@ -99,7 +102,7 @@ class SummaryGenerationHandler(Handler):
                         request['summary'] = ''
                 else:
                     # Handle small documents directly
-                    request['summary'] = self._generate_summary(text, None, None, max_length, num_beams,
+                    request['summary'] = self._generate_summary(text, n_words, compression, max_length, num_beams,
                                                             do_sample, repetition_penalty,
                                                             no_repeat_ngram_size)
                     request['big_summary'] = ''
@@ -132,18 +135,24 @@ class SummaryGenerationHandler(Handler):
             #               и оригинального текста.
             text = '[{0:.1g}] '.format(compression) + text
 
-        inputs = tokenizer(text, return_tensors='pt', padding=True).to(device)
+        prefix = 'summary big: '
+        text = prefix + text
 
-        with torch.inference_mode():
-            output = model.generate(
-                **inputs,
-                max_length=max_length,
-                num_beams=num_beams,
-                do_sample=do_sample,
-                repetition_penalty=repetition_penalty,
-                no_repeat_ngram_size=no_repeat_ngram_size,
-                **kwargs
-            )
+        inputs = tokenizer(text, 
+                           return_tensors='pt', 
+                           padding=True
+                           ).to(device)
+
+        # with torch.inference_mode():
+        output = model.generate(
+            **inputs,
+            max_length=max_length,
+            num_beams=num_beams,
+            do_sample=do_sample,
+            repetition_penalty=repetition_penalty,
+            no_repeat_ngram_size=no_repeat_ngram_size,
+            **kwargs
+        )
 
         return tokenizer.decode(output[0], skip_special_tokens=True)
               

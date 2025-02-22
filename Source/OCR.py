@@ -87,7 +87,7 @@ def extract_text_from_img(path, file_format):
     tables = None
     try:
         if file_format in ['pdf', 'jpg', 'jpeg', 'png']:
-            text_tesseract = tesseract_scan(path, file_format)
+            # text_tesseract = tesseract_scan(path, file_format)
             text_dedoc, tables = dedoc_scan(path)
         elif file_format in ["doc", "docx"]:
             text_tesseract = None

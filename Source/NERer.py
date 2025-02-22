@@ -39,7 +39,6 @@ class NamedEntityRecognitionHandler(Handler):
             entities = [(ent.text, ent.label_) for ent in doc.ents]
             
             for entity in entities:
-                print(f'[ DEBUG ] {entity}')
                 if entity not in unique_entities:
                     unique_entities.append(entity)
             

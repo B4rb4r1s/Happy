@@ -116,7 +116,33 @@
                 </table>
             {% elif text_dedoc %}
                 <p>Dedoc</p>
-                <pre>{{ text_dedoc }}</pre>
+                <pre>
+                    {{ text_dedoc }}
+                    
+                    {% if tables %}
+                        {% for table in tables %}
+                            <div style="font-size: 80%;">
+                                <h3>Таблицы документа:</h3>
+                                    <table style="width: 100%;">
+                                        <thead>
+                                            {% for text in table[2][0] %}
+                                                <th>{{ text }}</th>
+                                            {% endfor %}
+                                        </thead>
+                                        <tbody>
+                                            {% for cell in table[2][1:] %}
+                                                <tr>
+                                                {% for text in cell %}
+                                                    <td>{{ text }}</td>
+                                                {% endfor %}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </pre>
             {% elif text_tesseract %}
                 <p>Dedoc</p>
                 <pre>{{ text_tesseract }}</pre>

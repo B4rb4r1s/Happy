@@ -23,5 +23,6 @@ pytesseract==0.3.13
 python_docx==1.1.2
 pytest==8.3.3
 psycopg2==2.9.9
+protobuf
 
 spacy[cuda11x]

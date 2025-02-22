@@ -122,6 +122,7 @@ def upload_file():
         if req['file_format'] == 'pdf' and 'meta' in req:
             metadata = req['meta']
             cursor.execute("""
+                SET datestyle = dmy;
                 INSERT INTO metadata (doc_id, 
                                       format, 
                                       author, 
@@ -184,6 +185,9 @@ def upload_file():
     except Exception as err:
         print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with uploading document to Database\n>>> {err}', flush=True)
         print(f'>>> {traceback.format_exc()}', flush=True)
+        cursor.close()
+        conn.close()
+        return redirect(url_for('index'))
 
     # Завершение подключения к базе данных
     cursor.close()
