@@ -120,7 +120,7 @@ def upload_file():
         
         # Запись в табоицу METADATA
         if req['file_format'] == 'pdf' and 'meta' in req:
-            metadata = req['meta']
+            creation_date=None if not req['meta'].get('creation_date') or req['meta'].get('creation_date')=='Unknown' else req['meta'].get('creation_date')
             cursor.execute("""
                 SET datestyle = dmy;
                 INSERT INTO metadata (doc_id, 
@@ -135,14 +135,14 @@ def upload_file():
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", 
                     (
                     doc_id, 
-                    metadata.get('format'), 
-                    metadata.get('author'),
-                    metadata.get('creator'), 
-                    metadata.get('title'),
-                    metadata.get('subject'), 
-                    metadata.get('keywords'),
-                    metadata.get('creation_date') or None, 
-                    metadata.get('producer')
+                    req['meta'].get('format'), 
+                    req['meta'].get('author'),
+                    req['meta'].get('creator'), 
+                    req['meta'].get('title'),
+                    req['meta'].get('subject'), 
+                    req['meta'].get('keywords'),
+                    creation_date, 
+                    req['meta'].get('producer')
                     )
             )
         # if req['file_format'] in ['jpg', 'jpeg', 'png']:
@@ -283,6 +283,8 @@ def results(doc_id):
     ''', (doc_id,))
     tables = cursor.fetchall()
     
+    prev_id, next_id = get_adjacent_ids(doc_id, 'documents')
+    
     cursor.close()
     conn.close()
     # print(f'[ DEBUG APP ] {document}')
@@ -313,8 +315,10 @@ def results(doc_id):
                                entities = doc_entities,
 
                                # Таблицы
-                               tables = tables
-                               )
+                               tables = tables,
+
+                               prev_id = prev_id,
+                               next_id = next_id)
     else:
         flash('Документ не найден')
         return redirect(url_for('index'))
@@ -339,7 +343,7 @@ def dataset():
 
     cursor.close()
     conn.close()
-    return render_template('dataset.html', dataset=documents)
+    return render_template('dataset.html', dataset=documents, count = len(documents))
 
 
 @app.route('/dataset_document/<int:doc_id>')
@@ -392,6 +396,8 @@ def dataset_document(doc_id):
     ''', (doc_id,))
     tables = cursor.fetchall()
 
+    prev_id, next_id = get_adjacent_ids(doc_id, 'doc_dataset')
+
     cursor.close()
     conn.close()
     return render_template('dataset_document.html', 
@@ -419,7 +425,84 @@ def dataset_document(doc_id):
 
                            entities=dataset_entities,
                            
-                           tables = tables)
+                           tables = tables,
+                           
+                           prev_id=prev_id, 
+                           next_id=next_id)
+
+
+@app.route('/elib_dataset/')
+def elib_dataset():
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('''  
+        SELECT elibrary_dataset.id,
+               filename,
+               text_dedoc
+        FROM elibrary_dataset
+        ORDER BY id DESC;
+    ''')
+    documents = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return render_template('elib_dataset.html', dataset=documents,
+                                                count = len(documents))
+
+
+@app.route('/elib_dataset_document/<int:doc_id>')
+def elib_dataset_document(doc_id):
+    conn = db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT elibrary_dataset.id,
+               filename,
+               text_dedoc
+        FROM elibrary_dataset
+        WHERE elibrary_dataset.id = %s;
+    ''', (doc_id,))
+    docs = cursor.fetchone()
+    
+    cursor.execute(''' 
+        SELECT doc_id, header, rows
+        FROM elibrary_dataset_tables
+        WHERE doc_id = %s;
+    ''', (doc_id,))
+    tables = cursor.fetchall()
+    
+    cursor.execute(''' 
+        SELECT lingvo_summary,
+               mt5_summary,
+               mbart_summary,
+               rut5_summary,
+               t5_summary
+        FROM elibrary_dataset_summaries
+        WHERE doc_id = %s;
+    ''', (doc_id,))
+    summaries = cursor.fetchone()
+
+    prev_id, next_id = get_adjacent_ids(doc_id, 'elibrary_dataset')
+
+    cursor.close()
+    conn.close()
+    return render_template('elib_dataset_document.html', 
+                           id_doc =         docs[0],
+                           filename =       docs[1],
+                           text_dedoc =     docs[2],
+                           
+                           tables = tables,
+                           
+                           lingvo_summary = summaries[0],
+                           mbart_summary = summaries[1],
+                           mt5_summary = summaries[2],
+                           rut5_summary = summaries[3],
+                           t5_summary = summaries[4],
+                           
+                           prev_id=prev_id, 
+                           next_id=next_id)
+
 
 
 # Простая функция чат-бота (заглушка)
@@ -444,6 +527,37 @@ def chat():
         return jsonify({'error': 'Сообщение не должно быть пустым'}), 400
     
     return render_template('chat-assistant.html')
+
+
+
+def get_adjacent_ids(current_id, table):
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    # Получение предыдущего ID
+    cursor.execute('''
+        SELECT id
+        FROM '''+ table +'''
+        WHERE id < %s
+        ORDER BY id DESC
+        LIMIT 1;
+    ''', (current_id,))
+    prev_row = cursor.fetchone()
+    prev_id = prev_row[0] if prev_row else None
+
+    # Получение следующего ID
+    cursor.execute('''
+        SELECT id 
+        FROM '''+ table +'''
+        WHERE id > %s
+        ORDER BY id ASC
+        LIMIT 1;
+    ''', (current_id,))
+    next_row = cursor.fetchone()
+    next_id = next_row[0] if next_row else None
+
+    conn.close()
+    return prev_id, next_id
 
 
 @app.route('/error')

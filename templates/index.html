@@ -63,6 +63,8 @@
         <h2 style="text-align: center;">Обработанные документы</h2>
         <div class=''>
             <a href="{{ url_for('dataset') }}">База данных документов</a>
+            <br>
+            <a href="{{ url_for('elib_dataset') }}">База данных eLibrary</a>
             <form method="POST" action="{{ url_for('delete_documents') }}">
                 <button type="submit" style="margin: 5px;">Удалить выбранные документы</button>
                 <table>

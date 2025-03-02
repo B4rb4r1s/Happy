@@ -19,6 +19,14 @@
         <nav class="nav-links">
             <a href="{{ url_for('index') }}">Главная</a>
         </nav>
+        </div class = "nav-button">
+            {% if prev_id %}
+                <a href="{{ url_for('results', doc_id=prev_id) }}">Предыдущий документ</a>
+            {% endif %}
+            {% if next_id %}
+                <a href="{{ url_for('results', doc_id=next_id) }}">Следующий документ</a>
+            {% endif %}
+        </div>
 
         <!-- Предпросмотр файла -->
         <div class="file-preview" style="text-align: left; margin: 20px 0; width: 30%; min-width: 361px;">

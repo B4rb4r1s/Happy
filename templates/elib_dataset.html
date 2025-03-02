@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>База данных документов</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/> 
+</head>
+<body>
+    <h1>База данных документов</h1>
+    <div>
+        <a href="{{ url_for('index') }}">Главная</a>
+    </div>
+    <p>Всего документов в базе данных: {{ count }}</p>
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>ID</th>
+                    <th>Название файла</th>
+                    <th>Начало документа</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in dataset %}
+                    <tr>
+                        <td><input type="checkbox" name="document_ids" value="{{ doc[0] }}"></td>
+                        <td>{{ doc[0] }}</td>
+                        <td>
+                            <a href="{{ url_for('elib_dataset_document', doc_id=doc[0]) }}">{{ doc[1] }}</a>
+                        </td>
+                        <td>{{ doc[2][:26] }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="center">База данных пуста</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

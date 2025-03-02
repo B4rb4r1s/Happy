@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Документ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/> 
+</head>
+<body>
+    <div class="container" style="max-width: 100%; width: 90%;">
+        <h1>{{ filename }}</h1>
+        
+        <div>
+            <a href="{{ url_for('elib_dataset') }}">Назад</a>
+        </div>
+
+        <div class="navigation-buttons">
+            {% if prev_id %}
+                <a href="{{ url_for('elib_dataset_document', doc_id=prev_id) }}" class="nav-button">Предыдущий документ</a>
+            {% endif %}
+            {% if next_id %}
+                <a href="{{ url_for('elib_dataset_document', doc_id=next_id) }}" class="nav-button">Следующий документ</a>
+            {% endif %}
+        </div>
+
+        <h2>Полный текст</h2>
+        <!-- Извлеченный текст -->
+        <div class="text-section">
+            <h2>Извлеченный текст:</h2>
+            <table>
+                <thead>
+                    <th style="width: 50%;">
+                        <p>Dedoc</p>
+                    </th>
+                    <th style="width: 50%;">
+                        <p>Summaries</p>
+                    </th>
+                </thead>
+                <tbody>
+                    <td>
+                        <div>
+                            <pre class="elib_text">
+                                {{ text_dedoc }}
+                            </pre>
+                        </div>
+                        {% if tables %}
+                            <h3>Таблицы документа:</h3>
+                            {% for table in tables %}
+                                <div style="font-size: 80%;">
+                                    <table style="width: 100%;">
+                                        <thead>
+                                            {% for text in table[2][0] %}
+                                                <th>{{ text }}</th>
+                                            {% endfor %}
+                                        </thead>
+                                        <tbody>
+                                            {% for cell in table[2][1:] %}
+                                                <tr>
+                                                {% for text in cell %}
+                                                    <td>{{ text }}</td>
+                                                {% endfor %}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                    </td>
+                    <td style="vertical-align:top;">
+                        <!-- MODELS = ['./Happy/Models/csebuetnlp--mT5_multilingual_XLSum',
+                                       './Happy/Models/IlyaGusev--mbart_ru_sum_gazeta',
+                                       './Happy/Models/IlyaGusev--rut5_base_sum_gazeta',
+                                       './Happy/Models/utrobinmv--t5_summary_en_ru_zh_base_2048'] -->
+                        <div>
+                            {% if lingvo_summary %}
+                                <h2>lingvo_summary</h2>
+                                <pre class="elib_summaries">{{ lingvo_summary }}</pre>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if mt5_summary %}
+                                <h2>mT5_multilingual_XLSum</h2>
+                                <pre class="elib_summaries">{{ mt5_summary }}</pre>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if mbart_summary %}
+                                <h2>mbart_ru_sum_gazeta</h2>
+                                <pre class="elib_summaries">{{ mbart_summary }}</pre>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if rut5_summary %}
+                                <h2>rut5_base_sum_gazeta</h2>
+                                <pre class="elib_summaries">{{ rut5_summary }}</pre>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if t5_summary %}
+                                <h2>t5_summary_en_ru_zh_base_2048</h2>
+                                <pre class="elib_summaries">{{ t5_summary }}</pre>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bottom navigation -->
+        <nav class="nav-links" style="margin-top: 40px;">
+            <a href="{{ url_for('index') }}">Вернуться на главную</a>
+        </nav>
+
+    </div>
+</body>
+</html>
