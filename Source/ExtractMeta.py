@@ -7,6 +7,21 @@ import sys
 sys.stdout.flush()
 
 
+# Структура апроса:
+# request{
+#     task:           Текущая задача в цепочке
+#     dataset_handle: Флаг, ***
+#     file_format:    Формат документа (устанавливается в FileOverwiev.py)
+#     meta:           Словарь метаинформации документа (устанавливается в ExtractMeta.py)
+# 
+#     text:           Текстовый слой PDF-файла (устанавливается в DocReader.py)
+#     text_tesseract: Текст извлеченный с помощью Tesseract (устанавливается в DocReader.py)
+#     text_dedoc:     Текст извлеченный с помощью DeDoc (устанавливается в DocReader.py)
+#     tables:         Таблицы выделенные DeDoc (устанавливается в DocReader.py)
+#     summary:        Краткое сгенерированное содержание (устанавливается в Summarizer.py)
+#     big_summary:    Более полное сгенерированное содержание (устанавливается в Summarizer.py)
+#     entities:       Словарь сущность - класс сущности (устанавливается в NERer.py)
+# }
 class ExtractMeta(Handler):
     def handle(self, request):
         '''

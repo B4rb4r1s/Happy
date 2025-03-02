@@ -1,7 +1,7 @@
 
 from Source.FileOverwiev import FileOverwiever
 from Source.ExtractMeta import ExtractMeta
-from Source.PDFReader import TextExtractionHandler
+from Source.DocReader import TextExtractionHandler
 from Source.Summarizer import SummaryGenerationHandler
 from Source.NERer import NamedEntityRecognitionHandler
 

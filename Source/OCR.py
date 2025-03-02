@@ -23,6 +23,7 @@ dedoc_manager = DedocManager(
     }
 )
 
+# Сканирование TESSERACT
 def tesseract_scan(path, file_format):
     if file_format == 'pdf':
         try:
@@ -42,7 +43,7 @@ def tesseract_scan(path, file_format):
 
     return text_tesseract
 
-
+# Структура выделенных таблиц
 # [
 #   [
 #     ['header 1', 'header 2', 'header 3', 'header 4', 'header 5'], 

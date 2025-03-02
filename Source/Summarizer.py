@@ -11,6 +11,9 @@ from Source.Handler import Handler
 import sys
 sys.stdout.flush()
 
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 
 # Установка параметров работы модели
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -36,10 +39,24 @@ model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH).to(device)
 # tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
 # model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH).to(device)
 
-
 model.eval()
 
 
+# Структура апроса:
+# request{
+#     task:           Текущая задача в цепочке
+#     dataset_handle: Флаг, ***
+#     file_format:    Формат документа (устанавливается в FileOverwiev.py)
+#     meta:           Словарь метаинформации документа (устанавливается в ExtractMeta.py)
+#     text:           Текстовый слой PDF-файла (устанавливается в DocReader.py)
+#     text_tesseract: Текст извлеченный с помощью Tesseract (устанавливается в DocReader.py)
+#     text_dedoc:     Текст извлеченный с помощью DeDoc (устанавливается в DocReader.py)
+#     tables:         Таблицы выделенные DeDoc (устанавливается в DocReader.py)
+#     summary:        Краткое сгенерированное содержание (устанавливается в Summarizer.py)
+#     big_summary:    Более полное сгенерированное содержание (устанавливается в Summarizer.py)
+# 
+#     entities:       Словарь сущность - класс сущности (устанавливается в NERer.py)
+# }
 class SummaryGenerationHandler(Handler):
     def handle(self, request, 
                n_words=None, 
@@ -50,10 +67,8 @@ class SummaryGenerationHandler(Handler):
                repetition_penalty=10.0, 
                no_repeat_ngram_size=4, 
                **kwargs):
-        '''
-        Текущий запрос:
-            request = ['text']
-        '''
+        
+
         if 'text' in request and request['task'] == 'generate_summary':
             try:
                 if request['text'] == '':
