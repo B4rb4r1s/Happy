@@ -10,13 +10,15 @@ services:
       - postgre
     volumes:
       - .:/app
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: ['python', 'app.py']
+
 
   postgre:
     image: happy_db
@@ -32,34 +34,32 @@ services:
     volumes:
       - ./happy_pgdata:/var/lib/postgresql/data
 
-  task:
-    image: happy
-    container_name: task_container
+
+  loader:
+    image: happy:dedoc
+    container_name: loader_container
     depends_on:
       - postgre
     ports:
       - 8888:8888
+    expose:
+      - 8888
     volumes:
-      - .:/app
-    stdin_open:
-      # docker run -i
-      true
-    tty:
-      # docker run -t
-      true
-    command: [python, ./Utility/load_dataset.py]
+      - ..:/app
+    command: tail -F /dev/null
+    # command: ['python', './NER_System/run.py']
+    # command: ["python", './Happy/Utility/load_dataset.py']
 
-    # environment:
-    #   NVIDIA_VISIBLE_DEVICES: all
-    # runtime: nvidia
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-      
+
+  cleaner:
+    image: cleaner
+    container_name: spell_checker_cleaner
+    depends_on:
+      - postgre
+    volumes:
+      - ..:/app
+    command: tail -F /dev/null
+
 
 volumes:
   pgdata:

@@ -1,6 +1,7 @@
 from flask import Flask, request, session
 from flask import redirect, url_for, flash, render_template, jsonify
 import os
+import re
 import time
 import json
 import traceback
@@ -8,11 +9,12 @@ import traceback
 import datetime
 import psycopg2
 
-from run import Chain
+from Source import Chain
 
 import sys
 sys.stdout.flush()
 
+WHITESPACE_HANDLER = lambda k: re.sub(r' {2,}', ' ', re.sub('\n+', '\n\t', re.sub(r'(?<!\n)\n(?!\n)', ' ', re.sub('-\n', '', k.strip()))))
 
 # Создаем экземпляр приложения Flask
 app = Flask(__name__)
@@ -294,7 +296,7 @@ def results(doc_id):
                                filename =       document[1],
                                extracted_text = document[2],
                                text_tesseract = document[3],
-                               text_dedoc =     document[4],
+                               text_dedoc =     WHITESPACE_HANDLER(document[4]),
                                big_summary =    document[5],
                                summary =        document[6],
                                upload_time =    document[7],
@@ -404,7 +406,7 @@ def dataset_document(doc_id):
                         #    doc_full=docs, 
                            id_doc =         docs[0],
                            text_tesseract = docs[1],
-                           texy_dedoc =     docs[2],
+                           texy_dedoc =     WHITESPACE_HANDLER(docs[2]),
                            filename =       docs[3],
                            event =          docs[4],
                            doc_format =     docs[5],
@@ -482,6 +484,8 @@ def elib_dataset_document(doc_id):
         WHERE doc_id = %s;
     ''', (doc_id,))
     summaries = cursor.fetchone()
+    if not summaries:
+        summaries = [None]*5
 
     prev_id, next_id = get_adjacent_ids(doc_id, 'elibrary_dataset')
 
@@ -490,13 +494,13 @@ def elib_dataset_document(doc_id):
     return render_template('elib_dataset_document.html', 
                            id_doc =         docs[0],
                            filename =       docs[1],
-                           text_dedoc =     docs[2],
+                           text_dedoc =     WHITESPACE_HANDLER(docs[2]),
                            
                            tables = tables,
                            
                            lingvo_summary = summaries[0],
-                           mbart_summary = summaries[1],
-                           mt5_summary = summaries[2],
+                           mt5_summary = summaries[1],
+                           mbart_summary = summaries[2],
                            rut5_summary = summaries[3],
                            t5_summary = summaries[4],
                            

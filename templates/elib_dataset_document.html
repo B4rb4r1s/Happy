@@ -22,26 +22,22 @@
                 <a href="{{ url_for('elib_dataset_document', doc_id=next_id) }}" class="nav-button">Следующий документ</a>
             {% endif %}
         </div>
-
-        <h2>Полный текст</h2>
         <!-- Извлеченный текст -->
         <div class="text-section">
             <h2>Извлеченный текст:</h2>
             <table>
                 <thead>
-                    <th style="width: 50%;">
+                    <th style="width: 40%;">
                         <p>Dedoc</p>
                     </th>
-                    <th style="width: 50%;">
+                    <th style="width: 60%;">
                         <p>Summaries</p>
                     </th>
                 </thead>
                 <tbody>
-                    <td>
-                        <div>
-                            <pre class="elib_text">
-                                {{ text_dedoc }}
-                            </pre>
+                    <td class="left-cell">
+                        <div class="scrollable-content" style="overflow-y: auto;">
+                            <pre class="elib_text">{{ text_dedoc }}</pre>
                         </div>
                         {% if tables %}
                             <h3>Таблицы документа:</h3>
@@ -68,7 +64,7 @@
                         {% endif %}
 
                     </td>
-                    <td style="vertical-align:top;">
+                    <td class="right-cell" style="vertical-align:top;">
                         <!-- MODELS = ['./Happy/Models/csebuetnlp--mT5_multilingual_XLSum',
                                        './Happy/Models/IlyaGusev--mbart_ru_sum_gazeta',
                                        './Happy/Models/IlyaGusev--rut5_base_sum_gazeta',
@@ -114,5 +110,18 @@
         </nav>
 
     </div>
+
+    <!-- <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          // Находим элементы правой и левой ячеек
+          const rightCell = document.querySelector('.right-cell');
+          const leftContent = document.querySelector('.left-cell .scrollable-content');
+          
+          if (rightCell && leftContent) {
+            // Устанавливаем максимальную высоту левого блока равной высоте правой ячейки
+            leftContent.style.maxHeight = rightCell.offsetHeight + 'px';
+          }
+        });
+    </script> -->
 </body>
 </html>

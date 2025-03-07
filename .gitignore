@@ -3,22 +3,25 @@
 __pycache__/
 .ipynb_checkpoints/
 .app.py.swp
-tesser-test.ipynb
-handles_dataset.py
 
-Models/
+Data/
+Verifying/
+pgdata/
+happy_pgdata/
+
+static/Uploads/
+
+Models/SpellCheck/*
+Models/Summary/*
 Models_all/
+
 Source/__pycache__/
 Source/.ipynb_checkpoints/
 Source/Classification/
-Source/NER_System/
 Source/support.ipynb
 
-pgdata/
-happy_pgdata/
-Utility/
-Verifying/
-Data/
-uploads/
+Utility/__pycache__/
+Utility/.ipynb_checkpoints/
+Utility/NER_System/
 
-happy.rar
+*.rar

@@ -1,9 +1,9 @@
 
-from Source.FileOverwiev import FileOverwiever
-from Source.ExtractMeta import ExtractMeta
-from Source.DocReader import TextExtractionHandler
-from Source.Summarizer import SummaryGenerationHandler
-from Source.NERer import NamedEntityRecognitionHandler
+from .FileOverwiev import FileOverwiever
+from .ExtractMeta import ExtractMeta
+from .DocReader import TextExtractionHandler
+from .Summarizer import SummaryGenerationHandler
+from .NERer import NamedEntityRecognitionHandler
 
 
 class Chain:
