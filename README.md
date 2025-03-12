@@ -18,16 +18,9 @@ Happy/
 │   ├── OCR.py          
 │   ├── Summarizer.py   
 │   └── NERer.py        
-```
-├── config.py        # Конфигурационные данные
-├── models/          # Модели данных
-│   ├── __init__.py
-│   ├── user.py
-│   └── product.py
-├── services/        # Бизнес-логика
-│   ├── __init__.py
-│   ├── auth.py
-│   └── payment.py
-└── utils/           # Вспомогательные утилиты
+└── Utility/           # Вспомогательные утилиты
     ├── __init__.py
-    └── helpers.py
+    ├── DatabaseHandler.py
+    ├── Cleaner/
+    └── SpellCheck/
+```
