@@ -52,6 +52,7 @@ model.eval()
 #     text_tesseract: Текст извлеченный с помощью Tesseract (устанавливается в DocReader.py)
 #     text_dedoc:     Текст извлеченный с помощью DeDoc (устанавливается в DocReader.py)
 #     tables:         Таблицы выделенные DeDoc (устанавливается в DocReader.py)
+# 
 #     summary:        Краткое сгенерированное содержание (устанавливается в Summarizer.py)
 #     big_summary:    Более полное сгенерированное содержание (устанавливается в Summarizer.py)
 # 
@@ -69,7 +70,7 @@ class SummaryGenerationHandler(Handler):
                **kwargs):
         
 
-        if 'text' in request and request['task'] == 'generate_summary':
+        if 'text' in request and request['task'] == 'generate_summary' and request['summary_needed']:
             try:
                 if request['text'] == '':
                     text = request['text_dedoc']
@@ -131,6 +132,14 @@ class SummaryGenerationHandler(Handler):
             except Exception as err:
                 print(f"[ {datetime.datetime.now()} ][ DEBUG ERROR SUMM ] Handling failed\n>>> {err}")
                 return super().handle(request)
+            
+        elif not request['summary_needed']:
+            request['task'] = 'extract_entities'
+            request['summary'] = ''
+            request['big_summary'] = ''
+            print(f"[ DEBUG ] Task SummaryGenerationHandler is not needed")
+            return super().handle(request)
+             
         else:
             print(f"[ DEBUG ] Task SummaryGenerationHandler skipped >>> {request['task']}")
             return super().handle(request)

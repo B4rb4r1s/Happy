@@ -11,15 +11,15 @@
         <h1>{{ filename }}</h1>
         
         <div>
-            <a href="{{ url_for('dataset') }}">Назад</a>
+            <a href="{{ url_for('dataset') }}" class="button">Назад</a>
         </div>
 
         </div class = "nav-button">
             {% if prev_id %}
-                <a href="{{ url_for('dataset_document', doc_id=prev_id) }}">Предыдущий документ</a>
+                <a href="{{ url_for('dataset_document', doc_id=prev_id) }}" class="nav-button">Предыдущий документ</a>
             {% endif %}
             {% if next_id %}
-                <a href="{{ url_for('dataset_document', doc_id=next_id) }}">Следующий документ</a>
+                <a href="{{ url_for('dataset_document', doc_id=next_id) }}" class="nav-button">Следующий документ</a>
             {% endif %}
         </div>
         

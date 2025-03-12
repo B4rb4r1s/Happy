@@ -81,11 +81,18 @@ def upload_file():
     file = request.files['file']
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     file.save(file_path)
-    
+
+    need_summary = 'summary' in request.form
+    need_ner = 'ner' in request.form
+
     chain = Chain()
-    req = {'task': 'overwiev',
-            'path': file_path,
-            'dataset_handle': False}
+    req = {
+        'task': 'overwiev',
+        'path': file_path,
+        'dataset_handle': False,
+        'summary_needed': need_summary,
+        'ner_needed': need_ner
+    }
     chain.handle_request(req)
 
     conn = db_connection()

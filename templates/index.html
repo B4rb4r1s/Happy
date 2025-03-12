@@ -36,70 +36,88 @@
 
     <div class="container">
         <h1>Система Обработки Документов</h1>
-        <div class="center">
-            <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
-                <label for="file">Выберите файл:</label>
-                <input type="file" name="file" id="file">
-                <button type="submit" class="upload">Обработать</button>
-            </form>
 
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <div class="messages">
-                        <ul>
-                            {% for message in messages %}
-                                <li>{{ message }}</li>
-                            {% endfor %}
-                        </ul>
+        <div>
+            <div class="topper">
+                <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <label for="file">Выберите файл:</label>
+                    <input type="file" name="file" id="file">
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="summary" value="1">Генерация содержания</label><br>
+                        <label><input type="checkbox" name="ner" value="1">Выделение сущностей</label>
                     </div>
+                    <button type="submit" class="upload-button">Обработать</button>
+                </form>
+
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="messages">
+                            <ul>
+                                {% for message in messages %}
+                                    <li>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            
+                {% if documents|length > 0 %}
+                    <a href="{{ url_for('results', doc_id=documents[0][0]) }}" class="button">Просмотреть результаты</a>
                 {% endif %}
-            {% endwith %}
-        
-            {% if documents|length > 0 %}
-                <a href="{{ url_for('results', doc_id=documents[0][0]) }}">Просмотреть результаты</a>
-            {% endif %}
+            </div>
+
+            <div class="navigator">
+                <a href="{{ url_for('dataset') }}" class="button">База данных документов</a>
+                <br>
+                <a href="{{ url_for('elib_dataset') }}" class="button">База данных eLibrary</a>
+            </div>
         </div>
 
-        <h2 style="text-align: center;">Обработанные документы</h2>
-        <div class=''>
-            <a href="{{ url_for('dataset') }}">База данных документов</a>
-            <br>
-            <a href="{{ url_for('elib_dataset') }}">База данных eLibrary</a>
+        <div class='uploaded-docs-table'>
+            <h2>Обработанные документы</h2>
             <form method="POST" action="{{ url_for('delete_documents') }}">
-                <button type="submit" style="margin: 5px;">Удалить выбранные документы</button>
+                <button type="submit" class="button">Удалить выбранные документы</button>
                 <table>
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>ID</th>
-                        <th>Имя файла</th>
-                        <th>Дата загрузки</th>
-                        <th>Дата создания</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for doc in documents %}
+                    <thead>
+                    </thead>
+                    <tbody>
                         <tr>
-                            <td><input type="checkbox" name="document_ids" value="{{ doc[0] }}"></td>
-                            <td>{{ doc[0] }}</td>
-                            <td>
-                                <a href="{{ url_for('results', doc_id=doc[0]) }}">{{ doc[1] }}</a>
-                            </td>
-                            <td>{{ doc[2].strftime('%d.%m.%Y %H:%M:%S') }}</td>
-                            {% if doc[3] %}
-                            <td>{{ doc[3].strftime('%d.%m.%Y %H:%M:%S') }}</td>
-                            {% else %}
-                            <td>Пусто</td>
-                            {% endif %}
+                            <th></th>
+                            <th>ID</th>
+                            <th>Имя файла</th>
+                            <th>Дата загрузки</th>
+                            <th>Дата создания</th>
                         </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="5" class="center">База данных пуста</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
+                        {% for doc in documents %}
+                            <tr>
+                                <td><input type="checkbox" name="document_ids" value="{{ doc[0] }}"></td>
+                                <td>{{ doc[0] }}</td>
+                                <td>
+                                    <a href="{{ url_for('results', doc_id=doc[0]) }}">{{ doc[1] }}</a>
+                                </td>
+                                <td>{{ doc[2].strftime('%d.%m.%Y %H:%M:%S') }}</td>
+                                {% if doc[3] %}
+                                <td>{{ doc[3].strftime('%d.%m.%Y %H:%M:%S') }}</td>
+                                {% else %}
+                                <td>Пусто</td>
+                                {% endif %}
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="center">База данных пуста</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
             </form>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <p>Вы уверены, что хотите удалить выбранные документы?</p>
+            <button id="confirm-delete" class="button">Да, удалить</button>
+            <button id="cancel-delete" class="button">Отмена</button>
         </div>
     </div>
 

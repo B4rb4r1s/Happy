@@ -13,33 +13,36 @@
 </head>
 <body>
     <div class="container">
-        <h1 style="text-align: center;">Результаты обработки</h1>
-        <h2 style="text-align: center;">{{ filename }}</h2>
 
-        <nav class="nav-links">
-            <a href="{{ url_for('index') }}">Главная</a>
-        </nav>
-        </div class = "nav-button">
-            {% if prev_id %}
-                <a href="{{ url_for('results', doc_id=prev_id) }}">Предыдущий документ</a>
-            {% endif %}
-            {% if next_id %}
-                <a href="{{ url_for('results', doc_id=next_id) }}">Следующий документ</a>
-            {% endif %}
+        <div class="topper">
+            <h1>Результаты обработки</h1>
+            <h2>{{ filename }}</h2>
+
+            <nav class="nav-links">
+                <a href="{{ url_for('index') }}">Главная</a>
+            </nav>
+            <div class = "nav-button">
+                {% if prev_id %}
+                    <a href="{{ url_for('results', doc_id=prev_id) }}" class="nav-button">Предыдущий документ</a>
+                {% endif %}
+                {% if next_id %}
+                    <a href="{{ url_for('results', doc_id=next_id) }}" class="nav-button">Следующий документ</a>
+                {% endif %}
+            </div>
         </div>
 
         <!-- Предпросмотр файла -->
-        <div class="file-preview" style="text-align: left; margin: 20px 0; width: 30%; min-width: 361px;">
+        <div class="file-preview">
             {% if doc_format in ['jpg', 'jpeg', 'png'] %}
-                <img src="{{ url_for('static', filename='uploads/' + filename) }}" 
+                <img src="{{ url_for('static', filename='Uploads/' + filename) }}" 
                     alt="Изображение" 
                     style="max-width: 100%; height: auto; cursor: pointer;"><br>
-                <a href="{{ url_for('static', filename='uploads/' + filename) }}" target="_blank">Открыть в новой вкладке</a>
+                <a href="{{ url_for('static', filename='Uploads/' + filename) }}" target="_blank">Открыть в новой вкладке</a>
             {% elif doc_format == 'pdf' %}
-                <iframe src="{{ url_for('static', filename='uploads/' + filename) }}" 
+                <iframe src="{{ url_for('static', filename='Uploads/' + filename) }}" 
                         width="100%" height="500px" 
                         style="border: none;"></iframe>
-                <p><a href="{{ url_for('static', filename='uploads/' + filename) }}" target="_blank">Открыть PDF в новой вкладке</a></p>
+                <p><a href="{{ url_for('static', filename='Uploads/' + filename) }}" target="_blank">Открыть PDF в новой вкладке</a></p>
             {% endif %}
         </div>
         <!-- Метаинформация PDF -->
@@ -79,10 +82,10 @@
             {% if text_tesseract and text_dedoc %}
                 <table>
                     <thead>
-                        <th style="width: 50%;">
+                        <th>
                             <p>Tesseract</p>
                         </th>
-                        <th style="width: 50%;">
+                        <th>
                             <p>Dedoc</p>
                         </th>
                     </thead>
@@ -98,9 +101,9 @@
                             </div>
                             {% if tables %}
                                 {% for table in tables %}
-                                    <div style="font-size: 80%;">
+                                    <div>
                                         <h3>Таблицы документа:</h3>
-                                            <table style="width: 100%;">
+                                            <table>
                                                 <thead>
                                                     {% for text in table[2][0] %}
                                                         <th>{{ text }}</th>
@@ -124,14 +127,13 @@
                 </table>
             {% elif text_dedoc %}
                 <p>Dedoc</p>
-                <pre>
-                    {{ text_dedoc }}
+                <pre class="document-text">{{ text_dedoc }}
                     
                     {% if tables %}
                         {% for table in tables %}
-                            <div style="font-size: 80%;">
+                            <div>
                                 <h3>Таблицы документа:</h3>
-                                    <table style="width: 100%;">
+                                    <table>
                                         <thead>
                                             {% for text in table[2][0] %}
                                                 <th>{{ text }}</th>
@@ -163,40 +165,42 @@
         </div>
 
         <!-- Краткое содержание -->
-        {% if big_summary %}
-        <div class="summary-section">
-            <h2>Содержание</h2>
-            <pre>{{ big_summary }}</pre>
-        </div>
+        {% if big_summary or summary %}
+            <div class="summary-section">
+                {% if big_summary %}
+                    <h2>Содержание</h2>
+                    <pre>{{ big_summary }}</pre>
+                {% endif %}
+                {% if summary %}
+                    <h2>Краткое содержание:</h2>
+                    <pre>{{ summary }}</pre>
+                {% endif %}
+            </div>
         {% endif %}
 
-        {% if summary %}
-        <div class="summary-section">
-            <h2>Краткое содержание:</h2>
-            <pre>{{ summary }}</pre>
-        </div>
-        {% endif %}
 
         <!-- Именованные сущности -->
-        <div class="">
-            <h2>Именованные сущности:</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Сущность</th>
-                        <th>Тип</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for entity, type in entities %}
-                    <tr>
-                        <td>{{ entity }}</td>
-                        <td>{{ type }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        {% if entities %}
+            <div class="entities-section">
+                <h2>Именованные сущности:</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Сущность</th>
+                            <th>Тип</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entity, type in entities %}
+                        <tr>
+                            <td>{{ entity }}</td>
+                            <td>{{ type }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
 
         <!-- Bottom navigation -->
         <nav class="nav-links" style="margin-top: 40px;">

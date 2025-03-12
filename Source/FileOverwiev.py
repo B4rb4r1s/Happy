@@ -12,6 +12,7 @@ sys.stdout.flush()
 # request{
 #     task:           Текущая задача в цепочке
 #     dataset_handle: Флаг, ***
+# 
 #     file_format:    Формат документа (устанавливается в FileOverwiev.py)
 # 
 #     meta:           Словарь метаинформации документа (устанавливается в ExtractMeta.py)
@@ -25,22 +26,15 @@ sys.stdout.flush()
 # }
 class FileOverwiever(Handler):
     def handle(self, request):
-        '''
-        Текущий запрос:
-            request = {
-                'task': 'overwiev',
-                'path': './Data/*.*'}
-        '''
         if request['task'] == 'overwiev':
             try:
                 file_format = request['path'][request['path'].rfind('.')+1:].lower()
-
                 print(f"[ {datetime.now()} ][ DEBUG ] FileOverwiev: Обработано\n>>> {file_format}")
 
                 request['file_format'] = file_format
-
                 request['task'] = 'extract_meta'
                 return super().handle(request)
+            
             except Exception as err:
                 print(f"[ {datetime.now()} ][ DEBUG ERROR FileOW ] Handling failed\n>>> {err}")
         else:

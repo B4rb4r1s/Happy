@@ -40,7 +40,7 @@ class NamedEntityRecognitionHandler(Handler):
 
     def handle(self, request):
         # Проверяем, нужно ли выполнять выделение сущностей
-        if 'text' in request and request['task'] == 'extract_entities':
+        if 'text' in request and request['task'] == 'extract_entities' and request['ner_needed']:
             unique_entities = []
             
             if request['text'] == '':
@@ -61,6 +61,11 @@ class NamedEntityRecognitionHandler(Handler):
             
             print(f"[{datetime.datetime.now()}][ Debug ] NamedEntityRecognitionHandler: Обработано")
             print(request['entities'][:5])
+            return super().handle(request)
+        
+        elif not request['ner_needed']:
+            request['entities'] = {}
+            print(f"[ DEBUG ] Task NamedEntityRecognitionHandler is not needed")
             return super().handle(request)
         else:
             print(f"[{datetime.datetime.now()}][ Debug Error ] Error during handing (NER)")

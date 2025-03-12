@@ -15,6 +15,7 @@ from Source.OCR import extract_text_from_img
 #     dataset_handle: Флаг, ***
 #     file_format:    Формат документа (устанавливается в FileOverwiev.py)
 #     meta:           Словарь метаинформации документа (устанавливается в ExtractMeta.py)
+# 
 #     text:           Текстовый слой PDF-файла (устанавливается в DocReader.py)
 #     text_tesseract: Текст извлеченный с помощью Tesseract (устанавливается в DocReader.py)
 #     text_dedoc:     Текст извлеченный с помощью DeDoc (устанавливается в DocReader.py)
@@ -26,18 +27,12 @@ from Source.OCR import extract_text_from_img
 # }
 class TextExtractionHandler(Handler):
     def handle(self, request):
-        '''
-        Текущий запрос:
-            request = {
-                'task': 'extract_text',
-                'path': './Data/PDF/text/text2.pdf',
-                'dataset_handle': True/False}
-        '''
-        if request['task'] == 'extract_text' and request['dataset_handle'] == False:
+        if request['task'] == 'extract_text' and request['dataset_handle'] == False and request['file_format']:
             text_tesseract = None
             text_dedoc = None
             tables = None
             all_text = ''
+
             try:
                 if request['file_format'] == 'pdf':
                     # Чтение текстового слоя
@@ -46,15 +41,13 @@ class TextExtractionHandler(Handler):
                         for page in reader:
                             all_text += page.get_text()
 
-                    text_tesseract, text_dedoc, tables = extract_text_from_img(request['path'], request['file_format'])
-
                 elif request['file_format'] in ["jpg", "jpeg", "png"]:
                     print('[ DEBUG ] Extracting from IMG scan')
-                    text_tesseract, text_dedoc, tables = extract_text_from_img(request['path'], request['file_format'])
 
                 elif request['file_format'] in ["doc", "docx"]:
                     print('[ DEBUG ] Extracting from DOC scan')
-                    text_tesseract, text_dedoc, tables = extract_text_from_img(request['path'], request['file_format'])
+                    
+                text_tesseract, text_dedoc, tables = extract_text_from_img(request['path'], request['file_format'])
 
                 request['text'] = ''
                 request['text_tesseract'] = text_tesseract
@@ -66,7 +59,7 @@ class TextExtractionHandler(Handler):
                 return super().handle(request)
             
             except Exception as err:
-                print(f"[{datetime.now()}][ DEBUG ERROR ExtrMeta ] Handling failed\n>>> {err}")
+                print(f"[{datetime.now()}][ DEBUG ERROR READ ] Handling failed\n>>> {err}")
                 return super().handle(request)
         
         elif request['dataset_handle'] == True:
@@ -81,6 +74,10 @@ class TextExtractionHandler(Handler):
             print(f"[ DEBUG ] TextExtractionHandler: Обработано")
             # print(request['text'])
             request['task'] = 'generate_summary'
+            return super().handle(request)
+        
+        elif request['file_format'] == None:
+            print(f"[ {datetime.now()} ][ DEBUG READ ] UNKNOWN FORMAT")
             return super().handle(request)
             
         else:

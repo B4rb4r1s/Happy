@@ -12,6 +12,7 @@ sys.stdout.flush()
 #     task:           Текущая задача в цепочке
 #     dataset_handle: Флаг, ***
 #     file_format:    Формат документа (устанавливается в FileOverwiev.py)
+# 
 #     meta:           Словарь метаинформации документа (устанавливается в ExtractMeta.py)
 # 
 #     text:           Текстовый слой PDF-файла (устанавливается в DocReader.py)
@@ -24,21 +25,11 @@ sys.stdout.flush()
 # }
 class ExtractMeta(Handler):
     def handle(self, request):
-        '''
-        Текущий запрос:
-            request = {
-                'task': 'extract_meta',
-                'path': './Data/PDF/text/*.*',
-                'file_format': '.*'
-                }
-        '''
         if request['task'] == 'extract_meta':
             try:
                 if request['file_format'] == 'pdf':
                     doc = fitz.open(request['path'])
-
                     meta = doc.metadata
-
                     meta_info = {
                         'format': meta.get('format', 'Нет данных'),
                         'author': meta.get('author', 'Нет данных'),
@@ -53,6 +44,12 @@ class ExtractMeta(Handler):
                         'producer': meta.get('producer', 'Нет данных')
                     }
                     request['meta'] = meta_info
+                
+                    print(f"[ {datetime.now()} ][ DEBUG ] ExtractPDFMeta: Обработано")
+                    print(request['meta'])
+
+                    request['task'] = 'extract_text'
+                    return super().handle(request)
 
                 elif request['file_format'] in ["jpg", "jpeg", "png"]:
                     # request['meta'] = {
@@ -69,14 +66,9 @@ class ExtractMeta(Handler):
 
                 else:
                     print(f"[ {datetime.now()} ][ DEBUG META ] UNKNOWN FORMAT")
+                    request['file_format'] = None
+                    request['task'] = None
                     return super().handle(request)
-                
-
-                print(f"[ {datetime.now()} ][ DEBUG ] ExtractPDFMeta: Обработано")
-                print(request['meta'])
-
-                request['task'] = 'extract_text'
-                return super().handle(request)
             
             except Exception as err:
                 print(f"[{datetime.now()}][ DEBUG ERROR ExtrMeta ] Handling failed\n>>> {err}")
