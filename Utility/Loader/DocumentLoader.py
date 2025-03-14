@@ -75,7 +75,8 @@ class DocumentLoader:
                         continue
 
                     # Загрузка в базу данных
-                    self.db_load(document, text_dedoc, tables)
+                    if text_dedoc:
+                        self.db_load(document, text_dedoc, tables)
 
                 else:
                     print(f'[ DEBUG ] Documnet {document} format is not supported')
@@ -89,7 +90,8 @@ class DocumentLoader:
         with self.connection.cursor() as cursor:
             cursor.execute(f'''
                 INSERT INTO {self.db_table} (filename, text_dedoc)
-                VALUES ({document}, {text_dedoc});''')
+                VALUES (%s, %s);''',
+                (document,text_dedoc,))
 
             if tables:
                 for table in tables:
@@ -98,8 +100,8 @@ class DocumentLoader:
                         VALUES (
                             (SELECT id 
                             FROM elibrary_dataset 
-                            ORDER BY ID DESC LIMIT 1), {table})
-                    ''')
+                            ORDER BY ID DESC LIMIT 1), %s)
+                    ''', (table,))
 
         self.connection.commit()
         print(f'[ DEBUG ] Documnet {document} has successfuly uploaded')

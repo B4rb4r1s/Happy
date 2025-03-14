@@ -101,26 +101,33 @@ class SummaryGenerationHandler(Handler):
                     print(f'[ DEBUG ] start: {start}, finish: {end}')
 
                     # Generate summary for each chunk
-                    summary = self._generate_summary(chunk, n_words, compression, max_length, num_beams, do_sample,
-                                                    repetition_penalty, no_repeat_ngram_size)
+                    summary = self._generate_summary(
+                        chunk, n_words, compression, 
+                        max_length, num_beams, do_sample,
+                        repetition_penalty, no_repeat_ngram_size
+                    )
                     summary_parts.append(summary)
 
                 if num_steps > 0:
                     big_summary = '\n'.join(summary_parts)
                     request['big_summary'] = big_summary
                     try:
-                        final_summary = self._generate_summary(big_summary, n_words, compression, max_length, num_beams,
-                                                            do_sample, repetition_penalty,
-                                                            no_repeat_ngram_size)
+                        final_summary = self._generate_summary(
+                            big_summary, n_words, compression, 
+                            max_length, num_beams, do_sample, 
+                            repetition_penalty, no_repeat_ngram_size
+                        )
                         request['summary'] = final_summary
                     except:
                         print(f'[ DEBUG ] Big summary is too long to summarize')
                         request['summary'] = ''
                 else:
                     # Handle small documents directly
-                    request['summary'] = self._generate_summary(text, n_words, compression, max_length, num_beams,
-                                                            do_sample, repetition_penalty,
-                                                            no_repeat_ngram_size)
+                    request['summary'] = self._generate_summary(
+                        text, n_words, compression, max_length, num_beams,
+                        do_sample, repetition_penalty,
+                        no_repeat_ngram_size
+                    )
                     request['big_summary'] = ''
 
                 print(f"[ DEBUG ] SummaryGenerationHandler: Обработано")
@@ -145,9 +152,11 @@ class SummaryGenerationHandler(Handler):
             return super().handle(request)
 
         
-    def _generate_summary(self, text, n_words, compression, max_length, 
-                          num_beams, do_sample, repetition_penalty, 
-                          no_repeat_ngram_size, **kwargs):
+    def _generate_summary(
+            self, text, n_words, compression, max_length,
+            num_beams, do_sample, repetition_penalty,
+            no_repeat_ngram_size, **kwargs
+        ):
         if not text:
             return ''
 
