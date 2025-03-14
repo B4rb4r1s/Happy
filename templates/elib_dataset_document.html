@@ -24,6 +24,16 @@
         </div>
         <!-- Извлеченный текст -->
         <div class="text-section">
+            <details>
+                <summary>Предпросмотр файла</summary>
+                <div class="file-preview">
+                    <iframe src="{{ url_for('serve_pdf', filename=filename) }}" 
+                            width="100%" height="500px" 
+                            style="border: none;"></iframe>
+                </div>
+            </details>
+            <a href="{{ url_for('serve_pdf', filename=filename) }}" target="_blank">Открыть PDF</a>
+
             <h2>Извлеченный текст:</h2>
             <table>
                 <tbody>
@@ -39,8 +49,9 @@
                                 <pre class="document-text">{{ text_dedoc }}</pre>
                             </div>
                             {% if tables %}
-                                <h3>Таблицы документа:</h3>
+                                <h2>Таблицы документа:</h2>
                                 {% for table in tables %}
+                                    <h3>Таблица {{ loop.index0 +1 }}</h3>
                                     <div>
                                         <table>
                                             <thead>
@@ -59,6 +70,7 @@
                                             </tbody>
                                         </table>
                                     </div>
+                                    <br>
                                 {% endfor %}
                             {% endif %}
 
@@ -121,6 +133,18 @@
             // Устанавливаем максимальную высоту левого блока равной высоте правой ячейки
             leftContent.style.maxHeight = rightCell.offsetHeight + 'px';
           }
+        });
+    </script> -->
+    
+
+    <!-- <script>
+        document.querySelector(".collapsible").addEventListener("click", function () {
+            let content = this.nextElementSibling;
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null; // Скрыть
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px"; // Показать
+            }
         });
     </script> -->
 </body>

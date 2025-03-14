@@ -19,9 +19,9 @@
             <h2>{{ filename }}</h2>
 
             <nav class="nav-links">
-                <a href="{{ url_for('index') }}">Главная</a>
+                <a href="{{ url_for('index') }}" class="nav-button">Главная</a>
             </nav>
-            <div class = "nav-button">
+            <div>
                 {% if prev_id %}
                     <a href="{{ url_for('results', doc_id=prev_id) }}" class="nav-button">Предыдущий документ</a>
                 {% endif %}
@@ -77,7 +77,7 @@
         </div>
 
         <!-- Извлеченный текст -->
-        <div class="text-section">
+        <div class="raw-text-section">
             <h2>Извлеченный текст:</h2>
             {% if text_tesseract and text_dedoc %}
                 <table>
@@ -100,25 +100,25 @@
                                 <pre>{{ text_dedoc }}</pre>
                             </div>
                             {% if tables %}
+                                <h2>Таблицы документа:</h2>
                                 {% for table in tables %}
                                     <div>
-                                        <h3>Таблицы документа:</h3>
-                                            <table>
-                                                <thead>
-                                                    {% for text in table[2][0] %}
-                                                        <th>{{ text }}</th>
+                                        <table>
+                                            <thead>
+                                                {% for text in table[2][0] %}
+                                                    <th>{{ text }}</th>
+                                                {% endfor %}
+                                            </thead>
+                                            <tbody>
+                                                {% for cell in table[2][1:] %}
+                                                    <tr>
+                                                    {% for text in cell %}
+                                                        <td>{{ text }}</td>
                                                     {% endfor %}
-                                                </thead>
-                                                <tbody>
-                                                    {% for cell in table[2][1:] %}
-                                                        <tr>
-                                                        {% for text in cell %}
-                                                            <td>{{ text }}</td>
-                                                        {% endfor %}
-                                                        </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 {% endfor %}
                             {% endif %}
@@ -127,32 +127,35 @@
                 </table>
             {% elif text_dedoc %}
                 <p>Dedoc</p>
-                <pre class="document-text">{{ text_dedoc }}
-                    
-                    {% if tables %}
-                        {% for table in tables %}
-                            <div>
-                                <h3>Таблицы документа:</h3>
-                                    <table>
-                                        <thead>
-                                            {% for text in table[2][0] %}
-                                                <th>{{ text }}</th>
-                                            {% endfor %}
-                                        </thead>
-                                        <tbody>
-                                            {% for cell in table[2][1:] %}
-                                                <tr>
-                                                {% for text in cell %}
-                                                    <td>{{ text }}</td>
-                                                {% endfor %}
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+                <pre class="document-text">{{ text_dedoc }}</pre>
+                
+                <pre class="document-tables">
+                {% if tables %}
+                    <h2>Таблицы документа:</h2>
+                    {% for table in tables %}
+                        <div>
+                            <table class="document-table">
+                                <thead>
+                                    {% for text in table[2][0] %}
+                                        <th>{{ text }}</th>
+                                    {% endfor %}
+                                </thead>
+                                <tbody>
+                                    {% for cell in table[2][1:] %}
+                                        <tr>
+                                        {% for text in cell %}
+                                            <td>{{ text }}</td>
+                                        {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <br>
+                    {% endfor %}
+                {% endif %}
                 </pre>
+                
             {% elif text_tesseract %}
                 <p>Dedoc</p>
                 <pre>{{ text_tesseract }}</pre>

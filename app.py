@@ -1,5 +1,5 @@
 from flask import Flask, request, session
-from flask import redirect, url_for, flash, render_template, jsonify
+from flask import redirect, url_for, flash, render_template, jsonify, send_from_directory
 import os
 import re
 import time
@@ -569,6 +569,12 @@ def get_adjacent_ids(current_id, table):
 
     conn.close()
     return prev_id, next_id
+
+
+@app.route('/pdf/<filename>')
+def serve_pdf(filename):
+    # return send_from_directory('uploads', filename)
+    return send_from_directory('Data/GRNTI/elibrary044100/', filename)
 
 
 @app.route('/error')

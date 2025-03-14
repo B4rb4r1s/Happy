@@ -24,8 +24,8 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <th></th>
-                        <th>ID</th>
+                        <th class="select-column"></th>
+                        <th class="id-column">ID</th>
                         <th>Название файла</th>
                         <th>Начало документа</th>
                     </tr>
@@ -36,7 +36,7 @@
                             <td>
                                 <a href="{{ url_for('elib_dataset_document', doc_id=doc[0]) }}">{{ doc[1] }}</a>
                             </td>
-                            <td>{{ doc[2][:26] }}</td>
+                            <td class="text-head">{{ doc[2][:65] }} ...</td>
                         </tr>
                     {% else %}
                         <tr>
