@@ -1,0 +1,1 @@
+To run script in `run_summarizer` use `docker compose exec -it summarizer python ./Happy/Utility/Summarizer/run_summarizer.py`

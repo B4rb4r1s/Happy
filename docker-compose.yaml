@@ -10,13 +10,14 @@ services:
       - postgre
     volumes:
       - .:/app
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+      - ..:/app/prj
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     command: ['python', 'app.py']
 
 
@@ -46,9 +47,16 @@ services:
       - 8888
     volumes:
       - ..:/app
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     command: tail -F /dev/null
     # command: ['python', './NER_System/run.py']
-    # command: ["python", './Happy/Utility/load_dataset.py']
+    # command: ["python", './Happy/Utility/Loader/run_loader.py']
 
 
   cleaner:
@@ -57,7 +65,24 @@ services:
     depends_on:
       - postgre
     volumes:
+      - ..:/task
+    command: tail -F /dev/null
+
+
+  summarizer:
+    image: happy:dedoc
+    container_name: summarizer_cleaner
+    depends_on:
+      - postgre
+    volumes:
       - ..:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     command: tail -F /dev/null
 
 
