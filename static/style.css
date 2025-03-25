@@ -18,6 +18,7 @@ h1 {
 }
 h2 {
     color: var(--primary-color);
+    margin-bottom: 0px;
     /* margin-bottom: 30px; */
 }
 
@@ -57,6 +58,9 @@ pre {
     white-space: pre-wrap; 
     word-wrap: break-word; 
     overflow-wrap: break-word;
+}
+p {
+    margin: 3px 5px;
 }
 
 
@@ -107,6 +111,11 @@ pre {
     width: 100%; */
 }
 
+.tables-of-document {
+    max-width: 80vh;
+    overflow-x: auto;
+}
+
 
 .select-column {
     width: 1%;
@@ -121,7 +130,7 @@ pre {
 .document-text-content {
     /* height: 50vh; */
     
-    overflow-y: scroll; 
+    overflow-y: auto; 
     overflow-x: hidden; 
 }
 .raw-text-section {
@@ -141,7 +150,15 @@ pre {
 }
 
 .extracted-document {
+    vertical-align: top;
     width: 50%;
+    max-width: 50%;
+}
+.right-cell {
+    vertical-align: top;
+}
+.lingvo_summary {
+    font-size: 75%;
 }
 
 .document-text {
@@ -168,6 +185,12 @@ pre {
     color: #fff;
     background-color: #227fb8; 
     transform: scale(1.05); 
+}
+
+#query {
+    width: 30%;
+    height: 25px;
+    font-size: 15px;
 }
 
 

@@ -52,7 +52,7 @@
                                 <h2>Таблицы документа:</h2>
                                 {% for table in tables %}
                                     <h3>Таблица {{ loop.index0 +1 }}</h3>
-                                    <div>
+                                    <div class="tables-of-document">
                                         <table>
                                             <thead>
                                                 {% for text in table[2][0] %}
@@ -83,7 +83,7 @@
                             <div>
                                 {% if lingvo_summary %}
                                     <h2>lingvo_summary</h2>
-                                    <pre class="elib_summaries">{{ lingvo_summary }}</pre>
+                                    <pre class="lingvo_summary">{{ lingvo_summary }}</pre>
                                 {% endif %}
                             </div>
                             <div>
@@ -118,7 +118,7 @@
 
         <!-- Bottom navigation -->
         <nav class="nav-links" style="margin-top: 40px;">
-            <a href="{{ url_for('index') }}">Вернуться на главную</a>
+            <a href="{{ url_for('index') }}" class="button">Вернуться на главную</a>
         </nav>
 
     </div>

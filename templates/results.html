@@ -129,7 +129,7 @@
                 <p>Dedoc</p>
                 <pre class="document-text">{{ text_dedoc }}</pre>
                 
-                <pre class="document-tables">
+                <!-- <pre class="document-tables">
                 {% if tables %}
                     <h2>Таблицы документа:</h2>
                     {% for table in tables %}
@@ -154,7 +154,33 @@
                         <br>
                     {% endfor %}
                 {% endif %}
-                </pre>
+                </pre> -->
+                
+                {% if tables %}
+                    <h2>Таблицы документа:</h2>
+                    {% for table in tables %}
+                        <h3>Таблица {{ loop.index0 +1 }}</h3>
+                        <div>
+                            <table>
+                                <thead>
+                                    {% for text in table[2][0] %}
+                                        <th>{{ text }}</th>
+                                    {% endfor %}
+                                </thead>
+                                <tbody>
+                                    {% for cell in table[2][1:] %}
+                                        <tr>
+                                        {% for text in cell %}
+                                            <td>{{ text }}</td>
+                                        {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <br>
+                    {% endfor %}
+                {% endif %}
                 
             {% elif text_tesseract %}
                 <p>Dedoc</p>
@@ -207,7 +233,7 @@
 
         <!-- Bottom navigation -->
         <nav class="nav-links" style="margin-top: 40px;">
-            <a href="{{ url_for('index') }}">Вернуться на главную</a>
+            <a href="{{ url_for('index') }}" class="button">Вернуться на главную</a>
         </nav>
     </div>
 </body>

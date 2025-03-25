@@ -440,24 +440,59 @@ def dataset_document(doc_id):
                            next_id=next_id)
 
 
-@app.route('/elib_dataset/')
+@app.route('/elib_dataset/', methods=['GET', 'POST'])
 def elib_dataset():
     conn = db_connection()
     cursor = conn.cursor()
 
-    cursor.execute('''  
-        SELECT elibrary_dataset.id,
-               filename,
-               text_dedoc
-        FROM elibrary_dataset
-        ORDER BY id DESC;
-    ''')
-    documents = cursor.fetchall()
+    query = request.form.get('query')
+    if query:
+        cursor.execute('''
+            SELECT * 
+            FROM elibrary_dataset 
+            WHERE content_vector @@ to_tsquery(%s);
+        ''', (query,))
+        documents = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
-    return render_template('elib_dataset.html', dataset=documents,
-                                                count = len(documents))
+        cursor.close()
+        conn.close()
+        return render_template('elib_dataset.html', dataset=documents,
+                                                    count = len(documents))
+    else:
+        cursor.execute('''  
+            SELECT elibrary_dataset.id,
+                filename,
+                text_dedoc
+            FROM elibrary_dataset
+            ORDER BY id DESC;
+        ''')
+        documents = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+        return render_template('elib_dataset.html', dataset=documents,
+                                                    count = len(documents))
+
+# @app.route('/elib_dataset/', methods=['POST'])
+# def elib_dataset_search():
+#     conn = db_connection()
+#     cursor = conn.cursor()
+    
+#     query = request.form.get('query')
+#     if query:
+#         cursor.execute('''
+#             SELECT * 
+#             FROM elibrary_dataset 
+#             WHERE content_vector @@ to_tsquery(%s);
+#         ''', (query,))
+#         documents = cursor.fetchall()
+
+#         cursor.close()
+#         conn.close()
+#         return render_template('elib_dataset.html', dataset=documents,
+#                                                     count = len(documents))
+#     else:
+#         return redirect(url_for('elib_dataset'))
 
 
 @app.route('/elib_dataset_document/<int:doc_id>')
@@ -574,7 +609,7 @@ def get_adjacent_ids(current_id, table):
 @app.route('/pdf/<filename>')
 def serve_pdf(filename):
     # return send_from_directory('uploads', filename)
-    return send_from_directory('Data/GRNTI/elibrary044100/', filename)
+    return send_from_directory('prj/Datasets/GRNTI/elibrary/', filename)
 
 
 @app.route('/error')
