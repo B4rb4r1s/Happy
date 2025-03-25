@@ -6,9 +6,6 @@ import psycopg2
 import pymupdf 
 import subprocess
 
-import torch
-import time
-
 import os
 
 from dedoc import DedocManager
@@ -29,6 +26,105 @@ dedoc_manager = DedocManager(
         "document_metadata_extractor": MetadataExtractorComposition([BaseMetadataExtractor()])
     }
 )
+
+
+
+def mero_load(dir):
+    # dr = './datasets/Mero'
+    # dr = './Data/PDF'
+    directory = os.fsencode(dir)
+    
+    for event in os.listdir(dir):
+        for doc in os.listdir(dir+'/'+event):
+            doc_path = dir+'/'+event+'/'+doc
+            forma = doc[doc.find('.')+1:]
+
+            text_tesseract = ''
+            text_dedoc = ''
+
+            cursor.execute('''
+                SELECT file_name, full_text_tesseract, full_text_dedoc, id
+                FROM doc_dataset
+                WHERE file_name = %s;
+                           ''', (doc,))
+            already_uploaded_docs = cursor.fetchall()
+
+            if len(already_uploaded_docs) > 0:
+
+                # Tesseract text
+                print(already_uploaded_docs, flush=True)
+                if already_uploaded_docs[0][1] == None:
+                    print(f'[ DEBUG ] Uploading document using Tesseract OCR {doc}')
+                    text_tesseract = ''
+                    try:
+                        pages = convert_from_path(doc_path, 900)
+                        for page in pages:
+                            text = pytesseract.image_to_string(page, lang='eng+rus')
+                            text_tesseract += text + '\n'
+                    except Exception as err:
+                        print(f'[ DEBUG ERROR ] Document {doc} is too big to process')
+                        continue
+                    cursor.execute("""
+                        UPDATE doc_dataset 
+                        SET full_text_tesseract = %s
+                        WHERE id = %s
+                                """, (text_tesseract, already_uploaded_docs[0][3]))
+                    connection.commit()
+
+                    
+                # Dedoc text
+                if already_uploaded_docs[0][2] == None:
+                    print(f'[ DEBUG ] Uploading document using Dedoc {doc}')
+                    text_dedoc = ''
+                    try:
+                        parsed_document = dedoc_manager.parse(doc_path)
+                        rec = concat_subpara([], parsed_document.content.structure)
+                        text_dedoc = '\n'.join(rec)
+                    except Exception as err:
+                        print(f'[ DEBUG ERROR ] Document {doc} is too big to process')
+                        continue
+                    cursor.execute("""
+                        UPDATE doc_dataset 
+                        SET full_text_dedoc = %s
+                        WHERE id = %s
+                                """, (text_dedoc, already_uploaded_docs[0][3]))
+                    connection.commit()
+                
+                if already_uploaded_docs[0][1] and already_uploaded_docs[0][2]:
+                    print(f'[ DEBUG ] Dcoument {doc} is already uploaded and processed in Database')
+                    continue
+
+            else:
+                print(f'[ DEBUG ] Uploading document using Tesseract OCR {doc}')
+                try:
+                    pages = convert_from_path(doc_path, 900)
+                    text_tesseract = ''
+                    for page in pages:
+                        text = pytesseract.image_to_string(page, lang='eng+rus')
+                        text_tesseract += text + '\n'
+                except Exception as err:
+                    text_tesseract = ''
+                    print(f'[ DEBUG ERROR ] Document {doc} is too big to process')
+                    continue
+
+                print(f'[ DEBUG ] Uploading document using Dedoc {doc}')
+                text_dedoc = ''
+                try:
+                    parsed_document = dedoc_manager.parse(doc_path)
+                    rec = concat_subpara([], parsed_document.content.structure)
+                    text_dedoc = '\n'.join(rec)
+                except Exception as err:
+                    print(f'[ DEBUG ERROR ] Document {doc} is too big to process')
+                    continue    
+
+                cursor.execute('''
+                    INSERT INTO doc_dataset (full_text_tesseract, full_text_dedoc, file_name, event, format)
+                    VALUES (%s, %s, %s, %s, %s);''', 
+                    (text_tesseract, text_dedoc, doc, event, forma))
+                connection.commit()
+            
+            print(f'[ Success ] Data uploaded\n\t{text_tesseract[:20]}, {text_dedoc[:20]}, {doc}, {event}, {forma}')
+    return 0
 
 
 class DocumentLoader:
@@ -58,9 +154,6 @@ class DocumentLoader:
                 FROM {self.db_table}
             ''')
             already_uploaded = [item[0] for item in cursor.fetchall()]
-        
-        with open('Happy/Utility/Loader/logs.txt', 'a') as f:
-            f.write(f'GPU is available\n') if torch.cuda.is_available() else f.write('Computing on CPU\n')
 
         for document in os.listdir(self.source_directory):
             document_path = self.source_directory + '/' + document
@@ -73,21 +166,15 @@ class DocumentLoader:
                 if document[document.find('.')+1:].lower() in ['pdf', 'doc', 'docx']:
                     text_dedoc = None
                     tables = None
-
                     # Сканирование с помощью DeDoc
                     try:
-                        start = time.time()
                         text_dedoc, tables = self.dedoc_scan(document_path)
-                        stop = time.time() - start
-                        with open('Happy/Utility/Loader/logs.txt', 'a') as f:
-                            f.write(f'\tDocument {document} was scanned in {stop} sec\n')
                     except Exception as err:
                         print(f'[ ERROR ] Error during OCR \n>>> {err}')
                         continue
 
                     # Загрузка в базу данных
-                    if text_dedoc:
-                        self.db_load(document, text_dedoc, tables)
+                    self.db_load(document, text_dedoc, tables)
 
                 else:
                     print(f'[ DEBUG ] Documnet {document} format is not supported')
@@ -101,8 +188,7 @@ class DocumentLoader:
         with self.connection.cursor() as cursor:
             cursor.execute(f'''
                 INSERT INTO {self.db_table} (filename, text_dedoc)
-                VALUES (%s, %s);''',
-                (document,text_dedoc,))
+                VALUES (%s, %s);''', (document, text_dedoc,))
 
             if tables:
                 for table in tables:
@@ -141,3 +227,12 @@ class DocumentLoader:
             rows = [[cell.get_text() for cell in row] for row in table.cells]
             tables_list.append(rows)
         return tables_list
+
+
+
+if __name__ == '__main__':
+
+    loader = DocumentLoader(source_directory='Datasets/GRNTI/elibrary044100', 
+                            db_table='elibrary_dataset')
+    loader.elibrary_load()
+
