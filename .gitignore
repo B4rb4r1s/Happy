@@ -23,5 +23,6 @@ Source/support.ipynb
 Utility/__pycache__/
 Utility/.ipynb_checkpoints/
 Utility/NER_System/
+Utility/Summarizer/logs.txt
 
 *.rar

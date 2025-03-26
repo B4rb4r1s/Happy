@@ -5,7 +5,7 @@ import config
 
 
 def run_and_load():
-    db_handler = DatabaseHandler(host='ssh')
+    db_handler = DatabaseHandler(host='docker')
     db_handler.set_doc_ids()
 
     summarizers = [Omega_summarizer(model_path, device=config.DEVICE) for model_path in config.SUMMARY_MODELS]

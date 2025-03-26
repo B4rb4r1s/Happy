@@ -43,6 +43,8 @@ class BaseSummarizer:
 
     def summarize_text(self, text):
         tokens = self.tokenizer.encode(config.PROCESSING_HANDLER(text))
+        
+        words = text.split(' ')
         num_tokens = len(tokens)
         batch_size = 1024
         num_batches = num_tokens // batch_size
@@ -50,14 +52,14 @@ class BaseSummarizer:
             num_batches += 1
         # print(self.tokenizer.encode(text))
 
+        token_chunks = [tokens[i:i+batch_size] for i in range(0, len(tokens), batch_size)]
+        text_chunks = [self.tokenizer.decode(chunk, skip_special_tokens=True) for chunk in token_chunks]
+
         summary = []
         start = time.time()
-        for i in range(num_batches):
-            start_index = i * batch_size
-            end_index = min((i + 1) * batch_size, num_tokens)
-            batch_text = ' '.join(text.split(' ')[start_index:end_index])
+        for text_chunk in text_chunks:
 
-            input_ids = self.tokenizer(batch_text, **self.tokenization_args)["input_ids"].to(self.device)
+            input_ids = self.tokenizer(text_chunk, **self.tokenization_args)["input_ids"].to(self.device)
             self.set_generation_arguments()
 
             output_ids = self.model.generate(input_ids=input_ids, **self.generation_args).to(self.device)
@@ -65,7 +67,7 @@ class BaseSummarizer:
 
         stop = time.time() - start
         with open('Happy/Utility/Summarizer/logs.txt', 'a') as f:
-            f.write(f'\tDocment with {len(config.PROCESSING_HANDLER(text))} symbols on {len(tokens)} tokens processed in {stop} sec\n')
+            f.write(f'\tDocment with {len(config.PROCESSING_HANDLER(text))} symbols, {len(words)} words and {len(tokens)} tokens processed in {stop} sec\n')
 
         return ' '.join(summary)
     

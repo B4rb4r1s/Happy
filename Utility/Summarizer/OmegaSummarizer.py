@@ -33,6 +33,19 @@ class Omega_summarizer(BaseSummarizer):
             }
             return True
 
+        elif self.model_path == './Happy/Models/Summary/IlyaGusev--rut5_base_sum_gazeta':
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+            self.model = T5ForConditionalGeneration.from_pretrained(self.model_path).to(self.device)
+            self.column='rut5_summary'
+            self.tokenization_args = {
+                'add_special_tokens':   True,
+                'max_length':           600,
+                'padding':              "max_length",
+                'truncation':           True,
+                'return_tensors':       "pt"
+            }
+            return True
+
         elif self.model_path == './Happy/Models/Summary/utrobinmv--t5_summary_en_ru_zh_base_2048':
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
             self.model = T5ForConditionalGeneration.from_pretrained(self.model_path).to(self.device)
@@ -57,6 +70,11 @@ class Omega_summarizer(BaseSummarizer):
                 'num_beams':              4
             }
         elif self.model_path == './Happy/Models/Summary/IlyaGusev--mbart_ru_sum_gazeta':
+            self.generation_args = {
+                'no_repeat_ngram_size':   4
+            }
+
+        elif self.model_path == './Happy/Models/Summary/IlyaGusev--rut5_base_sum_gazeta':
             self.generation_args = {
                 'no_repeat_ngram_size':   4
             }
