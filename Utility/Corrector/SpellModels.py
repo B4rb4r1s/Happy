@@ -25,14 +25,14 @@ from transformers import AutoModelForSeq2SeqLM, T5TokenizerFast
 class Omage_corrector(BaseSpellCorrector):
     def set_model(self):
         if self.model_path == './Happy/Models/SpellCheck/ai-forever--FRED-T5-large-spell':
-            self.model = T5ForConditionalGeneration.from_pretrained(self.model_path)
+            self.model = T5ForConditionalGeneration.from_pretrained(self.model_path).to(self.device)
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_path, eos_token="</s>")
             self.column = 'fred_t5_large'
             self.tokenization_args = {}
             return True
         
         elif self.model_path == './Happy/Models/SpellCheck/ai-forever--RuM2M100-1.2B':
-            self.model = M2M100ForConditionalGeneration.from_pretrained(self.model_path)
+            self.model = M2M100ForConditionalGeneration.from_pretrained(self.model_path).to(self.device)
             self.tokenizer = M2M100Tokenizer.from_pretrained(self.model_path, src_lang="ru", tgt_lang="ru")
             self.column = 'rum2m100'
             self.tokenization_args = {}
@@ -40,7 +40,7 @@ class Omage_corrector(BaseSpellCorrector):
         
         elif self.model_path == './Happy/Models/SpellCheck/ai-forever--sage-fredt5-distilled-95m' or \
              self.model_path == './Happy/Models/SpellCheck/ai-forever--sage-fredt5-large':
-            self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_path)
+            self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_path).to(self.device)
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
             self.column = 'sage_fredt5_distilled' if self.model_path == './Happy/Models/SpellCheck/ai-forever--sage-fredt5-distilled-95m' else 'sage_fredt5_large'
             self.tokenization_args = {
@@ -51,15 +51,15 @@ class Omage_corrector(BaseSpellCorrector):
             return True
         
         elif self.model_path == './Happy/Models/SpellCheck/ai-forever--sage-m2m100-1.2B':
-            self.model = M2M100ForConditionalGeneration.from_pretrained(self.model_path)
+            self.model = M2M100ForConditionalGeneration.from_pretrained(self.model_path).to(self.device)
             self.tokenizer = M2M100Tokenizer.from_pretrained(self.model_path, src_lang="ru", tgt_lang="ru")
             self.column = 'sage_m2m100'
             self.tokenization_args = {}
             return True
         
         elif self.model_path == './Happy/Models/SpellCheck/UrukHan--t5-russian-spell':
+            self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_path).to(self.device)
             self.tokenizer = T5TokenizerFast.from_pretrained(self.model_path)
-            self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_path)
             self.column = 't5_russ'
             self.tokenization_args = {
                 'padding': "longest",

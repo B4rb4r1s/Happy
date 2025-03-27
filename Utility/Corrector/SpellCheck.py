@@ -1,6 +1,7 @@
 import os
 import re
 import tqdm
+import time
 
 import psycopg2
 import json
@@ -23,6 +24,7 @@ class BaseSpellCorrector:
         self.generation_args = {}
 
         self.encodings = {'input_ids': torch.tensor([[]])}
+        print(f'Computing using GPU') if self.device=='cuda:0' else print(f'Computing using CPU')
         self.set_model()
     
     def set_model(self):
@@ -39,10 +41,18 @@ class BaseSpellCorrector:
         if self.column == 'fred_t5_large_spell':
             text = 'Исправь: """' + text +'"""'
 
-        for paragraph in tqdm.tqdm(text.split('\n'), desc="Processing text paragraphs"):
-            self.encodings = self.tokenizer(paragraph, **self.tokenization_args, return_tensors="pt")
+        for i, paragraph in enumerate(tqdm.tqdm(text.split('\n'), desc="Processing text paragraphs")):
+
+            self.encodings = self.tokenizer(paragraph, **self.tokenization_args, return_tensors="pt").to(self.device)
             self.set_generation_arguments()
-            generated_tokens = self.model.generate(**self.encodings, **self.generation_args)
+
+            start = time.time()
+            generated_tokens = self.model.generate(**self.encodings, **self.generation_args).to(self.device)
+            stop = time.time() - start
+
+            with open('Happy/Utility/Cleaner/logs.txt', 'a') as res:
+                res.write(f'\t\tParagraph {i}: {len(paragraph)} charecters proccesed in {stop} sec\n')
+
             corrected_paragraphs.append(self.decode(generated_tokens))
         
         corrected_text = '\n'.join(corrected_paragraphs)

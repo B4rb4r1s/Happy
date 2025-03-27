@@ -59,19 +59,26 @@ services:
     # command: ["python", './Happy/Utility/Loader/run_loader.py']
 
 
-  cleaner:
-    image: cleaner
-    container_name: spell_checker_cleaner
+  corrector:
+    image: corrector
+    container_name: spell_checker_container
     depends_on:
       - postgre
     volumes:
       - ..:/task
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     command: tail -F /dev/null
 
 
   summarizer:
     image: happy:dedoc
-    container_name: summarizer_cleaner
+    container_name: summarizer_container
     depends_on:
       - postgre
     volumes:
