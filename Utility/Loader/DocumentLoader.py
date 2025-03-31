@@ -59,11 +59,12 @@ class DocumentLoader:
             ''')
             already_uploaded = [item[0] for item in cursor.fetchall()]
         
-        with open('Happy/Utility/Loader/logs.txt', 'a') as f:
+        with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
             f.write(f'GPU is available\n') if torch.cuda.is_available() else f.write('Computing on CPU\n')
 
         for document in os.listdir(self.source_directory):
             document_path = self.source_directory + '/' + document
+            tag = self.source_directory.split('/')[-1]
 
             # Проверка - загружен ли уже документ?
             if document in already_uploaded:
@@ -79,15 +80,15 @@ class DocumentLoader:
                         start = time.time()
                         text_dedoc, tables = self.dedoc_scan(document_path)
                         stop = time.time() - start
-                        with open('Happy/Utility/Loader/logs.txt', 'a') as f:
-                            f.write(f'\tDocument {document} was scanned in {stop} sec\n')
+                        with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+                            f.write(f'\tDocument `{document}` with `{tag}` tag was scanned in {stop} sec\n')
                     except Exception as err:
                         print(f'[ ERROR ] Error during OCR \n>>> {err}')
                         continue
 
                     # Загрузка в базу данных
                     if text_dedoc:
-                        self.db_load(document, text_dedoc, tables)
+                        self.db_load(document, text_dedoc, tag, tables)
 
                 else:
                     print(f'[ DEBUG ] Documnet {document} format is not supported')
@@ -97,12 +98,12 @@ class DocumentLoader:
         self.close_db_connection()
 
     
-    def db_load(self, document, text_dedoc, tables):
+    def db_load(self, document, text_dedoc, tag, tables):
         with self.connection.cursor() as cursor:
             cursor.execute(f'''
-                INSERT INTO {self.db_table} (filename, text_dedoc)
-                VALUES (%s, %s);''',
-                (document,text_dedoc,))
+                INSERT INTO {self.db_table} (filename, text_dedoc, tag)
+                VALUES (%s, %s, %s);''',
+                (document, text_dedoc, tag,))
 
             if tables:
                 for table in tables:
