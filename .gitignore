@@ -13,6 +13,7 @@ static/Uploads/
 
 Models/SpellCheck/*
 Models/Summary/*
+Models/OCR/*
 Models_all/
 
 Source/__pycache__/

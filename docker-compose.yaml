@@ -93,6 +93,14 @@ services:
     command: tail -F /dev/null
 
 
+  ocr:
+    image: olm_ocr
+    container_name: ocr_container
+    volumes:
+      - ..:/ocr
+    command: tail -F /dev/null
+
+
 volumes:
   pgdata:
     driver: local
