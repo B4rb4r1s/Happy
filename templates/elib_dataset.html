@@ -33,6 +33,7 @@
                         <th class="id-column">ID</th>
                         <th>Название файла</th>
                         <th>Начало документа</th>
+                        <th>Секция</th>
                     </tr>
                     {% for doc in dataset %}
                         <tr>
@@ -42,6 +43,7 @@
                                 <a href="{{ url_for('elib_dataset_document', doc_id=doc[0]) }}">{{ doc[1] }}</a>
                             </td>
                             <td class="text-head">{{ doc[2][:65] }} ...</td>
+                            <td>{{ doc[3] }}</td>
                         </tr>
                     {% else %}
                         <tr>

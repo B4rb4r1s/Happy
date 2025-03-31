@@ -448,30 +448,25 @@ def elib_dataset():
     query = request.form.get('query')
     if query:
         cursor.execute('''
-            SELECT * 
+            SELECT elibrary_dataset.id, filename, text_dedoc, tag 
             FROM elibrary_dataset 
             WHERE content_vector @@ to_tsquery(%s);
         ''', (query,))
         documents = cursor.fetchall()
 
-        cursor.close()
-        conn.close()
-        return render_template('elib_dataset.html', dataset=documents,
-                                                    count = len(documents))
     else:
         cursor.execute('''  
-            SELECT elibrary_dataset.id,
-                filename,
-                text_dedoc
+            SELECT elibrary_dataset.id, filename, text_dedoc, tag
             FROM elibrary_dataset
             ORDER BY id DESC;
         ''')
         documents = cursor.fetchall()
 
-        cursor.close()
-        conn.close()
-        return render_template('elib_dataset.html', dataset=documents,
-                                                    count = len(documents))
+    cursor.close()
+    conn.close()
+
+    return render_template('elib_dataset.html', dataset = documents,
+                                                count = len(documents))
 
 # @app.route('/elib_dataset/', methods=['POST'])
 # def elib_dataset_search():
@@ -609,7 +604,13 @@ def get_adjacent_ids(current_id, table):
 @app.route('/pdf/<filename>')
 def serve_pdf(filename):
     # return send_from_directory('uploads', filename)
-    return send_from_directory('prj/Datasets/GRNTI/elibrary/', filename)
+    for dirs in os.listdir('prj/Datasets/GRNTI/elibrary/'):
+        if filename in os.listdir(f'prj/Datasets/GRNTI/elibrary/{dirs}'):
+            print(f'prj/Datasets/GRNTI/elibrary/{dirs}/{filename}', flush=True)
+            return send_from_directory(f'prj/Datasets/GRNTI/elibrary/{dirs}/', filename)
+        else:
+            print('No file')
+            continue
 
 
 @app.route('/error')
