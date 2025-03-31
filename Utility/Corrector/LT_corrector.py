@@ -13,8 +13,8 @@ class LT_corrector:
         # ]
 
 
-
-    def run_LT(self, text=None):
+    # /root/.cache/language_tool_python
+    def run_LT(self, text):
         # [rule.ruleId != f'{rule}' for rule in self.good_rules]
         is_good_rule = lambda rule: \
             rule.ruleId != 'MORFOLOGIK_RULE_RU_RU' and \
@@ -28,16 +28,19 @@ class LT_corrector:
             dataset = [text]
         tool = language_tool_python.LanguageTool('auto')
 
+        array_matches = []
         for text in tqdm.tqdm(dataset):
             try:
                 matches = tool.check(config.PROCESSING_HANDLER(text))
                 # matches = [rule for rule in matches if is_good_rule(rule)]
                 for i, match in enumerate(matches):
+                    # yield i, match
                     print(i, match)
+                    array_matches.append(match)
             except Exception as err:
                 print(f'[ ERROR ] >>> {err}')
                 continue
-        return 0
+        return array_matches
 
 
 if __name__ == '__main__':

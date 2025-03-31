@@ -51,7 +51,7 @@ class BaseSpellCorrector:
             stop = time.time() - start
 
             with open('Happy/Utility/Cleaner/logs.txt', 'a') as res:
-                res.write(f'\t\tParagraph {i}: {len(paragraph)} charecters proccesed in {stop} sec\n')
+                res.write(f'\t\t\tParagraph {i}: {len(paragraph)} charecters proccesed in {stop} sec\n')
 
             corrected_paragraphs.append(self.decode(generated_tokens))
         
