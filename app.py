@@ -490,8 +490,13 @@ def elib_dataset():
 #         return redirect(url_for('elib_dataset'))
 
 
-@app.route('/elib_dataset_document/<int:doc_id>')
+@app.route('/elib_dataset_document/<int:doc_id>', methods=['GET', 'POST'])
 def elib_dataset_document(doc_id):
+
+    # changer = None
+    # if request.method == 'POST':
+    # changer = request.form.get('changer')
+
     conn = db_connection()
     cursor = conn.cursor()
     
@@ -523,23 +528,55 @@ def elib_dataset_document(doc_id):
     summaries = cursor.fetchone()
     if not summaries:
         summaries = [None]*5
+        sums = False
+    else:
+        sums = True
+
+    cursor.execute(''' 
+        SELECT fred_t5_large,
+               rum2m100,
+               sage_fredt5_distilled,
+               sage_fredt5_large,
+               sage_m2m100,
+               language_tool,
+               langtool
+        FROM elibrary_dataset_spell
+        WHERE doc_id = %s;
+    ''', (doc_id,))
+    corrections = cursor.fetchone()
+    if not corrections:
+        corrections = [None]*7
+        cors = False
+    else:
+        cors = True
 
     prev_id, next_id = get_adjacent_ids(doc_id, 'elibrary_dataset')
 
     cursor.close()
     conn.close()
     return render_template('elib_dataset_document.html', 
+                           changer_ =       'summ',
                            id_doc =         docs[0],
                            filename =       docs[1],
                            text_dedoc =     WHITESPACE_HANDLER(docs[2]),
                            
                            tables = tables,
                            
-                           lingvo_summary = summaries[0],
-                           mt5_summary = summaries[1],
-                           mbart_summary = summaries[2],
-                           rut5_summary = summaries[3],
-                           t5_summary = summaries[4],
+                           sums =           sums,
+                           lingvo_summary =     summaries[0],
+                           mt5_summary =        summaries[1],
+                           mbart_summary =      summaries[2],
+                           rut5_summary =       summaries[3],
+                           t5_summary =         summaries[4],
+
+                           cors =           cors,
+                           fred_t5_large =          corrections[0],
+                           rum2m100 =               corrections[1],
+                           sage_fredt5_distilled =  corrections[2],
+                           sage_fredt5_large =      corrections[3],
+                           sage_m2m100 =            corrections[4],
+                           language_tool =          corrections[5],
+                           langtool =               corrections[6],
                            
                            prev_id=prev_id, 
                            next_id=next_id)
@@ -604,7 +641,7 @@ def get_adjacent_ids(current_id, table):
 @app.route('/pdf/<filename>')
 def serve_pdf(filename):
     # return send_from_directory('uploads', filename)
-    for dirs in os.listdir('prj/Datasets/GRNTI/elibrary/'):
+    for dirs in os.listdir('prj/Datasets/GRNTI/elibrary'):
         if filename in os.listdir(f'prj/Datasets/GRNTI/elibrary/{dirs}'):
             print(f'prj/Datasets/GRNTI/elibrary/{dirs}/{filename}', flush=True)
             return send_from_directory(f'prj/Datasets/GRNTI/elibrary/{dirs}/', filename)

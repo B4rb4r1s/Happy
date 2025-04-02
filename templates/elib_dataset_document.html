@@ -5,6 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Документ</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/> 
+
+    <style>
+        #corr {
+            display: none;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            border-radius: 25%;
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            transform: translateX(0px);
+
+            border-radius: 100%;
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+    </style>
+    <script>
+        // JavaScript function to toggle between div blocks
+        function toggleDivs() {
+            var summ = document.getElementById('summ');
+            var corr = document.getElementById('corr');
+            console.log(summ, corr)
+            // var div1 = document.getElementsByClassName('summ');
+            // var div2 = document.getElementsByClassName('corr');
+
+            if (corr.style.display === 'block') 
+            {
+                summ.style.display = 'block';
+                corr.style.display = 'none';
+            } else {
+                summ.style.display = 'none';
+                corr.style.display = 'block';
+            }
+        }
+    </script>
+
 </head>
 <body>
     <div class="container">
@@ -35,6 +114,23 @@
             <a href="{{ url_for('serve_pdf', filename=filename) }}" target="_blank">Открыть PDF</a>
 
             <h2>Извлеченный текст:</h2>
+            <div class="summary-correction-changer">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="switch" onclick="toggleDivs()" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+
+            <!-- <div id="div1">This is the first div block.</div>
+            <div id="div2">This is the second div block.</div> -->
+
+            {% if changer == 'summ' %}
+                <div class="block option1-block">Контент для варианта 1</div>
+            {% elif changer == 'corr' %}
+                <div class="block option2-block">Контент для варианта 2</div>
+            {% endif %}
+
             <table>
                 <tbody>
                     <th class="extracted-document">
@@ -42,6 +138,7 @@
                     </th>
                     <th>
                         <p>Summaries</p>
+                        <p>Correction</p>
                     </th>
                     <tr class="row-section">
                         <td class="extracted-document">
@@ -76,39 +173,82 @@
 
                         </td>
                         <td class="right-cell">
-                            <!-- MODELS = ['./Happy/Models/csebuetnlp--mT5_multilingual_XLSum',
-                                        './Happy/Models/IlyaGusev--mbart_ru_sum_gazeta',
-                                        './Happy/Models/IlyaGusev--rut5_base_sum_gazeta',
-                                        './Happy/Models/utrobinmv--t5_summary_en_ru_zh_base_2048'] -->
-                            <div>
-                                {% if lingvo_summary %}
-                                    <h2>lingvo_summary</h2>
-                                    <pre class="lingvo_summary">{{ lingvo_summary }}</pre>
-                                {% endif %}
+                            <div id="summ">
+                                <h1>Summaries</h1>
+                                <!-- MODELS = ['./Happy/Models/csebuetnlp--mT5_multilingual_XLSum',
+                                            './Happy/Models/IlyaGusev--mbart_ru_sum_gazeta',
+                                            './Happy/Models/IlyaGusev--rut5_base_sum_gazeta',
+                                            './Happy/Models/utrobinmv--t5_summary_en_ru_zh_base_2048'] -->
+                                <div>
+                                    {% if lingvo_summary %}
+                                        <h2>lingvo_summary</h2>
+                                        <pre class="lingvo_summary">{{ lingvo_summary }}</pre>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if mt5_summary %}
+                                        <h2>mT5_multilingual_XLSum</h2>
+                                        <pre class="elib_summaries">{{ mt5_summary }}</pre>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if mbart_summary %}
+                                        <h2>mbart_ru_sum_gazeta</h2>
+                                        <pre class="elib_summaries">{{ mbart_summary }}</pre>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if rut5_summary %}
+                                        <h2>rut5_base_sum_gazeta</h2>
+                                        <pre class="elib_summaries">{{ rut5_summary }}</pre>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if t5_summary %}
+                                        <h2>t5_summary_en_ru_zh_base_2048</h2>
+                                        <pre class="elib_summaries">{{ t5_summary }}</pre>
+                                    {% endif %}
+                                </div>
                             </div>
-                            <div>
-                                {% if mt5_summary %}
-                                    <h2>mT5_multilingual_XLSum</h2>
-                                    <pre class="elib_summaries">{{ mt5_summary }}</pre>
-                                {% endif %}
-                            </div>
-                            <div>
-                                {% if mbart_summary %}
-                                    <h2>mbart_ru_sum_gazeta</h2>
-                                    <pre class="elib_summaries">{{ mbart_summary }}</pre>
-                                {% endif %}
-                            </div>
-                            <div>
-                                {% if rut5_summary %}
-                                    <h2>rut5_base_sum_gazeta</h2>
-                                    <pre class="elib_summaries">{{ rut5_summary }}</pre>
-                                {% endif %}
-                            </div>
-                            <div>
-                                {% if t5_summary %}
-                                    <h2>t5_summary_en_ru_zh_base_2048</h2>
-                                    <pre class="elib_summaries">{{ t5_summary }}</pre>
-                                {% endif %}
+                            <div id="corr">
+                                <h1>Corrections</h1>
+                                <!-- fred_t5_large
+                                     rum2m100
+                                     sage_fredt5_distilled
+                                     sage_fredt5_large
+                                     sage_m2m100
+                                     language_tool
+                                     langtool -->
+                                <div>
+                                    {% if langtool %}
+                                        <h2>langtool</h2>
+                                        <pre class="elib_corrector document-text">{{ langtool }}</pre>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if fred_t5_large %}
+                                        <h2>fred_t5_large</h2>
+                                        <pre class="elib_corrector document-text">{{ fred_t5_large }}</pre>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if rum2m100 %}
+                                        <h2>rum2m100</h2>
+                                        <pre class="elib_corrector document-text">{{ rum2m100 }}</pre>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if sage_fredt5_distilled %}
+                                        <h2>sage_fredt5_distilled</h2>
+                                        <pre class="elib_corrector document-text">{{ sage_fredt5_distilled }}</pre>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if sage_m2m100 %}
+                                        <h2>sage_m2m100</h2>
+                                        <pre class="elib_corrector document-text">{{ sage_m2m100 }}</pre>
+                                    {% endif %}
+                                </div>
                             </div>
                         </td>
                     </tr>
