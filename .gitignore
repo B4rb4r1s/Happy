@@ -25,10 +25,9 @@ Utility/__pycache__/
 Utility/.ipynb_checkpoints/
 Utility/NER_System/
 
-Utility/Loader/logs.txt
-Utility/Cleaner/logs.txt
-Utility/Summarizer/logs.txt
-Utility/Corrector/logs.txt
-Utility/Corrector/logs_old.txt
+Utility/Loader/logs*.txt
+Utility/Cleaner/logs*.txt
+Utility/Summarizer/logs*.txt
+Utility/Corrector/logs*.txt
 
 *.rar

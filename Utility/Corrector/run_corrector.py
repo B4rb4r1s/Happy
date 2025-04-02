@@ -4,6 +4,7 @@ import config
 import os
 import re
 import time
+import tqdm
 import pandas as pd
 # sys.path.append('/task/Happy/Utility')
 
@@ -16,12 +17,19 @@ from DatabaseHandler import DatabaseHandler
 
 
 def run_full_correction():
-    db_handler = DatabaseHandler('docker')
+    db_handler = DatabaseHandler('ssh')
     db_handler.set_doc_ids(config.SPELL_CORRECTION_TABLE)
 
-    correctors = [Omage_corrector(model_path) for model_path in config.SPELL_CORRECTION_MODELS]
-    for corrector in correctors:
-        corrector.run_and_load(db_handler)
+    # correctors = [Omage_corrector(model_path) for model_path in config.SPELL_CORRECTION_MODELS]
+    # for corrector in correctors:
+    #     corrector.run_and_load(db_handler)
+    corrector = Omage_corrector(config.SPELL_CORRECTION_MODELS[1])
+
+    with open('Happy/Utility/Corrector/logs.txt', 'a') as f:
+        f.write('task: run_full_correction\n')
+        f.write(f'\tCorrector: {corrector.column}\n')
+
+    corrector.run_and_load(db_handler)
 
     db_handler.close_db_connection()
 
@@ -35,21 +43,68 @@ def run():
 
 # python ./Happy/Utility/Corrector/run_corrector.py
 def LT_with_NN():
-    db_handler = DatabaseHandler('docker')
+    db_handler = DatabaseHandler('ssh')
     # db_handler.set_doc_ids(config.SPELL_CORRECTION_TABLE)
 
     langtool = LT_corrector()
+    corrector = Omage_corrector(config.SPELL_CORRECTION_MODELS[1])
+    # correctors = [Omage_corrector(model_path) for model_path in config.SPELL_CORRECTION_MODELS]
 
-    doc_text = config.PROCESSING_HANDLER(db_handler.get_db_table('elibrary_dataset_spell', 'langtool')[10][1])
-    # print(doc_text)
+    with open('Happy/Utility/Corrector/logs.txt', 'a') as f:
+        f.write('task: LT_with_NN\n')
+        f.write(f'\tCorrector: {corrector.column}\n')
 
-    with open('Happy/Utility/Cleaner/logs.txt', 'a') as f:
-        f.write('task: LT_with_NN')
+    docs_texts = db_handler.get_db_table('elibrary_dataset_spell', 'langtool')
+    for doc_id, doc_text in docs_texts[:25]:
 
-    matches = langtool.run_LT(doc_text)
-    print(matches)
+        with open('Happy/Utility/Corrector/logs.txt', 'a') as f:
+            f.write(f'\t\tDocument: {doc_id}\n')
 
-    return 0
+        doc_para = config.WHITESPACE_HANDLER(doc_text).split('\n')
+        doc_para_sent = [para.split('.') for para in doc_para]
+
+        start = time.time()
+        corrected_text = []
+        for i, para in enumerate(doc_para_sent):
+            print(para)
+            corrected_paragraph = []
+            for j, sent in enumerate(para):
+                print(sent)
+                matches = langtool.run_LT(sent)
+                print(matches)
+
+
+                return 0
+                if matches:
+                    # print(f'In {i+1}/{len(doc_para_sent)} paragraph\nIn {j+1}/{len(para)} sentance\n{len(matches)} possible misstakes found')
+                    # for match in matches:
+                    #     print(f'\t{match};')
+                    corrected_sentance = corrector.correct_text(sent)
+                    print(f'corrected_sentance: {corrected_sentance}')
+                    corrected_paragraph.append(corrected_sentance)
+                else:
+                    corrected_paragraph.append(sent)
+
+            corrected_paragraph = '.'.join(corrected_paragraph)
+
+        corrected_text = '\n'.join(corrected_paragraph)
+        stop = time.time() - start
+
+        # db_handler.upload_data('elibrary_dataset_spell', 'langtool', doc_id, corrected_text)
+
+
+        with open('Happy/Utility/Corrector/logs.txt', 'a') as res:
+            res.write(f'\t\tText: {len(doc_text)} charecters, {len(doc_para)} paragraphs\n\t\t\tproccesed in {stop} sec\n')
+
+
+    return corrected_text
+
+
+    # matches = langtool.run_LT(doc_text)
+    # print(matches)
+
+    # return 0
+
 
 
 
@@ -82,12 +137,18 @@ def folder_txt():
                 corr_text = corrector.correct_text(original_text)
                 stop = time.time()-start
 
-                with open('Happy/Utility/Cleaner/logs.txt', 'a') as res:
+                with open('Happy/Utility/Corrector/logs.txt', 'a') as res:
                     res.write(f'\t\tDoc: {document} \tText: {len(original_text)} charecters proccesed in {stop} sec\n')
                 print(f'Text: {len(original_text)} charecters proccesed in {stop} sec')
 
                 with open(f'{path}/correct/corr_{corrector.column}_{document}', 'w', encoding='windows-1251') as f:
                     f.write(corr_text)
+
+
+
+def check_tokens(text):
+    corr = Omage_corrector(config.SPELL_CORRECTION_MODELS[1])
+    print(corr.correct_text(text))
 
 
 def i_luv_u():
@@ -100,9 +161,8 @@ def i_luv_u():
 
 
 
-
 if __name__ == '__main__':
-    LT_with_NN()
+    # LT_with_NN()
     # folder_txt()
     # corrector = T5_russ_corrector('./Happy/Models/SpellCheck/UrukHan--t5-russian-spell')
     # print('В статье анализируется эмпирический материал, полученный входе социологических исследований феномена бедности. Рассмотренодва основных вопроса: оценка доли бедных в населении современнойРоссии и изучение отношений самих россиян к различным аспектамбедности. Выделены основные признаки «бедности по-российски»в массовом сознании россиян, показаны массовые представленияпричин бедности, даны структура и характерные особенностироссийской бедности.\n')
@@ -113,7 +173,9 @@ if __name__ == '__main__':
 
 
     # run()
-    # run_full_correction()
+    run_full_correction()
+    # text = '''Опрос студентов 4-х курсов (анкетирование, сплошной опрос, 289 чел.) показал, что около 20% опрошенных изъявляют желание продолжить обучение после окончания техникума (15% респондентов будут поступать в ДВГУПС на обучение по программам высшего профессионального образования по специальности и 5% отдают предпочтение другим вузам), а более 18% не имеют такого желания; 17% серьезно относятся к изучению только специальных дисциплин, которые пригодятся им для дальнейшего обучения в вузе; и столько же студентов 17% игнорируют все дисциплины. Большое количество опрошенных вообще воздержалось от ответа на вопрос об отношении к учебе в вузе. Однако 60% респондентов отметили, что хотели бы продолжить обучение по программам ВПО ДВГУПС, если бы существовали сокращенные программы обучения, позволяющие выпускникам СПО поступать на ВПО на специальных условиях. [3]Одной из причин, мешающих поступать на общих основаниях, студенты назвали то, что не хотят сдавать ЕГЭ, поскольку боятся, что за несколько лет обучения в техникуме забыли школьную программу и низко оценивают свои шансы на успешную сдачу ЕГЭ. Однако, у выпускников СПО есть преимущества перед выпускниками школ и они должны быть учтены при приеме их на ВПО: выпускник СПО, желающий продолжить образование, уже не только имеет представление о будущей профессии, но и прошел практику, он имеет специальные знания и навыки, которыми не обладают выпускники школ. А подготовка к ЕГЭ происходит как раз во время написания дипломной работы, поэтому студент не сможет полноценно подготовиться к ЕГЭ и одновременно успешно написать диплом. Поэтому необходимо пересмотреть условия поступления выпускников техникума на обучение по программам ВПО в ДВГУПС. Для успешной профессиональной социализации студентов СПО необходимо применение программы не только адаптации студентов нового набора к учебному'''
+    # check_tokens(text)
     
 
 

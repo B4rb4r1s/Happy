@@ -20,6 +20,8 @@ class BaseSpellCorrector:
         self.tokenizer =  None
         self.column = column
 
+        self.batch_size = 190
+
         self.tokenization_args = {}
         self.generation_args = {}
 
@@ -35,28 +37,55 @@ class BaseSpellCorrector:
     
     def decode(self, generated_tokens, **kwargs):
         return self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True, **kwargs)[0]
+
     
     def correct_text(self, text):
         corrected_paragraphs = []
         if self.column == 'fred_t5_large_spell':
             text = 'Исправь: """' + text +'"""'
 
-        for i, paragraph in enumerate(tqdm.tqdm(text.split('\n'), desc="Processing text paragraphs")):
+        # for i, paragraph in enumerate(tqdm.tqdm(text.split('\n'), desc="Processing text paragraphs")):
+        for i, paragraph in enumerate(text.split('\n')):
 
-            self.encodings = self.tokenizer(paragraph, **self.tokenization_args, return_tensors="pt").to(self.device)
-            self.set_generation_arguments()
+            tokens = self.tokenizer.encode(paragraph)
+            if len(tokens) > self.batch_size:
+                corrected_chunk = []
+                start = time.time()
 
-            start = time.time()
-            generated_tokens = self.model.generate(**self.encodings, **self.generation_args).to(self.device)
-            stop = time.time() - start
+                token_chunks = [tokens[i:i+self.batch_size] for i in range(0, len(tokens), self.batch_size)]
+                text_chunks = [self.tokenizer.decode(chunk, skip_special_tokens=True) for chunk in token_chunks]
 
-            with open('Happy/Utility/Cleaner/logs.txt', 'a') as res:
-                res.write(f'\t\t\tParagraph {i}: {len(paragraph)} charecters proccesed in {stop} sec\n')
+                for text_chunk in text_chunks:
 
-            corrected_paragraphs.append(self.decode(generated_tokens))
+                    self.encodings = self.tokenizer(text_chunk, **self.tokenization_args, return_tensors="pt").to(self.device)
+                    self.set_generation_arguments()
+
+                    generated_tokens = self.model.generate(**self.encodings, **self.generation_args).to(self.device)
+
+                    corrected_chunk.append(self.decode(generated_tokens))
+
+                corrected_paragraph = ' '.join(corrected_chunk)
+                stop = time.time() - start
+
+            else:
+
+                self.encodings = self.tokenizer(paragraph, **self.tokenization_args, return_tensors="pt").to(self.device)
+                self.set_generation_arguments()
+
+                start = time.time()
+                generated_tokens = self.model.generate(**self.encodings, **self.generation_args).to(self.device)
+                stop = time.time() - start
+
+                with open('Happy/Utility/Corrector/logs.txt', 'a') as res:
+                    res.write(f'\t\t\tParagraph {i}: {len(paragraph)} charecters proccesed in {stop} sec\n')
+
+                corrected_paragraph = self.decode(generated_tokens)
+
+            corrected_paragraphs.append(corrected_paragraph)
         
         corrected_text = '\n'.join(corrected_paragraphs)
         return corrected_text
+
     
     def run_and_load(self, db_handler=None, extra_condition=None):
         dataset = db_handler.get_db_table(table=config.SPELL_CORRECTION_TABLE, 
@@ -64,15 +93,23 @@ class BaseSpellCorrector:
                                           extra_condition=extra_condition)
         for doc_id, text in tqdm.tqdm(dataset, desc=f"Processing {self.column}"):
             try:
+                with open('Happy/Utility/Corrector/logs.txt', 'a') as f:
+                    f.write(f'\t\tDocument: {doc_id}\n')
+
+                start = time.time()
                 config.logger.debug(f"Обработка документа {doc_id}")
                 processed_text = config.WHITESPACE_HANDLER(text)
-                summary = self.correct_text(processed_text)
+                correction = self.correct_text(processed_text)
+                stop = time.time() - start
+
                 db_handler.upload_data(
                     table=config.SPELL_CORRECTION_TABLE, 
                     column=self.column, 
                     doc_id=doc_id, 
-                    text=summary
+                    text=correction
                 )
+                with open('Happy/Utility/Corrector/logs.txt', 'a') as f:
+                    f.write(f'\t\tDocument loaded in {stop} seconds\n')
             except Exception as err:
                 config.logger.error(f"[ ERROR ] Документ {doc_id}: {err}")
         return
