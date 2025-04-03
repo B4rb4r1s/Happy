@@ -9,21 +9,27 @@ class DatabaseHandler:
         self.get_db_connection()
 
     def get_db_connection(self):
+        port = "5432"
         if self.host == 'local':
-            host = "localhost" 
-        elif self.host == 'ssh':
+            host = "localhost"
+        elif self.host == 'ssh_27':
             host = "192.168.1.55"
+        elif self.host == 'ssh_dgx':
+            host = "195.19.43.12"
+            port = "5533"
         elif self.host == 'docker':
             host = "postgre"
         else:
             print(f'[ ERROR ] Unknown type for host')
             return False
         try:
+            print(f'[ DEBUG ] Trying to connect to {host}:{port}')
             self.connection = psycopg2.connect(database='happy_db', 
                                                user="happy_user", 
                                                password="happy", 
                                                host=host, 
-                                               port="5432")
+                                               port=port)
+            print(f'[ DEBUG ] Connected to {host}:{port}')
         except Exception as err:
             print(f'[ ERROR ] Database is unreachable\n>>> {err}')
             return False
