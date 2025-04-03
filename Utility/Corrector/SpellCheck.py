@@ -15,7 +15,7 @@ import SpellModels
 class BaseSpellCorrector:
     def __init__(self, model_path, column=None, device=None):
         self.model_path = model_path
-        self.device = device or "cuda:0" if torch.cuda.is_available() else "cpu"
+        self.device = device or "cuda:1" if torch.cuda.is_available() else "cpu"
         self.model = None
         self.tokenizer =  None
         self.column = column
@@ -26,7 +26,7 @@ class BaseSpellCorrector:
         self.generation_args = {}
 
         self.encodings = {'input_ids': torch.tensor([[]])}
-        print(f'Computing using GPU') if self.device=='cuda:0' else print(f'Computing using CPU')
+        print(f'Computing using GPU') if 'cuda' in self.device else print(f'Computing using CPU')
         self.set_model()
     
     def set_model(self):
@@ -76,7 +76,7 @@ class BaseSpellCorrector:
                 generated_tokens = self.model.generate(**self.encodings, **self.generation_args).to(self.device)
                 stop = time.time() - start
 
-                with open('Happy/Utility/Corrector/logs.txt', 'a') as res:
+                with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as res:
                     res.write(f'\t\t\tParagraph {i}: {len(paragraph)} charecters proccesed in {stop} sec\n')
 
                 corrected_paragraph = self.decode(generated_tokens)
@@ -88,12 +88,14 @@ class BaseSpellCorrector:
 
     
     def run_and_load(self, db_handler=None, extra_condition=None):
+
         dataset = db_handler.get_db_table(table=config.SPELL_CORRECTION_TABLE, 
                                           column=self.column, 
                                           extra_condition=extra_condition)
+        
         for doc_id, text in tqdm.tqdm(dataset, desc=f"Processing {self.column}"):
             try:
-                with open('Happy/Utility/Corrector/logs.txt', 'a') as f:
+                with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as f:
                     f.write(f'\t\tDocument: {doc_id}\n')
 
                 start = time.time()
@@ -108,7 +110,7 @@ class BaseSpellCorrector:
                     doc_id=doc_id, 
                     text=correction
                 )
-                with open('Happy/Utility/Corrector/logs.txt', 'a') as f:
+                with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as f:
                     f.write(f'\t\tDocument loaded in {stop} seconds\n')
             except Exception as err:
                 config.logger.error(f"[ ERROR ] Документ {doc_id}: {err}")
@@ -140,7 +142,7 @@ def make_dataset_from_json(json_file):
 
 
 def run():
-    corr = SpellModels.Omage_corrector('./Happy/Models/SpellCheck/ai-forever--FRED-T5-large-spell')
+    corr = SpellModels.Omage_corrector('./DocumentAnalysisSystem/Models/SpellCheck/ai-forever--FRED-T5-large-spell')
     # corr = SpellModels.Omage_corrector('./Happy/Models/SpellCheck/UrukHan--t5-russian-spell')
 
     text = 'Проблнма изучания социокультурных особенностей формирования социального потенциаламолодежи в усл овиях происхлдящих кризисных явленийи трансформаци российского общества является многоаспектной.'

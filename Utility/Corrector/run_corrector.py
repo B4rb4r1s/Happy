@@ -1,23 +1,18 @@
 from SpellModels import Omage_corrector
-from LT_corrector import LT_corrector
 import config
 import os
-import re
+import sys
 import time
-import tqdm
-import pandas as pd
 # sys.path.append('/task/Happy/Utility')
 
-import logging
-import sys
-sys.path.append('/task/Happy/Utility')
+sys.path.append('/task/DocumentAnalysisSystem/Utility')
 # print(sys.path)
 from DatabaseHandler import DatabaseHandler
 
 
 
 def run_full_correction():
-    db_handler = DatabaseHandler('ssh')
+    db_handler = DatabaseHandler('docker')
     db_handler.set_doc_ids(config.SPELL_CORRECTION_TABLE)
 
     # correctors = [Omage_corrector(model_path) for model_path in config.SPELL_CORRECTION_MODELS]
@@ -25,7 +20,7 @@ def run_full_correction():
     #     corrector.run_and_load(db_handler)
     corrector = Omage_corrector(config.SPELL_CORRECTION_MODELS[1])
 
-    with open('Happy/Utility/Corrector/logs.txt', 'a') as f:
+    with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as f:
         f.write('task: run_full_correction\n')
         f.write(f'\tCorrector: {corrector.column}\n')
 
@@ -39,72 +34,6 @@ def run():
 
     text = 'Проблнма изучания социокультурных особенностей формирования социального потенциаламолодежи в усл овиях происхлдящих кризисных явленийи трансформаци российского общества является многоаспектной.'
     print(f'original: {text}\ncorrect: {corr.correct_text(text)}')
-
-
-# python ./Happy/Utility/Corrector/run_corrector.py
-def LT_with_NN():
-    db_handler = DatabaseHandler('ssh')
-    # db_handler.set_doc_ids(config.SPELL_CORRECTION_TABLE)
-
-    langtool = LT_corrector()
-    corrector = Omage_corrector(config.SPELL_CORRECTION_MODELS[1])
-    # correctors = [Omage_corrector(model_path) for model_path in config.SPELL_CORRECTION_MODELS]
-
-    with open('Happy/Utility/Corrector/logs.txt', 'a') as f:
-        f.write('task: LT_with_NN\n')
-        f.write(f'\tCorrector: {corrector.column}\n')
-
-    docs_texts = db_handler.get_db_table('elibrary_dataset_spell', 'langtool')
-    for doc_id, doc_text in docs_texts[:25]:
-
-        with open('Happy/Utility/Corrector/logs.txt', 'a') as f:
-            f.write(f'\t\tDocument: {doc_id}\n')
-
-        doc_para = config.WHITESPACE_HANDLER(doc_text).split('\n')
-        doc_para_sent = [para.split('.') for para in doc_para]
-
-        start = time.time()
-        corrected_text = []
-        for i, para in enumerate(doc_para_sent):
-            print(para)
-            corrected_paragraph = []
-            for j, sent in enumerate(para):
-                print(sent)
-                matches = langtool.run_LT(sent)
-                print(matches)
-
-
-                return 0
-                if matches:
-                    # print(f'In {i+1}/{len(doc_para_sent)} paragraph\nIn {j+1}/{len(para)} sentance\n{len(matches)} possible misstakes found')
-                    # for match in matches:
-                    #     print(f'\t{match};')
-                    corrected_sentance = corrector.correct_text(sent)
-                    print(f'corrected_sentance: {corrected_sentance}')
-                    corrected_paragraph.append(corrected_sentance)
-                else:
-                    corrected_paragraph.append(sent)
-
-            corrected_paragraph = '.'.join(corrected_paragraph)
-
-        corrected_text = '\n'.join(corrected_paragraph)
-        stop = time.time() - start
-
-        # db_handler.upload_data('elibrary_dataset_spell', 'langtool', doc_id, corrected_text)
-
-
-        with open('Happy/Utility/Corrector/logs.txt', 'a') as res:
-            res.write(f'\t\tText: {len(doc_text)} charecters, {len(doc_para)} paragraphs\n\t\t\tproccesed in {stop} sec\n')
-
-
-    return corrected_text
-
-
-    # matches = langtool.run_LT(doc_text)
-    # print(matches)
-
-    # return 0
-
 
 
 
