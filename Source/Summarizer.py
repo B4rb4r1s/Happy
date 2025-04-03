@@ -22,16 +22,16 @@ print(f'[{datetime.datetime.now()}][ DEBUG ] Computing using device - {device}')
 
 
 # BART
-# MODEL_NAME = 'IlyaGusev/mbart_ru_sum_gazeta'
-# MODEL_PATH = 'Models/Summary/IlyaGusev--mbart_ru_sum_gazeta'
-# tokenizer = MBartTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
-# model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
+MODEL_NAME = 'IlyaGusev/mbart_ru_sum_gazeta'
+MODEL_PATH = 'Models/Summary/IlyaGusev--mbart_ru_sum_gazeta'
+tokenizer = MBartTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
+model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
 
 # T5
-MODEL_NAME = 'utrobinmv/t5_summary_en_ru_zh_base_2048'
-MODEL_PATH = 'Models/Summary/utrobinmv--t5_summary_en_ru_zh_base_2048'
-tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
-model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH).to(device)
+# MODEL_NAME = 'utrobinmv/t5_summary_en_ru_zh_base_2048'
+# MODEL_PATH = 'Models/Summary/utrobinmv--t5_summary_en_ru_zh_base_2048'
+# tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
+# model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH).to(device)
 
 # mT5
 # MODEL_NAME = 'csebuetnlp/mT5_multilingual_XLSum'
