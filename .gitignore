@@ -31,3 +31,5 @@ Utility/Summarizer/logs*.txt
 Utility/Corrector/logs*.txt
 
 *.rar
+
+DocumentAnalysisSystem.code-workspace

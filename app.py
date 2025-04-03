@@ -222,15 +222,25 @@ def delete_documents():
     conn = db_connection()
     cursor = conn.cursor()
 
+    cursor.execute('SELECT filename FROM documents WHERE id = ANY(%s)', (document_ids,))
+    rm_files = cursor.fetchall()
+
     try:
         # Выполнение удаления по всем таблицам базы данных
         cursor.execute('DELETE FROM documents       WHERE id        = ANY(%s)', (document_ids,))
         cursor.execute('DELETE FROM metadata        WHERE doc_id    = ANY(%s)', (document_ids,))
         cursor.execute('DELETE FROM named_entities  WHERE doc_id    = ANY(%s)', (document_ids,))
-        
+
         conn.commit()
     except Exception as err:
         print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with deleting documents from Databes\n>>> {err}')
+
+    try:
+        for rm_file in rm_files:
+            rm_path = os.path.join(app.config['UPLOAD_FOLDER'], rm_file[0])
+            os.remove(rm_path)
+    except OSError:
+        pass
     
     cursor.close()
     conn.close()
