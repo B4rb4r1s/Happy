@@ -38,52 +38,57 @@ class BaseSpellCorrector:
     def decode(self, generated_tokens, **kwargs):
         return self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True, **kwargs)[0]
 
+
+    def encode_to_generate(self, inputs):
+
+        self.encodings = self.tokenizer(inputs, **self.tokenization_args, return_tensors="pt").to(self.device)
+        self.set_generation_arguments()
+        generated_tokens = self.model.generate(**self.encodings, **self.generation_args).to(self.device)
+
+        return generated_tokens
+
+
+    def correct_paragraph(self, paragraph):
+        tokens = self.tokenizer.encode(paragraph)
+        if len(tokens) > self.batch_size:
+            corrected_chunk = []
+
+            token_chunks = [tokens[i:i+self.batch_size] for i in range(0, len(tokens), self.batch_size)]
+            text_chunks = [self.tokenizer.decode(chunk, skip_special_tokens=True) for chunk in token_chunks]
+
+            for text_chunk in text_chunks:
+                generated_tokens = self.encode_to_generate(text_chunk)
+                corrected_chunk.append(self.decode(generated_tokens))
+
+            corrected_paragraph = ''.join(corrected_chunk)
+
+        else:
+            # self.encodings = self.tokenizer(paragraph, **self.tokenization_args, return_tensors="pt").to(self.device)
+            # self.set_generation_arguments()
+            # generated_tokens = self.model.generate(**self.encodings, **self.generation_args).to(self.device)
+            generated_tokens = self.encode_to_generate(paragraph)
+            corrected_paragraph = self.decode(generated_tokens)
+
+        return corrected_paragraph
+
     
     def correct_text(self, text):
         corrected_paragraphs = []
-        if self.column == 'fred_t5_large_spell':
-            text = 'Исправь: """' + text +'"""'
+        # if self.column == 'fred_t5_large_spell':
+        #     text = 'Исправь: """' + text +'"""'
 
         # for i, paragraph in enumerate(tqdm.tqdm(text.split('\n'), desc="Processing text paragraphs")):
         for i, paragraph in enumerate(text.split('\n')):
 
-            tokens = self.tokenizer.encode(paragraph)
-            if len(tokens) > self.batch_size:
-                corrected_chunk = []
-                start = time.time()
-
-                token_chunks = [tokens[i:i+self.batch_size] for i in range(0, len(tokens), self.batch_size)]
-                text_chunks = [self.tokenizer.decode(chunk, skip_special_tokens=True) for chunk in token_chunks]
-
-                for text_chunk in text_chunks:
-
-                    self.encodings = self.tokenizer(text_chunk, **self.tokenization_args, return_tensors="pt").to(self.device)
-                    self.set_generation_arguments()
-
-                    generated_tokens = self.model.generate(**self.encodings, **self.generation_args).to(self.device)
-
-                    corrected_chunk.append(self.decode(generated_tokens))
-
-                corrected_paragraph = ' '.join(corrected_chunk)
-                stop = time.time() - start
-
-            else:
-
-                self.encodings = self.tokenizer(paragraph, **self.tokenization_args, return_tensors="pt").to(self.device)
-                self.set_generation_arguments()
-
-                start = time.time()
-                generated_tokens = self.model.generate(**self.encodings, **self.generation_args).to(self.device)
-                stop = time.time() - start
-
-                with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as res:
-                    res.write(f'\t\t\tParagraph {i}: {len(paragraph)} charecters proccesed in {stop} sec\n')
-
-                corrected_paragraph = self.decode(generated_tokens)
-
+            start = time.time()
+            corrected_paragraph = self.correct_paragraph(paragraph)
             corrected_paragraphs.append(corrected_paragraph)
+            stop = time.time() - start
+                
+            with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as res:
+                res.write(f'\t\t\tParagraph {i}: {len(paragraph)} charecters proccesed in {stop} sec\n')
         
-        corrected_text = '\n'.join(corrected_paragraphs)
+        corrected_text = '\n\t'.join(corrected_paragraphs)
         return corrected_text
 
     
