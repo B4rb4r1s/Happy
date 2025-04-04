@@ -72,32 +72,27 @@ def LT_with_NN():
         doc_para = config.WHITESPACE_HANDLER(doc_text).split('\n')
         doc_para_sent = [para.split('.') for para in doc_para]
 
-        start = time.time()
+        startd = time.time()
         corrected_text = []
-        for i, para in enumerate(doc_para_sent):
+        for i, para in enumerate(doc_para):
             corrected_paragraph = []
-            for j, sent in enumerate(para):
-                start = time.time()
-                
-                matches = langtool.run_LT(sent)
-                if matches:
-                    # print(f'In {i+1}/{len(doc_para_sent)} paragraph\nIn {j+1}/{len(para)} sentance\n{len(matches)} possible misstakes found')
-                    # for match in matches:
-                    #     print(f'\t{match};')
-                    corrected_sentance = corrector.correct_paragraph(sent)
-                    corrected_paragraph.append(corrected_sentance)
-                else:
-                    corrected_paragraph.append(sent)
+            start = time.time()
 
-                stop = time.time() - start
+            matches = langtool.run_LT(para)
+            if len(matches)>0:
+                corrected_sentance = corrector.correct_paragraph(para)
+                corrected_paragraph.append(corrected_sentance)
+            else:
+                corrected_paragraph.append(para)
 
-                with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as res:
-                    res.write(f'\t\t\t{i}/{len(doc_para_sent)} Paragraph, {j}/{len(para)} Sentence:\n\t\t\t\t{len(sent)} charecters proccesed in {stop} sec\n')
+            stop = time.time() - start
 
-            corrected_paragraph = '.'.join(corrected_paragraph)
+            with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as res:
+                res.write(f'\t\t\t{i+1}/{len(doc_para_sent)} Paragraph for {len(para)} charecters proccesed in {stop} sec\n')
+            corrected_text.append(corrected_paragraph)
 
-        corrected_text = '\n'.join(corrected_paragraph)
-        stop = time.time() - start
+        corrected_text = '\n\t'.join(corrected_text)
+        stopd = time.time() - startd
 
         print(corrected_text)
 
@@ -105,7 +100,7 @@ def LT_with_NN():
 
 
         with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as res:
-            res.write(f'\t\tText: {len(doc_text)} charecters, {len(doc_para)} paragraphs\n\t\t\tproccesed in {stop} sec\n')
+            res.write(f'\t\tText: {len(doc_text)} charecters, {len(doc_para)} paragraphs\n\t\t\tproccesed in {stopd} sec\n')
 
 
     return True
@@ -115,8 +110,10 @@ def LT_with_NN():
 
 def simple_exmpl():
     langtool = LT_corrector()
-    text = '''`В молодежной среде регулярно проводятся соревнования по силовому многоборью, волейболу, футболу и другим видов спорта.'''
-    print(langtool.run_LT(text))
+    text = '''В статье представлены результаты исследования профессиональной идентичности молодого преподавателя в условиях трансформации академической среды. Доказано, что современное поколение молодых преподавателей существует в конфликтном социально-культурном и профессиональном пространстве. Одна плоскость анализа трансформация академической среды как меса работы, конфликт двух тпов университетских культур: традиционной, «профессорской», ориентированной на гуманитарные ценности, и корпоративной с базовыми экономическими ценностями. Другая плоскость анализа размытость социальной идентификации современной молодежи, в том числе и «молодых взрослых», современного поколения молодых'''
+    # text = '''`В молодежной среде регулярно проводятся соревнования по силовому многоборью, волейболу, футболу и другим видов спорта.'''
+    mhs = langtool.run_LT(text)
+    print(len(mhs),'\n', mhs)
 
 if __name__ == '__main__':
     LT_with_NN()
