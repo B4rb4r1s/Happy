@@ -107,8 +107,8 @@ p {
 }
 .document-table {
     /* table-layout: fixed;
-    display: table;
-    width: 100%; */
+    display: table; */
+    width: 100%;
 }
 
 .tables-of-document {
@@ -138,8 +138,8 @@ p {
     width: 65%;
 }
 .text-section {
-    /* max-width: 100vh;
-    width: 65%; */
+    /* width: 100vh; */
+    max-width: 100%;
 }
 .summary-section {
     max-height: 400px;
@@ -153,14 +153,22 @@ p {
     min-width: 361px;
 }
 
-.extracted-document {
+.summary-correction-changer {
+    margin-left: 50%;
+}
+
+.extracted-document{
     vertical-align: top;
     width: 50%;
     max-width: 50%;
 }
 .right-cell {
-    vertical-align: top;
+vertical-align: top;
+width: 50%;
+max-width: 50%;
 }
+
+
 .lingvo_summary {
     font-size: 75%;
 }

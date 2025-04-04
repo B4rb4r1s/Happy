@@ -6,8 +6,6 @@ services:
     container_name: happy_container
     ports:
       - "0.0.0.0:5052:5000"
-    #expose:
-    #  - 5052
     depends_on:
       - postgre
     volumes:
@@ -32,8 +30,6 @@ services:
       POSTGRES_DB: happy_db
     ports:
       - "0.0.0.0:5533:5432"
-    # expose:
-    #   - 5533
     volumes:
       - ./happy_pgdata:/var/lib/postgresql/data
 
@@ -52,9 +48,9 @@ services:
     #         - driver: nvidia
     #           count: all
     #           capabilities: [gpu]
-    command: tail -F /dev/null
+    # command: tail -F /dev/null
     # command: ['python', './NER_System/run.py']
-    # command: ["python", './Happy/Utility/Loader/run_loader.py']
+    command: ["python", './DocumentAnalysisSystem/Utility/Loader/run_loader.py']
 
 
   corrector:
@@ -71,24 +67,25 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    command: tail -F /dev/null
+    # command: tail -F /dev/null
+    command: ["python", './DocumentAnalysisSystem/Utility/Corrector/run_corrector.py']
 
 
-  summarizer:
-    image: happy:dedoc
-    container_name: happy_summarizer_container
-    depends_on:
-      - postgre
-    volumes:
-      - ..:/app
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-    command: tail -F /dev/null
+  # summarizer:
+  #   image: happy:dedoc
+  #   container_name: happy_summarizer_container
+  #   depends_on:
+  #     - postgre
+  #   volumes:
+  #     - ..:/app
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
+  #   command: tail -F /dev/null
 
 
   # ocr:
