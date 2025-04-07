@@ -1,4 +1,5 @@
 from SummaryLoader import BaseSummarizer
+import config
 
 from transformers import T5ForConditionalGeneration, AutoTokenizer
 from transformers import T5ForConditionalGeneration, T5Tokenizer
@@ -13,7 +14,7 @@ class mT5_Summarizer(BaseSummarizer):
 
     def summarize_text(self, text):
         input_ids = self.tokenizer(
-            [PROCESSING_HANDLER(text)],
+            [config.PROCESSING_HANDLER(text)],
             # text,
             return_tensors="pt",
             padding="max_length",
