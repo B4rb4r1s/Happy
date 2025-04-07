@@ -3,6 +3,7 @@ import config
 import os
 import sys
 import time
+import datetime
 # sys.path.append('/task/Happy/Utility')
 
 sys.path.append('/task/DocumentAnalysisSystem/Utility')
@@ -15,16 +16,12 @@ def run_full_correction():
     db_handler = DatabaseHandler('docker')
     db_handler.set_doc_ids(config.SPELL_CORRECTION_TABLE)
 
-    # correctors = [Omage_corrector(model_path) for model_path in config.SPELL_CORRECTION_MODELS]
-    # for corrector in correctors:
-    #     corrector.run_and_load(db_handler)
-    corrector = Omage_corrector(config.SPELL_CORRECTION_MODELS[1])
+    correctors = [Omage_corrector(model_path) for model_path in config.SPELL_CORRECTION_MODELS]
+    # corrector = Omage_corrector(config.SPELL_CORRECTION_MODELS[1])
 
-    with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as f:
-        f.write('task: run_full_correction\n')
-        f.write(f'\tCorrector: {corrector.column}\n')
-
-    corrector.run_and_load(db_handler)
+    for corrector in correctors:
+        corrector.run_and_load(db_handler)
+    # corrector.run_and_load(db_handler)
 
     db_handler.close_db_connection()
 

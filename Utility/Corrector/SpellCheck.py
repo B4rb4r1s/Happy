@@ -2,6 +2,7 @@ import os
 import re
 import tqdm
 import time
+import datetime
 
 import psycopg2
 import json
@@ -29,6 +30,11 @@ class BaseSpellCorrector:
         print(f'Computing using GPU') if 'cuda' in self.device else print(f'Computing using CPU')
         self.set_model()
     
+    def logger(self, message, level):
+        padding = '\t'*level
+        with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as res:
+            res.write(f'{padding}{message}\n')
+
     def set_model(self):
         raise NotImplementedError("Метод set_model должен быть реализован в подклассе.")
     
@@ -50,6 +56,7 @@ class BaseSpellCorrector:
 
     def correct_paragraph(self, paragraph):
         tokens = self.tokenizer.encode(paragraph)
+
         if len(tokens) > self.batch_size:
             corrected_chunk = []
 
@@ -69,7 +76,7 @@ class BaseSpellCorrector:
             generated_tokens = self.encode_to_generate(paragraph)
             corrected_paragraph = self.decode(generated_tokens)
 
-        return corrected_paragraph
+        return corrected_paragraph, len(tokens)
 
     
     def correct_text(self, text):
@@ -81,27 +88,30 @@ class BaseSpellCorrector:
         for i, paragraph in enumerate(text.split('\n')):
 
             start = time.time()
-            corrected_paragraph = self.correct_paragraph(paragraph)
+            corrected_paragraph, num_tokens = self.correct_paragraph(paragraph)
             corrected_paragraphs.append(corrected_paragraph)
             stop = time.time() - start
                 
-            with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as res:
-                res.write(f'\t\t\tParagraph {i}: {len(paragraph)} charecters proccesed in {stop} sec\n')
+            self.logger(f'Paragraph {i+1}:\t{len(paragraph)} charecters,\t{num_tokens} tokens,\t{-(-num_tokens//self.batch_size)} batch(es) proccesed in {stop} sec', 3)
         
         corrected_text = '\n\t'.join(corrected_paragraphs)
         return corrected_text
 
     
     def run_and_load(self, db_handler=None, extra_condition=None):
+        
+        self.logger(f'[{datetime.datetime.now()}] task: run_full_correction', 0)
+        self.logger(f'Corrector: {self.column}', 1)
 
         dataset = db_handler.get_db_table(table=config.SPELL_CORRECTION_TABLE, 
                                           column=self.column, 
                                           extra_condition=extra_condition)
         
-        for doc_id, text in tqdm.tqdm(dataset, desc=f"Processing {self.column}"):
+        for doc_id, text in tqdm.tqdm(dataset[:10], desc=f"Processing {self.column}"):
             try:
-                with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as f:
-                    f.write(f'\t\tDocument: {doc_id}\n')
+                num_words = len(text.split(' '))
+                num_tokens = len(self.tokenizer.encode(config.PROCESSING_HANDLER(text)))
+                self.logger(f'Document: {doc_id}', 2)
 
                 start = time.time()
                 config.logger.debug(f"Обработка документа {doc_id}")
@@ -115,10 +125,12 @@ class BaseSpellCorrector:
                     doc_id=doc_id, 
                     text=correction
                 )
-                with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as f:
-                    f.write(f'\t\tDocument loaded in {stop} seconds\n')
+
+                self.logger(f'Document with {len(config.PROCESSING_HANDLER(text))} symbols, {num_words} words and {num_tokens} tokens processed in {stop} seconds', 2)
             except Exception as err:
                 config.logger.error(f"[ ERROR ] Документ {doc_id}: {err}")
+        
+        self.logger(f'[{datetime.datetime.now()}] Corrector: {self.column} finished!', 1)
         return
 
 
