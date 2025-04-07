@@ -247,6 +247,40 @@ def delete_documents():
     
     return redirect(url_for('index'))
 
+@app.route('/delete_elib_documents', methods=['POST'])
+def delete_elib_documents():
+    document_ids = request.form.getlist('document_ids')
+    
+    if not document_ids:
+        flash(f'Не выбраны документы для удаления')
+        return redirect(url_for('index'))
+
+    document_ids = [int(doc_id) for doc_id in document_ids]
+
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Выполнение удаления по всем таблицам базы данных
+        try:
+            cursor.execute('DELETE FROM elibrary_dataset_spell      WHERE doc_id    = ANY(%s)', (document_ids,))
+        except:
+            pass
+        try:
+            cursor.execute('DELETE FROM elibrary_dataset_summaries  WHERE doc_id    = ANY(%s)', (document_ids,))
+        except:
+            pass
+        cursor.execute('DELETE FROM elibrary_dataset_tables     WHERE doc_id    = ANY(%s)', (document_ids,))
+        cursor.execute('DELETE FROM elibrary_dataset            WHERE id        = ANY(%s)', (document_ids,))
+        conn.commit()
+    except Exception as err:
+        print(f'[{datetime.datetime.now()}][ DEBUG ERROR ] Problem with deleting documents from Databes\n>>> {err}')
+    
+    cursor.close()
+    conn.close()
+    
+    return redirect(url_for('elib_dataset'))
+
 
 # Страница для просмотра результатов обработки (например, список сущностей)
 @app.route('/results/<int:doc_id>')
@@ -651,13 +685,18 @@ def get_adjacent_ids(current_id, table):
 @app.route('/pdf/<filename>')
 def serve_pdf(filename):
     # return send_from_directory('uploads', filename)
-    for dirs in os.listdir('prj/Datasets/GRNTI/elibrary'):
-        if filename in os.listdir(f'prj/Datasets/GRNTI/elibrary/{dirs}'):
-            print(f'prj/Datasets/GRNTI/elibrary/{dirs}/{filename}', flush=True)
-            return send_from_directory(f'prj/Datasets/GRNTI/elibrary/{dirs}/', filename)
-        else:
-            print('No file')
-            continue
+    # Datasets/GRNTI/ DiplomaParser/Инженерно-технологическое отделение
+    dataset_path = 'prj/Datasets/GRNTI'
+    for parent_dir in os.listdir(dataset_path):
+        # print(f'parent_dir - {parent_dir}', flush=True)
+        for dir in os.listdir(f'{dataset_path}/{parent_dir}'):
+            # print(f'dir - {dir}', flush=True)
+            if filename in os.listdir(f'{dataset_path}/{parent_dir}/{dir}'):
+                # print(f'{dataset_path}/{parent_dir}/{dir}/{filename}', flush=True)
+                return send_from_directory(f'{dataset_path}/{parent_dir}/{dir}/', filename)
+            else:
+                print('No file')
+                continue
 
 
 @app.route('/error')

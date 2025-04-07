@@ -48,7 +48,7 @@ class DatabaseHandler:
                     ON {table}.doc_id = elibrary_dataset.id
                 WHERE {table}.{column} IS NULL 
                     {f"AND {extra_condition}" if extra_condition else ""}
-                ORDER BY elibrary_dataset.id ASC;
+                ORDER BY elibrary_dataset.id DESC;
             ''')
             dataset = cursor.fetchall()
         return dataset

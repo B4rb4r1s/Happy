@@ -32,9 +32,11 @@ dedoc_manager = DedocManager(
 
 
 class DocumentLoader:
-    def __init__(self, source_directory, db_table):
-        self.source_directory = source_directory
-        self.db_table = db_table
+    def __init__(self):
+        # self.source_directory = source_directory
+        # self.db_table = db_table
+        self.source_directory = None
+        self.db_table = None
         self.connection = None
 
 
@@ -49,6 +51,17 @@ class DocumentLoader:
     def close_db_connection(self):
         self.connection.close()
 
+    def set_directory(self, directory):
+        self.source_directory = directory
+
+    def set_dbtable(self, table):
+        self.db_table = table
+
+    def log_message(self, message, level):
+        logger_path = 'DocumentAnalysisSystem/Utility/Loader/logs.txt'
+        level = '\t'*int(level)
+        with open(logger_path, 'a') as f:
+            f.write(f'{level}{message}\n')
 
     def elibrary_load(self):
         self.get_db_connection()
@@ -61,6 +74,8 @@ class DocumentLoader:
         
         with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
             f.write(f'GPU is available\n') if torch.cuda.is_available() else f.write('Computing on CPU\n')
+            f.write(f'\tScanning from `{self.source_directory}` directory\n')
+
 
         for document in os.listdir(self.source_directory):
             document_path = self.source_directory + '/' + document
@@ -69,9 +84,11 @@ class DocumentLoader:
             # Проверка - загружен ли уже документ?
             if document in already_uploaded:
                 print(f'[ DEBUG ] Documnet {document} is already uploaded')
+                with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+                    f.write(f'\t\tDocumnet `{document}` is already uploaded\n')
                 continue
             else:
-                if document[document.find('.')+1:].lower() in ['pdf', 'doc', 'docx']:
+                if document[document.rfind('.')+1:].lower() in ['pdf', 'doc', 'docx']:
                     text_dedoc = None
                     tables = None
 
@@ -81,9 +98,11 @@ class DocumentLoader:
                         text_dedoc, tables = self.dedoc_scan(document_path)
                         stop = time.time() - start
                         with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
-                            f.write(f'\tDocument {document} was scanned in {stop} sec\n')
+                            f.write(f'\t\tDocument {document} was scanned in {stop} sec\n')
                     except Exception as err:
                         print(f'[ ERROR ] Error during OCR \n>>> {err}')
+                        with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+                            f.write(f'\t\t[ ERROR ] Error during OCR\n\t\t\t{err}\n')
                         continue
 
                     # Загрузка в базу данных
@@ -95,29 +114,35 @@ class DocumentLoader:
                     continue
 
         print(f'[ DEBUG ] All documents has been uploaded!')
+        with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+            f.write(f'All documents has been uploaded!\n')
         self.close_db_connection()
 
     
     def db_load(self, document, text_dedoc, tables, tag):
-        with self.connection.cursor() as cursor:
-            cursor.execute(f'''
-                INSERT INTO {self.db_table} (filename, text_dedoc, tag)
-                VALUES (%s, %s, %s);''',
-                (document,text_dedoc,tag,))
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute(f'''
+                    INSERT INTO {self.db_table} (filename, text_dedoc, tag)
+                    VALUES (%s, %s, %s);''',
+                    (document,text_dedoc,tag,))
 
-            if tables:
-                for table in tables:
-                    cursor.execute(f'''
-                        INSERT INTO {self.db_table}_tables (doc_id, rows)
-                        VALUES (
-                            (SELECT id 
-                            FROM elibrary_dataset 
-                            ORDER BY ID DESC LIMIT 1), %s)
-                    ''', (table,))
+                if tables:
+                    for table in tables:
+                        cursor.execute(f'''
+                            INSERT INTO {self.db_table}_tables (doc_id, rows)
+                            VALUES (
+                                (SELECT id 
+                                FROM elibrary_dataset 
+                                ORDER BY ID DESC LIMIT 1), %s)
+                        ''', (table,))
 
-        self.connection.commit()
-        print(f'[ DEBUG ] Documnet {document} has successfuly uploaded')
-        return 0
+            self.connection.commit()
+            print(f'[ DEBUG ] Documnet {document} has successfuly uploaded')
+            return 0
+        except Exception as err:
+            with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+                f.write(f'\t\t[ ERROR ] Document {document} cant be loaded:\n\t\t\t{err}\n')
 
 
     def dedoc_scan(self, path):
