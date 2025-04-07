@@ -117,14 +117,25 @@ p {
 }
 
 
+
+table { table-layout: fixed; }
+
 .select-column {
     width: 1%;
 }
 .id-column {
     width: 4%;
 }
-.text-head {
-    max-width: 40vh;
+.text-head, .file-name-column, .tag-column{
+    max-width: 40vh; 
+    /* max-width: 40%; */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.file-name-column {
+    max-width: 40%;
+    overflow-x: auto;
 }
 
 .document-text-content {

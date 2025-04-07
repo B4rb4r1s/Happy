@@ -24,34 +24,37 @@
         </div>
 
         <div class="elib-documents">
-            <table class="elib-document-table" id="elib-documents-table">
-                <thead>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th class="select-column"></th>
-                        <th class="id-column">ID</th>
-                        <th>Название файла</th>
-                        <th>Начало документа</th>
-                        <th>Секция</th>
-                    </tr>
-                    {% for doc in dataset %}
+            <form method="POST" action="{{ url_for('delete_elib_documents') }}">
+                <div style="position: sticky; top: 0;"><button type="submit" class="button">Удалить выбранные документы</button></div>
+                <table class="elib-document-table" id="elib-documents-table">
+                    <thead>
+                    </thead>
+                    <tbody>
                         <tr>
-                            <td><input type="checkbox" name="document_ids" value="{{ doc[0] }}"></td>
-                            <td>{{ doc[0] }}</td>
-                            <td>
-                                <a href="{{ url_for('elib_dataset_document', doc_id=doc[0]) }}">{{ doc[1] }}</a>
-                            </td>
-                            <td class="text-head">{{ doc[2][:65] }} ...</td>
-                            <td>{{ doc[3] }}</td>
+                            <th class="select-column"></th>
+                            <th class="id-column">ID</th>
+                            <th class="file-name-column">Название файла</th>
+                            <th>Начало документа</th>
+                            <th>Секция</th>
                         </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="6" class="center">База данных пуста</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        {% for doc in dataset %}
+                            <tr>
+                                <td><input type="checkbox" name="document_ids" value="{{ doc[0] }}"></td>
+                                <td>{{ doc[0] }}</td>
+                                <td class="file-name-column">
+                                    <a href="{{ url_for('elib_dataset_document', doc_id=doc[0]) }}">{{ doc[1] }}</a>
+                                </td>
+                                <td class="text-head">{{ doc[2][:65] }} ...</td>
+                                <td class="tag-column">{{ doc[3] }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="center">База данных пуста</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
         </div>
     </div>
 
