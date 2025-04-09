@@ -149,6 +149,7 @@ table { table-layout: fixed; }
     
     overflow-y: auto; 
     overflow-x: hidden; 
+    /* padding-top: 77px; */
 }
 .raw-text-section {
     max-width: 100vh;
@@ -206,7 +207,8 @@ table { table-layout: fixed; }
 pre.lingvo_summary {
     font-size: 75%;
 }
-pre.elib_summaries, pre.lingvo_summary, pre.document-text {
+pre.elib_summaries, pre.elib_corrector, pre.lingvo_summary, pre.document-text {
+    padding-top: 0px;
     margin: 0px;
 }
 /* elib_dataset_document.html */
