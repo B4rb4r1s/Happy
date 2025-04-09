@@ -7,10 +7,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/> 
 
     <style>
-        #corr {
-            display: none;
-            /* width: 50%; */
-        }
         .toggle-switch {
             position: relative;
             display: inline-block;
@@ -35,7 +31,6 @@
             -webkit-transition: .4s;
             transition: .4s;
         }
-
         .slider:before {
             transform: translateX(0px);
 
@@ -50,32 +45,58 @@
             -webkit-transition: .4s;
             transition: .4s;
         }
-
         input:checked + .slider {
             background-color: #2196F3;
         }
-
         input:focus + .slider {
             box-shadow: 0 0 1px #2196F3;
         }
-
         input:checked + .slider:before {
             -webkit-transform: translateX(26px);
             -ms-transform: translateX(26px);
             transform: translateX(26px);
         }
+
+        .tab-container {
+            margin-top: 10px;
+        }
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+
+            overflow-x: auto;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .tab-button:hover {
+            background-color: #f0f0f0;
+        }
+        .tab-button.active {
+            border-bottom: 3px solid #2196F3;
+            color: #2196F3;
+        }
+        .tab-content {
+            display: none;
+            padding: 10px 0;
+        }
+        .tab-content.active {
+            display: block;
+        }
     </style>
     <script>
-        // JavaScript function to toggle between div blocks
         function toggleDivs() {
-            var summ = document.getElementById('summ');
-            var corr = document.getElementById('corr');
-            console.log(summ, corr)
-            // var div1 = document.getElementsByClassName('summ');
-            // var div2 = document.getElementsByClassName('corr');
+            const checkbox = document.getElementById('switch');
+            const summ = document.getElementById('summ');
+            const corr = document.getElementById('corr');
 
-            if (corr.style.display === 'block') 
-            {
+            if (checkbox.checked) {
                 summ.style.display = 'block';
                 corr.style.display = 'none';
             } else {
@@ -83,6 +104,30 @@
                 corr.style.display = 'block';
             }
         }
+
+        // При загрузке страницы установить нужный блок
+        document.addEventListener("DOMContentLoaded", function () {
+            toggleDivs();
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const buttons = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+    
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // убрать active у всех кнопок и вкладок
+                    buttons.forEach(btn => btn.classList.remove('active'));
+                    contents.forEach(content => content.classList.remove('active'));
+    
+                    // добавить active к текущей кнопке и вкладке
+                    button.classList.add('active');
+                    const target = document.getElementById(button.dataset.tab);
+                    if (target) target.classList.add('active');
+                });
+            });
+        });
     </script>
 
 </head>
@@ -116,21 +161,13 @@
 
             <h2>Извлеченный текст:</h2>
             <div class="summary-correction-changer">
+                <label><b>Corrections</b></label>
                 <label class="toggle-switch">
                     <input type="checkbox" id="switch" onclick="toggleDivs()" checked>
                     <span class="slider"></span>
                 </label>
+                <label><b>Summaries</b></label>
             </div>
-
-
-            <!-- <div id="div1">This is the first div block.</div>
-            <div id="div2">This is the second div block.</div> -->
-
-            {% if changer == 'summ' %}
-                <div class="block option1-block">Контент для варианта 1</div>
-            {% elif changer == 'corr' %}
-                <div class="block option2-block">Контент для варианта 2</div>
-            {% endif %}
 
             <table class="doctable">
                 <tbody>
@@ -174,45 +211,57 @@
 
                         </td>
                         <td class="right-cell">
+
                             <div id="summ">
-                                <h1>Summaries</h1>
-                                <!-- MODELS = ['./Happy/Models/csebuetnlp--mT5_multilingual_XLSum',
-                                            './Happy/Models/IlyaGusev--mbart_ru_sum_gazeta',
-                                            './Happy/Models/IlyaGusev--rut5_base_sum_gazeta',
-                                            './Happy/Models/utrobinmv--t5_summary_en_ru_zh_base_2048'] -->
-                                <div>
-                                    {% if lingvo_summary %}
-                                        <h2>lingvo_summary</h2>
-                                        <pre class="lingvo_summary">{{ lingvo_summary }}</pre>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    {% if mt5_summary %}
-                                        <h2>mT5_multilingual_XLSum</h2>
-                                        <pre class="elib_summaries">{{ mt5_summary }}</pre>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    {% if mbart_summary %}
-                                        <h2>mbart_ru_sum_gazeta</h2>
-                                        <pre class="elib_summaries">{{ mbart_summary }}</pre>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    {% if rut5_summary %}
-                                        <h2>rut5_base_sum_gazeta</h2>
-                                        <pre class="elib_summaries">{{ rut5_summary }}</pre>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    {% if t5_summary %}
-                                        <h2>t5_summary_en_ru_zh_base_2048</h2>
-                                        <pre class="elib_summaries">{{ t5_summary }}</pre>
-                                    {% endif %}
+                                <div class="tab-container">
+                                    <div class="tab-buttons">
+                                        {% if lingvo_summary %}<button class="tab-button active" data-tab="lingvo_summary">Lingvo summary</button>{% endif %}
+                                        {% if mt5_summary %}<button class="tab-button" data-tab="mt5_summary">mT5 multilingual</button>{% endif %}
+                                        {% if mbart_summary %}<button class="tab-button" data-tab="mbart_summary">MBart ru sum_gazeta</button>{% endif %}
+                                        {% if rut5_summary %}<button class="tab-button" data-tab="rut5_summary">ruT5 base sum_gazeta</button>{% endif %}
+                                        {% if t5_summary %}<button class="tab-button" data-tab="t5_summary">T5 en/ru/zh base_2048</button>{% endif %}
+                                    </div>
+                                    <!-- <h1>Summaries</h1> -->
+                                    <!-- MODELS = ['./Happy/Models/csebuetnlp--mT5_multilingual_XLSum',
+                                                './Happy/Models/IlyaGusev--mbart_ru_sum_gazeta',
+                                                './Happy/Models/IlyaGusev--rut5_base_sum_gazeta',
+                                                './Happy/Models/utrobinmv--t5_summary_en_ru_zh_base_2048'] -->
+                                    <div class="tab-content active" id="lingvo_summary">
+                                        {% if lingvo_summary %}
+                                            <h2>Lingvo summary</h2>
+                                            <pre class="lingvo_summary">{{ lingvo_summary }}</pre>
+                                        {% endif %}
+                                    </div>
+                                    <div class="tab-content active" id="mt5_summary">
+                                        {% if mt5_summary %}
+                                            <h2>mT5_multilingual_XLSum</h2>
+                                            <pre class="elib_summaries">{{ mt5_summary }}</pre>
+                                        {% endif %}
+                                    </div>
+                                    <div class="tab-content active" id="mbart_summary">
+                                        {% if mbart_summary %}
+                                            <h2>mbart_ru_sum_gazeta</h2>
+                                            <pre class="elib_summaries">{{ mbart_summary }}</pre>
+                                        {% endif %}
+                                    </div>
+                                    <div class="tab-content active" id="rut5_summary">
+                                        {% if rut5_summary %}
+                                            <h2>rut5_base_sum_gazeta</h2>
+                                            <pre class="elib_summaries">{{ rut5_summary }}</pre>
+                                        {% endif %}
+                                    </div>
+                                    <div class="tab-content active" id="t5_summary">
+                                        {% if t5_summary %}
+                                            <h2>t5_summary_en_ru_zh_base_2048</h2>
+                                            <pre class="elib_summaries">{{ t5_summary }}</pre>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
+
+
                             <div id="corr">
-                                <h1>Corrections</h1>
+                                <!-- <h1>Corrections</h1> -->
                                 <!-- fred_t5_large
                                      rum2m100
                                      sage_fredt5_distilled
@@ -220,35 +269,45 @@
                                      sage_m2m100
                                      language_tool
                                      langtool -->
-                                <div>
-                                    {% if langtool %}
-                                        <h2>langtool</h2>
-                                        <pre class="elib_corrector document-text">{{ langtool }}</pre>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    {% if fred_t5_large %}
-                                        <h2>fred_t5_large</h2>
-                                        <pre class="elib_corrector document-text">{{ fred_t5_large }}</pre>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    {% if rum2m100 %}
-                                        <h2>rum2m100</h2>
-                                        <pre class="elib_corrector document-text">{{ rum2m100 }}</pre>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    {% if sage_fredt5_distilled %}
-                                        <h2>sage_fredt5_distilled</h2>
-                                        <pre class="elib_corrector document-text">{{ sage_fredt5_distilled }}</pre>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    {% if sage_m2m100 %}
-                                        <h2>sage_m2m100</h2>
-                                        <pre class="elib_corrector document-text">{{ sage_m2m100 }}</pre>
-                                    {% endif %}
+                                <div class="tab-container">
+                                    <div class="tab-buttons">
+                                        {% if langtool %}<button class="tab-button active" data-tab="langtool">LanguageTool+NN</button>{% endif %}
+                                        {% if fred_t5_large %}<button class="tab-button" data-tab="fred_t5_large">Fred T5 Large</button>{% endif %}
+                                        {% if rum2m100 %}<button class="tab-button" data-tab="rum2m100">RuM2M100-1.2B</button>{% endif %}
+                                        {% if sage_fredt5_distilled %}<button class="tab-button" data-tab="sage_fredt5_distilled">SAGE FRED-T5 distilled</button>{% endif %}
+                                        {% if sage_m2m100 %}<button class="tab-button" data-tab="sage_m2m100">SAGE M2M100-1.2B</button>{% endif %}
+                                    </div>
+
+                                    <div class="tab-content active" id="langtool">
+                                        {% if langtool %}
+                                            <h2>langtool</h2>
+                                            <pre class="elib_corrector document-text">{{ langtool }}</pre>
+                                        {% endif %}
+                                    </div>
+                                    <div class="tab-content" id="fred_t5_large">
+                                        {% if fred_t5_large %}
+                                            <h2>fred_t5_large</h2>
+                                            <pre class="elib_corrector document-text">{{ fred_t5_large }}</pre>
+                                        {% endif %}
+                                    </div>
+                                    <div class="tab-content" id="rum2m100">
+                                        {% if rum2m100 %}
+                                            <h2>rum2m100</h2>
+                                            <pre class="elib_corrector document-text">{{ rum2m100 }}</pre>
+                                        {% endif %}
+                                    </div>
+                                    <div class="tab-content" id="sage_fredt5_distilled">
+                                        {% if sage_fredt5_distilled %}
+                                            <h2>sage_fredt5_distilled</h2>
+                                            <pre class="elib_corrector document-text">{{ sage_fredt5_distilled }}</pre>
+                                        {% endif %}
+                                    </div>
+                                    <div class="tab-content" id="sage_m2m100">
+                                        {% if sage_m2m100 %}
+                                            <h2>sage_m2m100</h2>
+                                            <pre class="elib_corrector document-text">{{ sage_m2m100 }}</pre>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -263,30 +322,5 @@
         </nav>
 
     </div>
-
-    <!-- <script>
-        document.addEventListener("DOMContentLoaded", function() {
-          // Находим элементы правой и левой ячеек
-          const rightCell = document.querySelector('.right-cell');
-          const leftContent = document.querySelector('.left-cell .scrollable-content');
-          
-          if (rightCell && leftContent) {
-            // Устанавливаем максимальную высоту левого блока равной высоте правой ячейки
-            leftContent.style.maxHeight = rightCell.offsetHeight + 'px';
-          }
-        });
-    </script> -->
-    
-
-    <!-- <script>
-        document.querySelector(".collapsible").addEventListener("click", function () {
-            let content = this.nextElementSibling;
-            if (content.style.maxHeight) {
-                content.style.maxHeight = null; // Скрыть
-            } else {
-                content.style.maxHeight = content.scrollHeight + "px"; // Показать
-            }
-        });
-    </script> -->
 </body>
 </html>
