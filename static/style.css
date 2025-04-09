@@ -206,6 +206,9 @@ table { table-layout: fixed; }
 pre.lingvo_summary {
     font-size: 75%;
 }
+pre.elib_summaries, pre.lingvo_summary, pre.document-text {
+    margin: 0px;
+}
 /* elib_dataset_document.html */
 
 
