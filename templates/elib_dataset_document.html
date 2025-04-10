@@ -179,29 +179,32 @@
 
             <table class="doctable">
                 <tbody>
-                    <th class="extracted-document">
-                        <p>Dedoc</p>
-                    </th>
-                    <th>
-                        <!-- <p>Summaries</p>
-                        <p>Correction</p> -->
+                    <tr style="position: sticky; top: 0;">
+                        <th class="extracted-document">
+                            <p>Dedoc</p>
+                        </th>
+                        <th>
+                            <!-- <p>Summaries</p>
+                            <p>Correction</p> -->
 
-                        <div id="summ-header" class="tab-buttons" style="position: sticky; top: 0;">
-                            {% if lingvo_summary %}<button class="tab-button active" data-tab="lingvo_summary">Lingvo summary</button>{% endif %}
-                            {% if mt5_summary %}<button class="tab-button" data-tab="mt5_summary">mT5 multilingual</button>{% endif %}
-                            {% if mbart_summary %}<button class="tab-button" data-tab="mbart_summary">MBart ru sum_gazeta</button>{% endif %}
-                            {% if rut5_summary %}<button class="tab-button" data-tab="rut5_summary">ruT5 base sum_gazeta</button>{% endif %}
-                            {% if t5_summary %}<button class="tab-button" data-tab="t5_summary">T5 en/ru/zh base_2048</button>{% endif %}
-                        </div>
+                            <div id="summ-header" class="tab-buttons" style="position: sticky; top: 0;">
+                                {% if lingvo_summary %}<button class="tab-button active" data-tab="lingvo_summary">Lingvo summary</button>{% endif %}
+                                {% if mt5_summary %}<button class="tab-button" data-tab="mt5_summary">mT5 multilingual</button>{% endif %}
+                                {% if mbart_summary %}<button class="tab-button" data-tab="mbart_summary">MBart ru sum_gazeta</button>{% endif %}
+                                {% if rut5_summary %}<button class="tab-button" data-tab="rut5_summary">ruT5 base sum_gazeta</button>{% endif %}
+                                {% if t5_summary %}<button class="tab-button" data-tab="t5_summary">T5 en/ru/zh base_2048</button>{% endif %}
+                            </div>
 
-                        <div id="corr-header" class="tab-buttons" style="position: sticky; top: 0;">
-                            {% if langtool %}<button class="tab-button active" data-tab="langtool">LanguageTool+NN</button>{% endif %}
-                            {% if fred_t5_large %}<button class="tab-button" data-tab="fred_t5_large">Fred T5 Large</button>{% endif %}
-                            {% if rum2m100 %}<button class="tab-button" data-tab="rum2m100">RuM2M100-1.2B</button>{% endif %}
-                            {% if sage_fredt5_distilled %}<button class="tab-button" data-tab="sage_fredt5_distilled">SAGE FRED-T5 distilled</button>{% endif %}
-                            {% if sage_m2m100 %}<button class="tab-button" data-tab="sage_m2m100">SAGE M2M100-1.2B</button>{% endif %}
-                        </div>
-                    </th>
+                            <div id="corr-header" class="tab-buttons" style="position: sticky; top: 0;">
+                                {% if langtool %}<button class="tab-button active" data-tab="langtool">LanguageTool+NN</button>{% endif %}
+                                {% if fred_t5_large %}<button class="tab-button" data-tab="fred_t5_large">Fred T5 Large</button>{% endif %}
+                                {% if rum2m100 %}<button class="tab-button" data-tab="rum2m100">RuM2M100-1.2B</button>{% endif %}
+                                {% if sage_fredt5_distilled %}<button class="tab-button" data-tab="sage_fredt5_distilled">SAGE FRED-T5 distilled</button>{% endif %}
+                                {% if sage_m2m100 %}<button class="tab-button" data-tab="sage_m2m100">SAGE M2M100-1.2B</button>{% endif %}
+                            </div>
+                        </th>
+                    </tr>
+                    
                     <tr>
                         <td class="extracted-document">
                             <div class="document-text-content">
