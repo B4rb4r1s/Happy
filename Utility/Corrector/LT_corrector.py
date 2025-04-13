@@ -49,6 +49,12 @@ class LT_corrector:
 
 
 
+def logger(message, level=0):
+    logger_path = 'DocumentAnalysisSystem/Utility/Corrector/logs.txt'
+    padding = '\t'*level
+    with open(logger_path, 'a') as f:
+        f.write(f'{padding}{message}\n')
+
 
 
 def LT_with_NN():
@@ -56,12 +62,12 @@ def LT_with_NN():
     # db_handler.set_doc_ids(config.SPELL_CORRECTION_TABLE)
 
     langtool = LT_corrector()
-    corrector = Omage_corrector(config.SPELL_CORRECTION_MODELS[1])
-    # correctors = [Omage_corrector(model_path) for model_path in config.SPELL_CORRECTION_MODELS]
+    # corrector = Omage_corrector(config.SPELL_CORRECTION_MODELS[1])
+    correctors = [Omage_corrector(model_path) for model_path in config.SPELL_CORRECTION_MODELS]
 
-    with open('DocumentAnalysisSystem/Utility/Corrector/logs.txt', 'a') as f:
-        f.write('task: LT_with_NN\n')
-        f.write(f'\tCorrector: {corrector.column}\n')
+    
+    logger(f'task: LT_with_NN', 0)
+    logger(f'Corrector: {corrector.column}', 1)
 
     docs_texts = db_handler.get_db_table('elibrary_dataset_spell', 'langtool')
     for doc_id, doc_text in docs_texts[:25]:

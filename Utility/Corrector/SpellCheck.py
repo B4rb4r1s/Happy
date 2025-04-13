@@ -107,7 +107,7 @@ class BaseSpellCorrector:
                                           column=self.column, 
                                           extra_condition=extra_condition)
         
-        for doc_id, text in tqdm.tqdm(dataset[:10], desc=f"Processing {self.column}"):
+        for doc_id, text in tqdm.tqdm(dataset, desc=f"Processing {self.column}"):
             try:
                 num_words = len(text.split(' '))
                 num_tokens = len(self.tokenizer.encode(config.PROCESSING_HANDLER(text)))

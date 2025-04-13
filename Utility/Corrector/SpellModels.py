@@ -87,7 +87,7 @@ class Omage_corrector(BaseSpellCorrector):
         elif self.model_path == './DocumentAnalysisSystem/Models/SpellCheck/ai-forever--sage-fredt5-distilled-95m' or \
              self.model_path == './DocumentAnalysisSystem/Models/SpellCheck/ai-forever--sage-fredt5-large':
             self.generation_args = {
-                'low_cpu_mem_usage':    True,
+                # 'low_cpu_mem_usage':    True,
                 'max_length':           self.encodings["input_ids"].size(1) * 1.5
             }
         elif self.model_path == './DocumentAnalysisSystem/Models/SpellCheck/ai-forever--sage-m2m100-1.2B':

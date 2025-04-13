@@ -24,9 +24,9 @@ SPELL_MODELS_DIRECTORY = './DocumentAnalysisSystem/Models/SpellCheck/'
 # './DocumentAnalysisSystem/Models/SpellCheck/ai-forever--sage-m2m100-1.2B'
 # SPELL_CORRECTION_MODELS = [f'{SPELL_MODELS_DIRECTORY}{model_dir}' for model_dir in os.listdir(SPELL_MODELS_DIRECTORY)]
 SPELL_CORRECTION_MODELS = [
-    # './DocumentAnalysisSystem/Models/SpellCheck/ai-forever--FRED-T5-large-spell',
-    # './DocumentAnalysisSystem/Models/SpellCheck/ai-forever--RuM2M100-1.2B',
-    # './DocumentAnalysisSystem/Models/SpellCheck/ai-forever--sage-fredt5-distilled-95m',
+    './DocumentAnalysisSystem/Models/SpellCheck/ai-forever--FRED-T5-large-spell',
+    './DocumentAnalysisSystem/Models/SpellCheck/ai-forever--RuM2M100-1.2B',
+    './DocumentAnalysisSystem/Models/SpellCheck/ai-forever--sage-fredt5-distilled-95m',
     './DocumentAnalysisSystem/Models/SpellCheck/ai-forever--sage-m2m100-1.2B',
     './DocumentAnalysisSystem/Models/SpellCheck/UrukHan--t5-russian-spell'
     ]
