@@ -30,7 +30,7 @@ class BaseSummarizer:
     def logger(self, message, level):
         padding = '\t'*level
         with open(self.logger_path, 'a') as f:
-            f.write(f'{padding}{message}\n')
+            f.write(f'{padding}{message}')
 
     def set_model(self):
         raise NotImplementedError("Метод set_model должен быть реализован в подклассе.")
@@ -73,32 +73,31 @@ class BaseSummarizer:
             summary.append(self.tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0])
 
         stop = time.time() - start
-        self.logger(f'Docment with {len(config.PROCESSING_HANDLER(text))} symbols, {len(words)} words and {len(tokens)} tokens processed in {stop} sec', 3)
+        self.logger(f'with {len(config.PROCESSING_HANDLER(text))} symbols, {len(words)} words and {len(tokens)} tokens processed in {stop} sec\n', 2)
 
         return ' '.join(summary)
     
 
 
-    def run_and_load(self, db_handler):
+    def run_and_load(self, db_handler, extra_condition=None):
         print(f'Computing using GPU') if 'cuda' in self.device else print(f'Computing using CPU')
         
-        self.logger(f'Task - run_and_load', 0)
-        self.logger(f'Model: {self.column},\tcomputing using {self.device}', 1)
+        self.logger(f'Task - run_and_load\n', 0)
+        self.logger(f'Model: {self.column},\tcomputing using {self.device}\n', 1)
 
         # extra_condition = '{SUMMARIES_TABLE}.lingvo_summary IS NOT NULL'
-        extra_condition = None
         dataset = db_handler.get_db_table(table=config.SUMMARIES_TABLE, 
                                           column=self.column, 
                                           extra_condition=extra_condition)
-        for doc_id, text in dataset[:1000]:
+        for doc_id, text in dataset:
             try:
                 print(f"Обработка документа {doc_id}")
-                self.logger(f'Обработка документа: {doc_id}', 2)
+                self.logger(f'Document: {doc_id}\t', 2)
                 processed_text = config.PROCESSING_HANDLER(text)
                 summary = self.summarize_text(processed_text)
                 db_handler.upload_summary(column=self.column, doc_id=doc_id, text=summary)
             except Exception as err:
                 print(f"[ ERROR ] Документ {doc_id}: {err}")
 
-        self.logger(f'Model: {self.column}, all documents processed!', 1)
+        self.logger(f'Model: {self.column}, all documents processed!\n', 1)
         return

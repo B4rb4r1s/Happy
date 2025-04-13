@@ -11,7 +11,7 @@ def run_and_load():
     summarizers = [Omega_summarizer(model_path, device=config.DEVICE) for model_path in config.SUMMARY_MODELS]
 
     for summarizer in summarizers:
-        summarizer.run_and_load(db_handler)
+        summarizer.run_and_load(db_handler, 'elibrary_dataset_summaries.doc_id <= 5140 and elibrary_dataset_summaries.doc_id > 5120')
 
     db_handler.close_db_connection()
 
