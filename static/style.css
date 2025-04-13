@@ -184,9 +184,10 @@ table { table-layout: fixed; }
     table-layout: fixed;
 }
 .extracted-document{
-    vertical-align: top;
+    vertical-align: middle;
     width: 50%;
     max-width: 50%;
+    font-size: 20px;
     
     box-sizing: border-box;
 }
@@ -198,6 +199,10 @@ table { table-layout: fixed; }
     padding-left: 20px;
     box-sizing: border-box;
     overflow-wrap: break-word;
+}
+.similatiries-table {
+    text-align: center;
+    /* background-color: #fff; */
 }
 
 .document-text {

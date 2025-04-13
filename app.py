@@ -6,6 +6,7 @@ import time
 import json
 import traceback
 
+import requests
 import datetime
 import psycopg2
 
@@ -26,6 +27,8 @@ app.secret_key = 'your_secret_key'
 UPLOAD_FOLDER = 'static/Uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
 
 
 def db_connection():
@@ -53,6 +56,50 @@ def db_connection():
         return 0
 
 
+def get_adjacent_ids(current_id, table):
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    # Получение предыдущего ID
+    cursor.execute('''
+        SELECT id
+        FROM '''+ table +'''
+        WHERE id < %s
+        ORDER BY id DESC
+        LIMIT 1;
+    ''', (current_id,))
+    prev_row = cursor.fetchone()
+    prev_id = prev_row[0] if prev_row else None
+
+    # Получение следующего ID
+    cursor.execute('''
+        SELECT id 
+        FROM '''+ table +'''
+        WHERE id > %s
+        ORDER BY id ASC
+        LIMIT 1;
+    ''', (current_id,))
+    next_row = cursor.fetchone()
+    next_id = next_row[0] if next_row else None
+
+    conn.close()
+    return prev_id, next_id
+
+
+def compare_documents(text_1, texts_2):
+    response = requests.post(
+        "http://similarity:5001/compare", 
+        json={
+            "text_1": text_1, 
+            "texts_2": texts_2, 
+            # "handlers": handlers
+            }
+        )
+    return response.json()
+
+
+
+
 # Главная страница с формой для загрузки файлов
 @app.route('/')
 def index():
@@ -69,6 +116,8 @@ def index():
     cursor.close()
     conn.close()
     return render_template('index.html', documents=documents)
+
+
 
 
 # Обработка загрузки файла
@@ -209,6 +258,8 @@ def upload_file():
     return redirect(url_for('index'))
 
 
+
+
 @app.route('/delete_documents', methods=['POST'])
 def delete_documents():
     document_ids = request.form.getlist('document_ids')
@@ -280,6 +331,8 @@ def delete_elib_documents():
     conn.close()
     
     return redirect(url_for('elib_dataset'))
+
+
 
 
 # Страница для просмотра результатов обработки (например, список сущностей)
@@ -377,6 +430,8 @@ def results(doc_id):
         return redirect(url_for('index'))
 
 
+
+
 @app.route('/dataset/')
 def dataset():
     conn = db_connection()
@@ -397,6 +452,8 @@ def dataset():
     cursor.close()
     conn.close()
     return render_template('dataset.html', dataset=documents, count = len(documents))
+
+
 
 
 @app.route('/dataset_document/<int:doc_id>')
@@ -484,6 +541,8 @@ def dataset_document(doc_id):
                            next_id=next_id)
 
 
+
+
 @app.route('/elib_dataset/', methods=['GET', 'POST'])
 def elib_dataset():
     conn = db_connection()
@@ -512,34 +571,11 @@ def elib_dataset():
     return render_template('elib_dataset.html', dataset = documents,
                                                 count = len(documents))
 
-# @app.route('/elib_dataset/', methods=['POST'])
-# def elib_dataset_search():
-#     conn = db_connection()
-#     cursor = conn.cursor()
-    
-#     query = request.form.get('query')
-#     if query:
-#         cursor.execute('''
-#             SELECT * 
-#             FROM elibrary_dataset 
-#             WHERE content_vector @@ to_tsquery(%s);
-#         ''', (query,))
-#         documents = cursor.fetchall()
 
-#         cursor.close()
-#         conn.close()
-#         return render_template('elib_dataset.html', dataset=documents,
-#                                                     count = len(documents))
-#     else:
-#         return redirect(url_for('elib_dataset'))
 
 
 @app.route('/elib_dataset_document/<int:doc_id>', methods=['GET', 'POST'])
 def elib_dataset_document(doc_id):
-
-    # changer = None
-    # if request.method == 'POST':
-    # changer = request.form.get('changer')
 
     conn = db_connection()
     cursor = conn.cursor()
@@ -595,6 +631,7 @@ def elib_dataset_document(doc_id):
         cors = True
 
     prev_id, next_id = get_adjacent_ids(doc_id, 'elibrary_dataset')
+    similatiries = compare_documents(WHITESPACE_HANDLER(docs[2]), summaries).get('similatiries')
 
     cursor.close()
     conn.close()
@@ -621,65 +658,13 @@ def elib_dataset_document(doc_id):
                            sage_m2m100 =            corrections[4],
                            language_tool =          corrections[5],
                            langtool =               corrections[6],
+
+                           similatiries =           similatiries,
                            
                            prev_id=prev_id, 
                            next_id=next_id)
 
 
-
-# Простая функция чат-бота (заглушка)
-def chatbot_response(user_input):
-    # Здесь можно подключить вашу модель или API чат-бота
-    return f"Вы сказали: {user_input}. Я пока просто эхо-бот."
-
-@app.route('/chat', methods=['GET', 'POST'])
-def chat():
-    if request.method == 'POST':
-        user_message = request.json.get('message', '')
-        # Логика обработки сообщения пользователя
-        bot_response = chatbot_response(user_message)
-        return jsonify({"response": bot_response})
-    
-    return render_template('chat-assistant.html')
-    if request.method == 'POST':
-        user_message = request.form.get('message')
-        if user_message:
-            bot_response = chatbot_response(user_message)
-            return jsonify({'user_message': user_message, 'bot_response': bot_response})
-        return jsonify({'error': 'Сообщение не должно быть пустым'}), 400
-    
-    return render_template('chat-assistant.html')
-
-
-
-def get_adjacent_ids(current_id, table):
-    conn = db_connection()
-    cursor = conn.cursor()
-
-    # Получение предыдущего ID
-    cursor.execute('''
-        SELECT id
-        FROM '''+ table +'''
-        WHERE id < %s
-        ORDER BY id DESC
-        LIMIT 1;
-    ''', (current_id,))
-    prev_row = cursor.fetchone()
-    prev_id = prev_row[0] if prev_row else None
-
-    # Получение следующего ID
-    cursor.execute('''
-        SELECT id 
-        FROM '''+ table +'''
-        WHERE id > %s
-        ORDER BY id ASC
-        LIMIT 1;
-    ''', (current_id,))
-    next_row = cursor.fetchone()
-    next_id = next_row[0] if next_row else None
-
-    conn.close()
-    return prev_id, next_id
 
 
 @app.route('/pdf/<filename>')
@@ -697,6 +682,8 @@ def serve_pdf(filename):
             else:
                 print('No file')
                 continue
+
+
 
 
 @app.route('/error')

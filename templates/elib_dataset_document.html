@@ -58,7 +58,7 @@
         }
 
         .tab-container {
-            /* margin-top: 10px; */
+            margin-top: 0px;
         }
         .tab-buttons {
             display: flex;
@@ -155,6 +155,10 @@
                 {% endif %}
             </div>
         </div>
+
+        <!-- <label>{{ similatiries }}</label> -->
+
+
         <!-- Извлеченный текст -->
         <div class="text-section">
             <details>
@@ -181,7 +185,7 @@
                 <tbody>
                     <tr style="position: sticky; top: 0;">
                         <th class="extracted-document">
-                            <p>Dedoc</p>
+                            <p>Текст документа</p>
                         </th>
                         <th>
                             <!-- <p>Summaries</p>
@@ -241,13 +245,6 @@
 
                             <div id="summ">
                                 <div class="tab-container">
-                                    <!-- <div class="tab-buttons" style="position: sticky; top: 0;">
-                                        {% if lingvo_summary %}<button class="tab-button active" data-tab="lingvo_summary">Lingvo summary</button>{% endif %}
-                                        {% if mt5_summary %}<button class="tab-button" data-tab="mt5_summary">mT5 multilingual</button>{% endif %}
-                                        {% if mbart_summary %}<button class="tab-button" data-tab="mbart_summary">MBart ru sum_gazeta</button>{% endif %}
-                                        {% if rut5_summary %}<button class="tab-button" data-tab="rut5_summary">ruT5 base sum_gazeta</button>{% endif %}
-                                        {% if t5_summary %}<button class="tab-button" data-tab="t5_summary">T5 en/ru/zh base_2048</button>{% endif %}
-                                    </div> -->
                                     <!-- <h1>Summaries</h1> -->
                                     <!-- MODELS = ['./Happy/Models/csebuetnlp--mT5_multilingual_XLSum',
                                                 './Happy/Models/IlyaGusev--mbart_ru_sum_gazeta',
@@ -257,30 +254,65 @@
                                         {% if lingvo_summary %}
                                             <!-- <h2>Lingvo summary</h2> -->
                                             <pre class="lingvo_summary">{{ lingvo_summary }}</pre>
+                                            <div class="similatiries-table">
+                                                <table style="margin: 0px;">
+                                                    {% for handler in similatiries %}
+                                                        <tr><td><p>{{ handler[0][0] }}:</td><td>{{ handler[0][1] }}</p></td></tr>
+                                                    {% endfor %}
+                                                </table>
+                                            </div>
                                         {% endif %}
                                     </div>
                                     <div class="tab-content active" id="mt5_summary">
                                         {% if mt5_summary %}
                                             <!-- <h2>mT5_multilingual_XLSum</h2> -->
                                             <pre class="elib_summaries">{{ mt5_summary }}</pre>
+                                            <div class="similatiries-table">
+                                                <table>
+                                                    {% for handler in similatiries %}
+                                                        <tr><td><p>{{ handler[0][0] }}:</td><td>{{ handler[1][1] }}</p></td></tr>
+                                                    {% endfor %}
+                                                </table>
+                                            </div>
                                         {% endif %}
                                     </div>
                                     <div class="tab-content active" id="mbart_summary">
                                         {% if mbart_summary %}
                                             <!-- <h2>mbart_ru_sum_gazeta</h2> -->
                                             <pre class="elib_summaries">{{ mbart_summary }}</pre>
+                                            <div class="similatiries-table">
+                                                <table>
+                                                    {% for handler in similatiries %}
+                                                        <tr><td><p>{{ handler[0][0] }}:</td><td>{{ handler[2][1] }}</p></td></tr>
+                                                    {% endfor %}
+                                                </table>
+                                            </div>
                                         {% endif %}
                                     </div>
                                     <div class="tab-content active" id="rut5_summary">
                                         {% if rut5_summary %}
                                             <!-- <h2>rut5_base_sum_gazeta</h2> -->
                                             <pre class="elib_summaries">{{ rut5_summary }}</pre>
+                                            <div class="similatiries-table">
+                                                <table>
+                                                    {% for handler in similatiries %}
+                                                        <tr><td><p>{{ handler[0][0] }}:</td><td>{{ handler[3][1] }}</p></td></tr>
+                                                    {% endfor %}
+                                                </table>
+                                            </div>
                                         {% endif %}
                                     </div>
                                     <div class="tab-content active" id="t5_summary">
                                         {% if t5_summary %}
                                             <!-- <h2>t5_summary_en_ru_zh_base_2048</h2> -->
                                             <pre class="elib_summaries">{{ t5_summary }}</pre>
+                                            <div class="similatiries-table">
+                                                <table>
+                                                    {% for handler in similatiries %}
+                                                        <tr><td><p>{{ handler[0][0] }}:</td><td>{{ handler[4][1] }}</p></td></tr>
+                                                    {% endfor %}
+                                                </table>
+                                            </div>
                                         {% endif %}
                                     </div>
                                 </div>
