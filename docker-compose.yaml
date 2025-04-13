@@ -8,6 +8,7 @@ services:
       - "0.0.0.0:5052:5000"
     depends_on:
       - postgre
+      - similarity
     volumes:
       - .:/app
       - ..:/app/prj
@@ -71,21 +72,44 @@ services:
     command: ["python", './DocumentAnalysisSystem/Utility/Corrector/run_corrector.py']
 
 
-  # summarizer:
-  #   image: happy:dedoc
-  #   container_name: happy_summarizer_container
-  #   depends_on:
-  #     - postgre
-  #   volumes:
-  #     - ..:/app
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             count: all
-  #             capabilities: [gpu]
-  #   command: tail -F /dev/null
+  summarizer:
+    image: happy:dedoc
+    container_name: happy_summarizer_container
+    depends_on:
+      - postgre
+    volumes:
+      - ..:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # command: tail -F /dev/null
+    command: ["python", './DocumentAnalysisSystem/Utility/Summarizer/run_summarizer.py']
+
+
+  similarity:
+    image: happy_similarity
+    # image: happy:dedoc
+    container_name: happy_similarity_container
+    depends_on:
+      - postgre
+    volumes:
+      - ../Similarity:/app
+    ports:
+      - "0.0.0.0:5053:5001"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # command: tail -F /dev/null
+    command: ["python", "FlaskHandler.py"]
+
 
 
   # ocr:
@@ -103,3 +127,5 @@ volumes:
 networks:
   default:
     name: postgre-service_default
+
+  app-network:
