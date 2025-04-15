@@ -244,6 +244,7 @@
                         <td class="right-cell">
 
                             <div id="summ">
+                                <!-- <button id="show-similarities" class="button" data-doc-id="{{ id_doc }}">Рассчитать и показать сходства</button> -->
                                 <div class="tab-container">
                                     <!-- <h1>Summaries</h1> -->
                                     <!-- MODELS = ['./Happy/Models/csebuetnlp--mT5_multilingual_XLSum',
@@ -254,10 +255,18 @@
                                         {% if lingvo_summary %}
                                             <!-- <h2>Lingvo summary</h2> -->
                                             <pre class="lingvo_summary">{{ lingvo_summary }}</pre>
-                                            <div class="similatiries-table">
+                                            <p>Сжатие текста: <b>{{ compression[0] }}</b></p>
+                                            <div class="similarities-table">
                                                 <table style="margin: 0px;">
-                                                    {% for handler in similatiries %}
-                                                        <tr><td><p>{{ handler[0][0] }}:</td><td>{{ handler[0][1] }}</p></td></tr>
+                                                    <tr>
+                                                        <th>Модель</th>
+                                                        <th>cos( x )</th>
+                                                        <th>acos( x )</th>
+                                                    </tr>
+                                                    {% for handler in similarities %}
+                                                        <tr><td><p>{{ handler[0][0] }}:</p></td>
+                                                            <td><p>{{ handler[0][1] }}</p></td>
+                                                            <td><p>{{ handler[0][2] }}</p></td></tr>
                                                     {% endfor %}
                                                 </table>
                                             </div>
@@ -267,10 +276,18 @@
                                         {% if mt5_summary %}
                                             <!-- <h2>mT5_multilingual_XLSum</h2> -->
                                             <pre class="elib_summaries">{{ mt5_summary }}</pre>
-                                            <div class="similatiries-table">
-                                                <table>
-                                                    {% for handler in similatiries %}
-                                                        <tr><td><p>{{ handler[0][0] }}:</td><td>{{ handler[1][1] }}</p></td></tr>
+                                            <p>Сжатие текста: <b>{{ compression[1] }}</b></p>
+                                            <div class="similarities-table">
+                                                <table style="margin: 0px;">
+                                                    <tr>
+                                                        <th>Модель</th>
+                                                        <th>cos( x )</th>
+                                                        <th>acos( x )</th>
+                                                    </tr>
+                                                    {% for handler in similarities %}
+                                                        <tr><td><p>{{ handler[0][0] }}:</p></td>
+                                                            <td><p>{{ handler[1][1] }}</p></td>
+                                                            <td><p>{{ handler[1][2] }}</p></td></tr>
                                                     {% endfor %}
                                                 </table>
                                             </div>
@@ -280,10 +297,18 @@
                                         {% if mbart_summary %}
                                             <!-- <h2>mbart_ru_sum_gazeta</h2> -->
                                             <pre class="elib_summaries">{{ mbart_summary }}</pre>
-                                            <div class="similatiries-table">
-                                                <table>
-                                                    {% for handler in similatiries %}
-                                                        <tr><td><p>{{ handler[0][0] }}:</td><td>{{ handler[2][1] }}</p></td></tr>
+                                            <p>Сжатие текста: <b>{{ compression[2] }}</b></p>
+                                            <div class="similarities-table">
+                                                <table style="margin: 0px;">
+                                                    <tr>
+                                                        <th>Модель</th>
+                                                        <th>cos( x )</th>
+                                                        <th>acos( x )</th>
+                                                    </tr>
+                                                    {% for handler in similarities %}
+                                                        <tr><td><p>{{ handler[0][0] }}:</p></td>
+                                                            <td><p>{{ handler[2][1] }}</p></td>
+                                                            <td><p>{{ handler[2][2] }}</p></td></tr>
                                                     {% endfor %}
                                                 </table>
                                             </div>
@@ -293,10 +318,18 @@
                                         {% if rut5_summary %}
                                             <!-- <h2>rut5_base_sum_gazeta</h2> -->
                                             <pre class="elib_summaries">{{ rut5_summary }}</pre>
-                                            <div class="similatiries-table">
-                                                <table>
-                                                    {% for handler in similatiries %}
-                                                        <tr><td><p>{{ handler[0][0] }}:</td><td>{{ handler[3][1] }}</p></td></tr>
+                                            <p>Сжатие текста: <b>{{ compression[3] }}</b></p>
+                                            <div class="similarities-table">
+                                                <table style="margin: 0px;">
+                                                    <tr>
+                                                        <th>Модель</th>
+                                                        <th>cos( x )</th>
+                                                        <th>acos( x )</th>
+                                                    </tr>
+                                                    {% for handler in similarities %}
+                                                        <tr><td><p>{{ handler[0][0] }}:</p></td>
+                                                            <td><p>{{ handler[3][1] }}</p></td>
+                                                            <td><p>{{ handler[3][2] }}</p></td></tr>
                                                     {% endfor %}
                                                 </table>
                                             </div>
@@ -306,10 +339,18 @@
                                         {% if t5_summary %}
                                             <!-- <h2>t5_summary_en_ru_zh_base_2048</h2> -->
                                             <pre class="elib_summaries">{{ t5_summary }}</pre>
-                                            <div class="similatiries-table">
-                                                <table>
-                                                    {% for handler in similatiries %}
-                                                        <tr><td><p>{{ handler[0][0] }}:</td><td>{{ handler[4][1] }}</p></td></tr>
+                                            <p>Сжатие текста: <b>{{ compression[4] }}</b></p>
+                                            <div class="similarities-table">
+                                                <table style="margin: 0px;">
+                                                    <tr>
+                                                        <th>Модель</th>
+                                                        <th>cos( x )</th>
+                                                        <th>acos( x )</th>
+                                                    </tr>
+                                                    {% for handler in similarities %}
+                                                        <tr><td><p>{{ handler[0][0] }}:</p></td>
+                                                            <td><p>{{ handler[4][1] }}</p></td>
+                                                            <td><p>{{ handler[4][2] }}</p></td></tr>
                                                     {% endfor %}
                                                 </table>
                                             </div>

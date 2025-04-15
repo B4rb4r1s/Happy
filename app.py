@@ -161,7 +161,7 @@ def upload_file():
             VALUES (%s, %s, %s, %s, %s, %s, %s)""",
                 (file.filename,
                 req['text'],
-                req['summary'],
+                None,
                 datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'),
                 req['file_format'],
                 req['text_tesseract'],
@@ -175,6 +175,24 @@ def upload_file():
             ORDER BY ID DESC LIMIT 1
         ''')
         doc_id = cursor.fetchone()[0] 
+
+        # Запись в табоицу DOCUMENTS_SUMMARIES
+        cursor.execute("""  
+            INSERT INTO documents_summaries (doc_id,
+                                             lingvo_summary,
+                                             mt5_summary,
+                                             mbart_summary,
+                                             rut5_summary,
+                                             t5_summary)
+            VALUES (%s, %s, %s, %s, %s, %s)""",
+                (doc_id,
+                None,
+                req['summaries'][0],
+                req['summaries'][1],
+                req['summaries'][2],
+                req['summaries'][3],
+                )
+            )
         
         # Запись в табоицу METADATA
         if req['file_format'] == 'pdf' and 'meta' in req:
@@ -350,8 +368,6 @@ def results(doc_id):
                content, 
                text_tesseract,
                text_dedoc,
-               big_summary,
-               summary, 
                upload_time, 
                doc_format,
             
@@ -371,8 +387,8 @@ def results(doc_id):
         ''', (doc_id,))
     document = cursor.fetchone()
     
-    matadata = document[8:]
-    document = document[:9]
+    matadata = document[6:]
+    document = document[:7]
 
     cursor.execute(''' 
         SELECT entity, value
@@ -389,22 +405,47 @@ def results(doc_id):
     ''', (doc_id,))
     tables = cursor.fetchall()
     
+    cursor.execute(''' 
+        SELECT  lingvo_summary,
+                mt5_summary,
+                mbart_summary,
+                rut5_summary,
+                t5_summary
+        FROM documents_summaries
+        WHERE doc_id = %s;
+    ''', (doc_id,))
+    summaries = cursor.fetchone()
+    if not summaries:
+        summaries = [None]*5
+    
     prev_id, next_id = get_adjacent_ids(doc_id, 'documents')
     
     cursor.close()
     conn.close()
     # print(f'[ DEBUG APP ] {document}')
+    response = compare_documents(WHITESPACE_HANDLER(document[4]), summaries)
+    similarities = response.get('similarities')
+    compression = response.get('compression')
     
     if document:
         return render_template('results.html', 
+                               id_doc =         document[0],
                                filename =       document[1],
                                extracted_text = document[2],
                                text_tesseract = document[3],
                                text_dedoc =     WHITESPACE_HANDLER(document[4]),
-                               big_summary =    document[5],
-                               summary =        document[6],
-                               upload_time =    document[7],
-                               doc_format =     document[8],
+                               upload_time =    document[5],
+                               doc_format =     document[6],
+
+                               # Аннотации
+                               lingvo_summary = summaries[0],
+                               mt5_summary =    summaries[1],
+                               mbart_summary =  summaries[2],
+                               rut5_summary =   summaries[3],
+                               t5_summary =     summaries[4],
+
+                               similarities =   similarities,
+                               compression =    compression,
 
                                # Метаинформация
                                doc_id =         matadata[1],
@@ -631,7 +672,9 @@ def elib_dataset_document(doc_id):
         cors = True
 
     prev_id, next_id = get_adjacent_ids(doc_id, 'elibrary_dataset')
-    similatiries = compare_documents(WHITESPACE_HANDLER(docs[2]), summaries).get('similatiries')
+    response = compare_documents(WHITESPACE_HANDLER(docs[2]), summaries)
+    similarities = response.get('similarities')
+    compression = response.get('compression')
 
     cursor.close()
     conn.close()
@@ -659,10 +702,48 @@ def elib_dataset_document(doc_id):
                            language_tool =          corrections[5],
                            langtool =               corrections[6],
 
-                           similatiries =           similatiries,
+                           similarities =   similarities,
+                           compression =    compression,
                            
                            prev_id=prev_id, 
                            next_id=next_id)
+
+
+@app.route('/get_similarities/<int:doc_id>', methods=['GET'])
+def get_similarities(doc_id):
+    conn = db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT text_dedoc
+        FROM elibrary_dataset
+        WHERE id = %s;
+    ''', (doc_id,))
+    docs = cursor.fetchone()
+    if not docs:
+        return jsonify({'error': 'Документ не найден'}), 404
+    
+    cursor.execute('''
+        SELECT lingvo_summary,
+               mt5_summary,
+               mbart_summary,
+               rut5_summary,
+               t5_summary
+        FROM elibrary_dataset_summaries
+        WHERE doc_id = %s;
+    ''', (doc_id,))
+    summaries = cursor.fetchone()
+    if not summaries:
+        summaries = [None]*5
+    
+    text = WHITESPACE_HANDLER(docs[0])
+    summaries_list = list(summaries)
+    similarities = compare_documents(text, summaries_list).get('similatiries', [])
+    
+    cursor.close()
+    conn.close()
+    
+    return jsonify({'similatiries': similarities})
 
 
 

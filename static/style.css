@@ -184,7 +184,7 @@ table { table-layout: fixed; }
     table-layout: fixed;
 }
 .extracted-document{
-    vertical-align: middle;
+    vertical-align: top;
     width: 50%;
     max-width: 50%;
     font-size: 20px;
@@ -200,7 +200,7 @@ table { table-layout: fixed; }
     box-sizing: border-box;
     overflow-wrap: break-word;
 }
-.similatiries-table {
+.similarities-table {
     text-align: center;
     /* background-color: #fff; */
 }
