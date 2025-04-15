@@ -4,7 +4,7 @@ import re
 import tqdm
 import time
 import logging
-import config
+import Source.Summarizer.config as config
 
 import psycopg2
 import torch
@@ -25,7 +25,7 @@ class BaseSummarizer:
         self.encodings = {'input_ids': torch.tensor([[]])}
         self.set_model()
 
-        self.logger_path = 'DocumentAnalysisSystem/Utility/Summarizer/logs.txt'
+        self.logger_path = '/app/Source/Summarizer/logs.txt'
 
     def logger(self, message, level):
         padding = '\t'*level
@@ -86,7 +86,7 @@ class BaseSummarizer:
         self.logger(f'Model: {self.column},\tcomputing using {self.device}\n', 1)
 
         # extra_condition = '{SUMMARIES_TABLE}.lingvo_summary IS NOT NULL'
-        dataset = db_handler.get_db_table(table=config.SUMMARIES_TABLE, 
+        dataset = db_handler.get_db_table(table=conconfigfigur.SUMMARIES_TABLE, 
                                           column=self.column, 
                                           extra_condition=extra_condition)
         for doc_id, text in dataset:

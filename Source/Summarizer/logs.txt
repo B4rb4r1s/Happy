@@ -1,0 +1,12 @@
+		with 2381 symbols, 201 words and 624 tokens processed in 5.65341854095459 sec
+		with 2381 symbols, 201 words and 550 tokens processed in 7.786833763122559 sec
+		with 2381 symbols, 201 words and 647 tokens processed in 4.242664813995361 sec
+		with 2381 symbols, 201 words and 585 tokens processed in 4.108275890350342 sec
+		with 2381 symbols, 201 words and 624 tokens processed in 5.903611660003662 sec
+		with 2381 symbols, 201 words and 550 tokens processed in 7.652042627334595 sec
+		with 2381 symbols, 201 words and 647 tokens processed in 4.273153781890869 sec
+		with 2381 symbols, 201 words and 585 tokens processed in 4.072905540466309 sec
+		with 6679 symbols, 764 words and 1932 tokens processed in 9.251072406768799 sec
+		with 6679 symbols, 764 words and 1778 tokens processed in 15.542186260223389 sec
+		with 6679 symbols, 764 words and 2007 tokens processed in 9.661962747573853 sec
+		with 6679 symbols, 764 words and 1908 tokens processed in 8.030878067016602 sec

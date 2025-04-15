@@ -14,18 +14,29 @@ sys.stdout.flush()
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+from Source.Summarizer.OmegaSummarizer import Omega_summarizer
+
 
 # Установка параметров работы модели
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
+device = "cuda:1" if torch.cuda.is_available() else "cpu"
 print(f'[{datetime.datetime.now()}][ DEBUG ] Computing using device - {device}')
+
+
+SUMMARY_MODELS = [
+    '/app/Models/Summary/csebuetnlp--mT5_multilingual_XLSum',
+    '/app/Models/Summary/IlyaGusev--mbart_ru_sum_gazeta',
+    '/app/Models/Summary/IlyaGusev--rut5_base_sum_gazeta',
+    '/app/Models/Summary/utrobinmv--t5_summary_en_ru_zh_base_2048',
+]
+summarizers = [Omega_summarizer(model_path, device=device) for model_path in SUMMARY_MODELS]
 
 
 
 # BART
-MODEL_NAME = 'IlyaGusev/mbart_ru_sum_gazeta'
-MODEL_PATH = 'Models/Summary/IlyaGusev--mbart_ru_sum_gazeta'
-tokenizer = MBartTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
-model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
+# MODEL_NAME = 'IlyaGusev/mbart_ru_sum_gazeta'
+# MODEL_PATH = 'Models/Summary/IlyaGusev--mbart_ru_sum_gazeta'
+# tokenizer = MBartTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
+# model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
 
 # T5
 # MODEL_NAME = 'utrobinmv/t5_summary_en_ru_zh_base_2048'
@@ -39,7 +50,7 @@ model = MBartForConditionalGeneration.from_pretrained(MODEL_PATH).to(device)
 # tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
 # model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH).to(device)
 
-model.eval()
+# model.eval()
 
 
 # Структура апроса:
@@ -74,62 +85,25 @@ class SummaryGenerationHandler(Handler):
             try:
                 if request['text'] == '':
                     text = request['text_dedoc']
-                    if request['tables']:
-                        tables_texts = '\n\n'.join(['\n'.join([' '.join(row) for row in table]) for table in request['tables']])
-                        text += tables_texts
+                    # if request['tables']:
+                    #     tables_texts = '\n\n'.join(['\n'.join([' '.join(row) for row in table]) for table in request['tables']])
+                    #     text += tables_texts
                 else:
                     text = request['text']
                 if not text:
                     request['summary'] = ''
                     request['big_summary'] = ''
+                    request['summaries'] = [None]*4
                     return super().handle(request)
                 
                 print(f"[{datetime.datetime.now()}][ DEBUG ] Text length: {len(text)} characters")
                 
-                # Define chunk size and calculate steps
-                CHUNK_SIZE = 100 * 1024  # 3KB chunks
-                num_steps = (len(text) // CHUNK_SIZE) + 1 if len(text) > CHUNK_SIZE else 0
-                print(f'[ DEBUG ] Needed steps: {num_steps}')
-                
-                # Process text in chunks for large documents
-                summary_parts = []
-                
-                for step in range(num_steps):
-                    start = step * CHUNK_SIZE
-                    end = start + CHUNK_SIZE
-                    chunk = text[start:end]
-                    print(f'[ DEBUG ] start: {start}, finish: {end}')
+                summaries = []
+                for summarizer in summarizers:
+                    summary = summarizer.summarize_text(text)
+                    summaries.append(summary)
 
-                    # Generate summary for each chunk
-                    summary = self._generate_summary(
-                        chunk, n_words, compression, 
-                        max_length, num_beams, do_sample,
-                        repetition_penalty, no_repeat_ngram_size
-                    )
-                    summary_parts.append(summary)
-
-                if num_steps > 0:
-                    big_summary = '\n'.join(summary_parts)
-                    request['big_summary'] = big_summary
-                    try:
-                        final_summary = self._generate_summary(
-                            big_summary, n_words, compression, 
-                            max_length, num_beams, do_sample, 
-                            repetition_penalty, no_repeat_ngram_size
-                        )
-                        request['summary'] = final_summary
-                    except:
-                        print(f'[ DEBUG ] Big summary is too long to summarize')
-                        request['summary'] = ''
-                else:
-                    # Handle small documents directly
-                    request['summary'] = self._generate_summary(
-                        text, n_words, compression, max_length, num_beams,
-                        do_sample, repetition_penalty,
-                        no_repeat_ngram_size
-                    )
-                    request['big_summary'] = ''
-
+                request['summaries'] = summaries
                 print(f"[ DEBUG ] SummaryGenerationHandler: Обработано")
 
                 print(f"[{datetime.datetime.now()}][ DEBUG ] Summary generated: {request['summary'][:50]}")
@@ -144,6 +118,7 @@ class SummaryGenerationHandler(Handler):
             request['task'] = 'extract_entities'
             request['summary'] = ''
             request['big_summary'] = ''
+            request['summaries'] = [None]*4
             print(f"[ DEBUG ] Task SummaryGenerationHandler is not needed")
             return super().handle(request)
              
@@ -152,43 +127,6 @@ class SummaryGenerationHandler(Handler):
             return super().handle(request)
 
         
-    def _generate_summary(
-            self, text, n_words, compression, max_length,
-            num_beams, do_sample, repetition_penalty,
-            no_repeat_ngram_size, **kwargs
-        ):
-        if not text:
-            return ''
-
-        if n_words:
-            # n_words - приблизительное кол-во слов, которые нужно сгенерировать
-            text = '[{}] '.format(n_words) + text
-        elif compression:
-            # compression - приблизительное отношение объема аннотации 
-            #               и оригинального текста.
-            text = '[{0:.1g}] '.format(compression) + text
-
-        prefix = 'summary big: '
-        text = prefix + text
-
-        inputs = tokenizer(text, 
-                           return_tensors='pt', 
-                           padding=True
-                           ).to(device)
-
-        # with torch.inference_mode():
-        output = model.generate(
-            **inputs,
-            max_length=max_length,
-            num_beams=num_beams,
-            do_sample=do_sample,
-            repetition_penalty=repetition_penalty,
-            no_repeat_ngram_size=no_repeat_ngram_size,
-            **kwargs
-        )
-
-        return tokenizer.decode(output[0], skip_special_tokens=True)
-              
               
     
 if __name__ == "__main__":

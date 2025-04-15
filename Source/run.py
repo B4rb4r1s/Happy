@@ -2,7 +2,7 @@
 from .FileOverwiev import FileOverwiever
 from .ExtractMeta import ExtractMeta
 from .DocReader import TextExtractionHandler
-from .Summarizer import SummaryGenerationHandler
+from .Summarizer.Summarizer import SummaryGenerationHandler
 from .NERer import NamedEntityRecognitionHandler
 
 
