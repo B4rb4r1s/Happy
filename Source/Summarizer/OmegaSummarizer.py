@@ -1,11 +1,11 @@
-from SummaryLoader import BaseSummarizer
+from Source.Summarizer.SummaryLoader import BaseSummarizer
 
 from transformers import T5ForConditionalGeneration, AutoTokenizer
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import MBartTokenizer, MBartForConditionalGeneration
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM
 
-MODEL_PATH = './DocumentAnalysisSystem/Models/Summary'
+MODEL_PATH = '/app/Models/Summary'
 
 class Omega_summarizer(BaseSummarizer):
     def set_model(self):
