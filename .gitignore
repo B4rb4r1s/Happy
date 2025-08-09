@@ -13,6 +13,7 @@ static/Uploads/
 
 Models/SpellCheck/*
 Models/Summary/*
+Models/Similarity/*
 Models/OCR/*
 Models/Vectors/*
 Models_all/
@@ -21,6 +22,7 @@ Source/__pycache__/
 Source/.ipynb_checkpoints/
 Source/Classification/
 Source/support.ipynb
+Source/Summarizer/logs*.txt
 
 Utility/__pycache__/
 Utility/.ipynb_checkpoints/
@@ -30,6 +32,7 @@ Utility/Loader/logs*.txt
 Utility/Cleaner/logs*.txt
 Utility/Summarizer/logs*.txt
 Utility/Corrector/logs*.txt
+
 
 *.rar
 

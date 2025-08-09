@@ -58,7 +58,8 @@ class DocumentLoader:
         self.db_table = table
 
     def log_message(self, message, level):
-        logger_path = 'DocumentAnalysisSystem/Utility/Loader/logs.txt'
+        # logger_path = 'DocumentAnalysisSystem/Utility/Loader/logs.txt'
+        logger_path = 'Happy/Utility/Loader/logs.txt'
         level = '\t'*int(level)
         with open(logger_path, 'a') as f:
             f.write(f'{level}{message}\n')
@@ -73,6 +74,7 @@ class DocumentLoader:
             already_uploaded = [item[0] for item in cursor.fetchall()]
         
         with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+        # with open('Happy/Utility/Loader/logs.txt', 'a') as f:
             f.write(f'GPU is available\n') if torch.cuda.is_available() else f.write('Computing on CPU\n')
             f.write(f'\tScanning from `{self.source_directory}` directory\n')
 
@@ -115,17 +117,52 @@ class DocumentLoader:
 
         print(f'[ DEBUG ] All documents has been uploaded!')
         with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+        # with open('Happy/Utility/Loader/logs.txt', 'a') as f:
             f.write(f'All documents has been uploaded!\n')
         self.close_db_connection()
 
+
+    def multidirs_load_txt(self):
+        self.get_db_connection()
+        self.log_message('TASK - multidirs_load_txt', 0)
+        # Обход всех папок вида chem_*
+        with self.connection.cursor() as cursor:
+            tag = self.source_directory.split('/')[-1]
+            self.log_message(f'Computing tag - {tag}', 1)
+            for folder_name in os.listdir(self.source_directory):
+                folder_path = os.path.join(self.source_directory, folder_name)
+                
+                name_file = os.path.join(folder_path, 'name.txt')
+                text_file = os.path.join(folder_path, 'text.txt')
+                abst_file = os.path.join(folder_path, 'abstract.txt')
+
+                if os.path.isfile(name_file) and os.path.isfile(text_file) and os.path.isfile(abst_file):
+                    with open(name_file, 'r', encoding='utf-8') as f:
+                        document = f.read().strip()
+
+                    with open(text_file, 'r', encoding='utf-8') as f:
+                        text = f.read()
+
+                    with open(abst_file, 'r', encoding='utf-8') as f:
+                        target_summary = f.read()
+
+                    self.db_load(document, document+'\n'+text, None, tag, target_summary)
+                    
+                    # print(f'name - {document}\ntext - {text[:100]}\ntag - {tag}')
+
+                    # Вставка в БД
+                    # cursor.execute(f'''INSERT INTO {self.db_table} (filename, text_dedoc, tag)
+                    #                 VALUES (%s, %s, %s);''',
+                    #             (document, document+'\n'+text, tag))
+
     
-    def db_load(self, document, text_dedoc, tables, tag):
+    def db_load(self, document, text_dedoc, tables, tag, target_summary=None):
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(f'''
-                    INSERT INTO {self.db_table} (filename, text_dedoc, tag)
-                    VALUES (%s, %s, %s);''',
-                    (document,text_dedoc,tag,))
+                    INSERT INTO {self.db_table} (filename, text_dedoc, tag, target_summary)
+                    VALUES (%s, %s, %s, %s);''',
+                    (document,text_dedoc,tag,target_summary,))
 
                 if tables:
                     for table in tables:
@@ -141,7 +178,8 @@ class DocumentLoader:
             print(f'[ DEBUG ] Documnet {document} has successfuly uploaded')
             return 0
         except Exception as err:
-            with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+            # with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+            with open('Happy/Utility/Loader/logs.txt', 'a') as f:
                 f.write(f'\t\t[ ERROR ] Document {document} cant be loaded:\n\t\t\t{err}\n')
 
 

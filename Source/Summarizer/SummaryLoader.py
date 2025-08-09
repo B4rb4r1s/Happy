@@ -4,7 +4,8 @@ import re
 import tqdm
 import time
 import logging
-import Source.Summarizer.config as config
+# import Source.Summarizer.config as config
+import config as config
 
 import psycopg2
 import torch
@@ -86,7 +87,7 @@ class BaseSummarizer:
         self.logger(f'Model: {self.column},\tcomputing using {self.device}\n', 1)
 
         # extra_condition = '{SUMMARIES_TABLE}.lingvo_summary IS NOT NULL'
-        dataset = db_handler.get_db_table(table=conconfigfigur.SUMMARIES_TABLE, 
+        dataset = db_handler.get_db_table(table=config.SUMMARIES_TABLE, 
                                           column=self.column, 
                                           extra_condition=extra_condition)
         for doc_id, text in dataset:

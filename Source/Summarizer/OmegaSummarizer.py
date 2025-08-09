@@ -1,4 +1,5 @@
-from Source.Summarizer.SummaryLoader import BaseSummarizer
+# from Source.Summarizer.SummaryLoader import BaseSummarizer
+from SummaryLoader import BaseSummarizer
 
 from transformers import T5ForConditionalGeneration, AutoTokenizer
 from transformers import T5ForConditionalGeneration, T5Tokenizer

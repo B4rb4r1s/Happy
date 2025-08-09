@@ -7,11 +7,12 @@ import config
 def run_and_load():
     db_handler = DatabaseHandler(host='docker')
     db_handler.set_doc_ids()
-
+    
     summarizers = [Omega_summarizer(model_path, device=config.DEVICE) for model_path in config.SUMMARY_MODELS]
 
     for summarizer in summarizers:
-        summarizer.run_and_load(db_handler, 'elibrary_dataset_summaries.doc_id <= 5140 and elibrary_dataset_summaries.doc_id > 5120')
+        # summarizer.run_and_load(db_handler, 'elibrary_dataset_summaries.doc_id <= 5140 and elibrary_dataset_summaries.doc_id > 5120')
+        summarizer.run_and_load(db_handler, 'elibrary_dataset_summaries.doc_id > 6800')
 
     db_handler.close_db_connection()
 

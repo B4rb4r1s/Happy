@@ -51,7 +51,8 @@ services:
     #           capabilities: [gpu]
     # command: tail -F /dev/null
     # command: ['python', './NER_System/run.py']
-    command: ["python", './DocumentAnalysisSystem/Utility/Loader/run_loader.py']
+    # command: ["python", './DocumentAnalysisSystem/Utility/Loader/run_loader.py']
+    command: ["python", './Happy/Utility/Loader/run_loader.py']
 
 
   corrector:
@@ -78,7 +79,7 @@ services:
     depends_on:
       - postgre
     volumes:
-      - ..:/app
+      - .:/app
     deploy:
       resources:
         reservations:
@@ -87,11 +88,12 @@ services:
               count: all
               capabilities: [gpu]
     # command: tail -F /dev/null
-    command: ["python", './DocumentAnalysisSystem/Utility/Summarizer/run_summarizer.py']
+    # command: ["python", './DocumentAnalysisSystem/Utility/Summarizer/run_summarizer.py']
+    command: ["python", './Source/Summarizer/run_summarizer.py']
 
 
   similarity:
-    image: happy_similarity
+    image: happy_simularity
     # image: happy:dedoc
     container_name: happy_similarity_container
     depends_on:
@@ -109,6 +111,27 @@ services:
               capabilities: [gpu]
     # command: tail -F /dev/null
     command: ["python", "FlaskHandler.py"]
+
+  similarity_task:
+    image: happy_simularity
+    # image: happy:dedoc
+    container_name: happy_similarity_container_handler
+    depends_on:
+      - postgre
+    volumes:
+      - ../Similarity:/app
+    ports:
+      - "0.0.0.0:5053:5001"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # command: tail -F /dev/null
+    # command: ["python", "FlaskHandler.py"]
+    command: ["python", "run_similarity.py"]
 
 
 
