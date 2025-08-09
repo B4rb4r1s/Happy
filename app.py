@@ -16,6 +16,16 @@ import sys
 sys.stdout.flush()
 
 WHITESPACE_HANDLER = lambda k: re.sub(r' {2,}', ' ', re.sub('\n+', '\n\t', re.sub(r'(?<!\n)\n(?!\n)', ' ', re.sub('-\n', '', k.strip()))))
+def whitespace_cleaner(text):
+    cleaned = text.strip()
+    cleaned = re.sub(r'\n\s*\d+\s*\n', ' ', cleaned)  # Удалить строки только с числами
+    cleaned = re.sub(r'-\n', '', cleaned)  # Удалить переносы слов
+    cleaned = re.sub(r'(?<!\n)\n(?!\n)', ' ', cleaned)  # Остальные одиночные переводы строк
+    cleaned = re.sub('\n+', '\n\t', cleaned)  # Обработка множественных переводов
+    # Склеить строки если: нет знака препинания, следующая строка начинается с маленькой буквы
+    cleaned = re.sub(r'(?<![.!?])\s*\n(?=\s*[a-zа-я])', ' ', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r' {2,}', ' ', cleaned)  # Сжать множественные пробелы
+    return cleaned
 
 # Создаем экземпляр приложения Flask
 app = Flask(__name__)
@@ -423,7 +433,7 @@ def results(doc_id):
     cursor.close()
     conn.close()
     # print(f'[ DEBUG APP ] {document}')
-    response = compare_documents(WHITESPACE_HANDLER(document[4]), summaries)
+    response = compare_documents(whitespace_cleaner(document[4]), summaries)
     similarities = response.get('similarities')
     compression = response.get('compression')
     
@@ -433,7 +443,7 @@ def results(doc_id):
                                filename =       document[1],
                                extracted_text = document[2],
                                text_tesseract = document[3],
-                               text_dedoc =     WHITESPACE_HANDLER(document[4]),
+                               text_dedoc =     whitespace_cleaner(document[4]),
                                upload_time =    document[5],
                                doc_format =     document[6],
 
@@ -555,7 +565,7 @@ def dataset_document(doc_id):
                         #    doc_full=docs, 
                            id_doc =         docs[0],
                            text_tesseract = docs[1],
-                           texy_dedoc =     WHITESPACE_HANDLER(docs[2]),
+                           texy_dedoc =     whitespace_cleaner(docs[2]),
                            filename =       docs[3],
                            event =          docs[4],
                            doc_format =     docs[5],
@@ -672,7 +682,7 @@ def elib_dataset_document(doc_id):
         cors = True
 
     prev_id, next_id = get_adjacent_ids(doc_id, 'elibrary_dataset')
-    response = compare_documents(WHITESPACE_HANDLER(docs[2]), summaries)
+    response = compare_documents(whitespace_cleaner(docs[2]), summaries)
     similarities = response.get('similarities')
     compression = response.get('compression')
 
@@ -682,7 +692,7 @@ def elib_dataset_document(doc_id):
                            changer_ =       'summ',
                            id_doc =         docs[0],
                            filename =       docs[1],
-                           text_dedoc =     WHITESPACE_HANDLER(docs[2]),
+                           text_dedoc =     whitespace_cleaner(docs[2]),
                            
                            tables = tables,
                            
@@ -736,7 +746,7 @@ def get_similarities(doc_id):
     if not summaries:
         summaries = [None]*5
     
-    text = WHITESPACE_HANDLER(docs[0])
+    text = whitespace_cleaner(docs[0])
     summaries_list = list(summaries)
     similarities = compare_documents(text, summaries_list).get('similatiries', [])
     
