@@ -33,7 +33,7 @@ Utility/Cleaner/logs*.txt
 Utility/Summarizer/logs*.txt
 Utility/Corrector/logs*.txt
 
-
+*.sql
 *.rar
 
 DocumentAnalysisSystem.code-workspace

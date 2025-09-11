@@ -50,6 +50,7 @@ class BaseSummarizer:
 
 
     def summarize_text(self, text):
+        ### (1) Деление текста на секции, если его размер больше 1024 токенов
         tokens = self.tokenizer.encode(config.PROCESSING_HANDLER(text))
         
         words = text.split(' ')
@@ -62,7 +63,9 @@ class BaseSummarizer:
 
         token_chunks = [tokens[i:i+batch_size] for i in range(0, len(tokens), batch_size)]
         text_chunks = [self.tokenizer.decode(chunk, skip_special_tokens=True) for chunk in token_chunks]
+        ### Конец (1)
 
+        # Реферирование в переменную - summary = []
         summary = []
         start = time.time()
         for text_chunk in text_chunks:
@@ -86,7 +89,10 @@ class BaseSummarizer:
         self.logger(f'Task - run_and_load\n', 0)
         self.logger(f'Model: {self.column},\tcomputing using {self.device}\n', 1)
 
+        
         # extra_condition = '{SUMMARIES_TABLE}.lingvo_summary IS NOT NULL'
+        
+        # Выбор таблицы `elibrary_dataset_summaries` в качестве датасета
         dataset = db_handler.get_db_table(table=config.SUMMARIES_TABLE, 
                                           column=self.column, 
                                           extra_condition=extra_condition)
@@ -94,8 +100,13 @@ class BaseSummarizer:
             try:
                 print(f"Обработка документа {doc_id}")
                 self.logger(f'Document: {doc_id}\t', 2)
+
+                # Предобработка текста
                 processed_text = config.PROCESSING_HANDLER(text)
+
+                # Функция реферирования выше
                 summary = self.summarize_text(processed_text)
+
                 db_handler.upload_summary(column=self.column, doc_id=doc_id, text=summary)
             except Exception as err:
                 print(f"[ ERROR ] Документ {doc_id}: {err}")

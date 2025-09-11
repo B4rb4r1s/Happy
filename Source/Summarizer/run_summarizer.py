@@ -5,13 +5,19 @@ import config
 
 
 def run_and_load():
+    # В DatabaseHandler прописаны все обращения к БД
     db_handler = DatabaseHandler(host='docker')
     db_handler.set_doc_ids()
     
+    # Инициализация Рефераторов, полный список в config файле
     summarizers = [Omega_summarizer(model_path, device=config.DEVICE) for model_path in config.SUMMARY_MODELS]
+    # Omega_summarizer - описание всех нейросетевых моделей моделей 
 
     for summarizer in summarizers:
+        # Тексты ВИНИТИ
         # summarizer.run_and_load(db_handler, 'elibrary_dataset_summaries.doc_id <= 5140 and elibrary_dataset_summaries.doc_id > 5120')
+        
+        # Тексты датасета [480]
         summarizer.run_and_load(db_handler, 'elibrary_dataset_summaries.doc_id > 6800')
 
     db_handler.close_db_connection()
