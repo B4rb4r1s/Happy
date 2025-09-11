@@ -6,11 +6,19 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer
 from transformers import MBartTokenizer, MBartForConditionalGeneration
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM
 
-MODEL_PATH = '/app/Models/Summary'
+from config import OFFLINEUSE
+
+if OFFLINEUSE:
+    MODEL_PATH = '/app/Models/Summary/'
+    SPACER = '--'
+else:
+    MODEL_PATH = ''
+    SPACER = '/'
+
 
 class Omega_summarizer(BaseSummarizer):
     def set_model(self):
-        if self.model_path == f'{MODEL_PATH}/csebuetnlp--mT5_multilingual_XLSum':
+        if self.model_path == f'{MODEL_PATH}csebuetnlp{SPACER}mT5_multilingual_XLSum':
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
             self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_path).to(self.device)
             self.column='mt5_summary'
@@ -22,7 +30,7 @@ class Omega_summarizer(BaseSummarizer):
             }
             return True
 
-        elif self.model_path == f'{MODEL_PATH}/IlyaGusev--mbart_ru_sum_gazeta':
+        elif self.model_path == f'{MODEL_PATH}IlyaGusev{SPACER}mbart_ru_sum_gazeta':
             self.tokenizer = MBartTokenizer.from_pretrained(self.model_path)
             self.model = MBartForConditionalGeneration.from_pretrained(self.model_path).to(self.device)
             self.column='mbart_summary'
@@ -34,7 +42,7 @@ class Omega_summarizer(BaseSummarizer):
             }
             return True
 
-        elif self.model_path == f'{MODEL_PATH}/IlyaGusev--rut5_base_sum_gazeta':
+        elif self.model_path == f'{MODEL_PATH}IlyaGusev{SPACER}rut5_base_sum_gazeta':
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
             self.model = T5ForConditionalGeneration.from_pretrained(self.model_path).to(self.device)
             self.column='rut5_summary'
@@ -47,7 +55,7 @@ class Omega_summarizer(BaseSummarizer):
             }
             return True
 
-        elif self.model_path == f'{MODEL_PATH}/utrobinmv--t5_summary_en_ru_zh_base_2048':
+        elif self.model_path == f'{MODEL_PATH}utrobinmv{SPACER}t5_summary_en_ru_zh_base_2048':
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
             self.model = T5ForConditionalGeneration.from_pretrained(self.model_path).to(self.device)
             self.column='t5_summary'
@@ -64,23 +72,23 @@ class Omega_summarizer(BaseSummarizer):
             print(f'Unknown model', flush=True)
 
     def set_generation_arguments(self):
-        if self.model_path == f'{MODEL_PATH}/csebuetnlp--mT5_multilingual_XLSum':
+        if self.model_path == f'{MODEL_PATH}csebuetnlp{SPACER}mT5_multilingual_XLSum':
             self.generation_args = {
                 # 'max_length':             512,
                 'no_repeat_ngram_size':   2,
                 'num_beams':              4
             }
-        elif self.model_path == f'{MODEL_PATH}/IlyaGusev--mbart_ru_sum_gazeta':
+        elif self.model_path == f'{MODEL_PATH}IlyaGusev{SPACER}mbart_ru_sum_gazeta':
             self.generation_args = {
                 'no_repeat_ngram_size':   4
             }
 
-        elif self.model_path == f'{MODEL_PATH}/IlyaGusev--rut5_base_sum_gazeta':
+        elif self.model_path == f'{MODEL_PATH}IlyaGusev{SPACER}rut5_base_sum_gazeta':
             self.generation_args = {
                 'no_repeat_ngram_size':   4
             }
 
-        elif self.model_path == f'{MODEL_PATH}/utrobinmv--t5_summary_en_ru_zh_base_2048':
+        elif self.model_path == f'{MODEL_PATH}utrobinmv{SPACER}t5_summary_en_ru_zh_base_2048':
             self.generation_args = {
                 'no_repeat_ngram_size':   4
             }
