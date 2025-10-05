@@ -93,8 +93,7 @@ class BaseSummarizer:
         # extra_condition = '{SUMMARIES_TABLE}.lingvo_summary IS NOT NULL'
         
         # Выбор таблицы `elibrary_dataset_summaries` в качестве датасета
-        dataset = db_handler.get_db_table(table=config.SUMMARIES_TABLE, 
-                                          column=self.column, 
+        dataset = db_handler.get_db_table(column=self.column, 
                                           extra_condition=extra_condition)
         for doc_id, text in dataset:
             try:

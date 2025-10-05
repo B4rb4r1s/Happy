@@ -21,7 +21,7 @@ class Omega_summarizer(BaseSummarizer):
         if self.model_path == f'{MODEL_PATH}csebuetnlp{SPACER}mT5_multilingual_XLSum':
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
             self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_path).to(self.device)
-            self.column='mt5_summary'
+            self.column='summary_mt5'
             self.tokenization_args = {
                 'return_tensors':     "pt",
                 'padding':            "max_length",
@@ -33,7 +33,7 @@ class Omega_summarizer(BaseSummarizer):
         elif self.model_path == f'{MODEL_PATH}IlyaGusev{SPACER}mbart_ru_sum_gazeta':
             self.tokenizer = MBartTokenizer.from_pretrained(self.model_path)
             self.model = MBartForConditionalGeneration.from_pretrained(self.model_path).to(self.device)
-            self.column='mbart_summary'
+            self.column='summary_mbart'
             self.tokenization_args = {
                 'return_tensors':     "pt",
                 'padding':            "max_length",
@@ -45,7 +45,7 @@ class Omega_summarizer(BaseSummarizer):
         elif self.model_path == f'{MODEL_PATH}IlyaGusev{SPACER}rut5_base_sum_gazeta':
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
             self.model = T5ForConditionalGeneration.from_pretrained(self.model_path).to(self.device)
-            self.column='rut5_summary'
+            self.column='summary_rut5'
             self.tokenization_args = {
                 'add_special_tokens':   True,
                 'max_length':           600,
@@ -58,7 +58,7 @@ class Omega_summarizer(BaseSummarizer):
         elif self.model_path == f'{MODEL_PATH}utrobinmv{SPACER}t5_summary_en_ru_zh_base_2048':
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
             self.model = T5ForConditionalGeneration.from_pretrained(self.model_path).to(self.device)
-            self.column='t5_summary'
+            self.column='summary_t5'
             self.tokenization_args = {
                 'return_tensors':     "pt",
                 'padding':            "max_length",

@@ -32,6 +32,7 @@ class DatabaseHandler:
     def close_db_connection(self):
         self.connection.close()
 
+
     def get_lingvo_table(self, table='elibrary_dataset_summaries'):
         with self.connection.cursor() as cursor:
             cursor.execute(f'''
@@ -45,14 +46,12 @@ class DatabaseHandler:
             dataset = cursor.fetchall()
         return dataset
 
-    def get_db_table(self, table, column, extra_condition=None):
+    def get_db_table(self, column, extra_condition=None):
         with self.connection.cursor() as cursor:
             cursor.execute(f'''
-                SELECT elibrary_dataset.id, text_dedoc
+                SELECT elibrary_dataset.id, source_text
                 FROM elibrary_dataset
-                LEFT JOIN {table}
-                    ON {table}.doc_id = elibrary_dataset.id
-                WHERE {table}.{column} IS NULL
+                WHERE elibrary_dataset.{column} IS NULL
                     {f"AND {extra_condition}" if extra_condition else ""}
                 ORDER BY elibrary_dataset.id DESC;
             ''')
@@ -62,9 +61,9 @@ class DatabaseHandler:
     def upload_summary(self, column, doc_id, text):
         with self.connection.cursor() as cursor:
             cursor.execute(f'''
-                UPDATE elibrary_dataset_summaries
+                UPDATE elibrary_dataset
                 SET {column} = %s
-                WHERE elibrary_dataset_summaries.doc_id = {doc_id};
+                WHERE elibrary_dataset.id = {doc_id};
             ''', (text, ))
             self.connection.commit()
         return True

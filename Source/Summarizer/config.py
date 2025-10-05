@@ -4,7 +4,7 @@ import torch
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 # DEVICE = "cpu"
 
-OFFLINEUSE = False
+OFFLINEUSE = True
 
 
 if OFFLINEUSE:
@@ -16,10 +16,10 @@ if OFFLINEUSE:
     '/app/Models/Summary/utrobinmv--t5_summary_en_ru_zh_base_2048',
     
     # Local use
-    # './DocumentAnalysisSystem/Models/Summary/csebuetnlp--mT5_multilingual_XLSum',
-    # './DocumentAnalysisSystem/Models/Summary/IlyaGusev--mbart_ru_sum_gazeta',
-    # './DocumentAnalysisSystem/Models/Summary/IlyaGusev--rut5_base_sum_gazeta',
-    # './DocumentAnalysisSystem/Models/Summary/utrobinmv--t5_summary_en_ru_zh_base_2048',
+    # './Happy/Models/Summary/csebuetnlp--mT5_multilingual_XLSum',
+    # './Happy/Models/Summary/IlyaGusev--mbart_ru_sum_gazeta',
+    # './Happy/Models/Summary/IlyaGusev--rut5_base_sum_gazeta',
+    # './Happy/Models/Summary/utrobinmv--t5_summary_en_ru_zh_base_2048',
     ]
 else:
     # Online use
@@ -32,5 +32,5 @@ else:
 
 
 
-SUMMARIES_TABLE = 'elibrary_dataset_summaries'
+SUMMARIES_TABLE = 'elibrary_dataset'
 PROCESSING_HANDLER = lambda k: re.sub(r' {2,}', ' ', re.sub('\n+', '\n', re.sub(r'(?<!\n)\n(?!\n)', ' ', re.sub('-\n', '', k.strip()))))

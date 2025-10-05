@@ -58,11 +58,13 @@ class DocumentLoader:
         self.db_table = table
 
     def log_message(self, message, level):
-        # logger_path = 'DocumentAnalysisSystem/Utility/Loader/logs.txt'
+        # logger_path = 'Happy/Utility/Loader/logs.txt'
         logger_path = 'Happy/Utility/Loader/logs.txt'
         level = '\t'*int(level)
         with open(logger_path, 'a') as f:
             f.write(f'{level}{message}\n')
+
+
 
     def elibrary_load(self):
         self.get_db_connection()
@@ -73,7 +75,7 @@ class DocumentLoader:
             ''')
             already_uploaded = [item[0] for item in cursor.fetchall()]
         
-        with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+        with open('Happy/Utility/Loader/logs.txt', 'a') as f:
         # with open('Happy/Utility/Loader/logs.txt', 'a') as f:
             f.write(f'GPU is available\n') if torch.cuda.is_available() else f.write('Computing on CPU\n')
             f.write(f'\tScanning from `{self.source_directory}` directory\n')
@@ -86,7 +88,7 @@ class DocumentLoader:
             # Проверка - загружен ли уже документ?
             if document in already_uploaded:
                 print(f'[ DEBUG ] Documnet {document} is already uploaded')
-                with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+                with open('Happy/Utility/Loader/logs.txt', 'a') as f:
                     f.write(f'\t\tDocumnet `{document}` is already uploaded\n')
                 continue
             else:
@@ -99,11 +101,11 @@ class DocumentLoader:
                         start = time.time()
                         text_dedoc, tables = self.dedoc_scan(document_path)
                         stop = time.time() - start
-                        with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+                        with open('Happy/Utility/Loader/logs.txt', 'a') as f:
                             f.write(f'\t\tDocument {document} was scanned in {stop} sec\n')
                     except Exception as err:
                         print(f'[ ERROR ] Error during OCR \n>>> {err}')
-                        with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+                        with open('Happy/Utility/Loader/logs.txt', 'a') as f:
                             f.write(f'\t\t[ ERROR ] Error during OCR\n\t\t\t{err}\n')
                         continue
 
@@ -116,7 +118,7 @@ class DocumentLoader:
                     continue
 
         print(f'[ DEBUG ] All documents has been uploaded!')
-        with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+        with open('Happy/Utility/Loader/logs.txt', 'a') as f:
         # with open('Happy/Utility/Loader/logs.txt', 'a') as f:
             f.write(f'All documents has been uploaded!\n')
         self.close_db_connection()
@@ -160,7 +162,7 @@ class DocumentLoader:
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(f'''
-                    INSERT INTO {self.db_table} (filename, text_dedoc, tag, target_summary)
+                    INSERT INTO {self.db_table} (filename, source_text, tag, target_summary)
                     VALUES (%s, %s, %s, %s);''',
                     (document,text_dedoc,tag,target_summary,))
 
@@ -178,7 +180,7 @@ class DocumentLoader:
             print(f'[ DEBUG ] Documnet {document} has successfuly uploaded')
             return 0
         except Exception as err:
-            # with open('DocumentAnalysisSystem/Utility/Loader/logs.txt', 'a') as f:
+            # with open('Happy/Utility/Loader/logs.txt', 'a') as f:
             with open('Happy/Utility/Loader/logs.txt', 'a') as f:
                 f.write(f'\t\t[ ERROR ] Document {document} cant be loaded:\n\t\t\t{err}\n')
 
